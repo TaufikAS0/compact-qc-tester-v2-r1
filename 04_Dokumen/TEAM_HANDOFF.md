@@ -4,7 +4,7 @@
 
 User assigns physical flashing to team. Verify actual USB port, MCU classic ESP32, MAC/16MB and current partition table before upload. The last verified board was COM13 CH340, ESP32-D0WD-V3 rev3.1 / 16MB; a reconnect can change port. No upload of v0.5.0 was performed by Codex.
 
-Build using README/Build-Firmware.ps1. Preserve private ota_secrets.h between builds or communicate the new password to operators. Do not distribute a binary publicly: it contains the OTA secret. Both initial USB build and later OTA build must contain the matching lab/pin/partition profile.
+Owner decision 2026-10-12 permits distribution with the intentional public LAB default admin / CompactLab050!. Build using Build-Firmware.ps1 -PublicLabRelease; private ota_secrets.h overrides are refused. Do not distribute private override builds. Keep OTA on the isolated LAB LAN. Portal distribution is app-only for device /update, not automatic portal OTA or merged USB. Both USB and OTA still require matching lab/pin/partition profiles.
 
 Legacy layout from partitions.csv:
 
@@ -22,7 +22,7 @@ Back up current partition table and NVS first. On this layout write build bootlo
 
 ## Later OTA
 
-Open http://device-IP/update (AP 192.168.4.1), login admin + private build password, select application .ino.bin only. Keep power stable. Bootloader/partitions cannot be changed via this application OTA. On success device restarts; reconnect, verify firmware v0.5.0/next version + MD5 and serial. A successful compile does not prove OTA works electrically with watchdog timing; exercise the acceptance cases below on a bench.
+Open http://device-IP/update (AP 192.168.4.1), login admin + LAB default (private password only for a private build), select application .ino.bin only. Keep power stable. Bootloader/partitions cannot be changed via this application OTA. On success device restarts; reconnect, verify firmware v0.5.0/next version + MD5 and serial. A successful compile does not prove OTA works electrically with watchdog timing; exercise the acceptance cases below on a bench.
 
 ## Bench acceptance checklist
 

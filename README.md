@@ -25,7 +25,7 @@ STA lab **HuaweiJIN**, AP `COMPACT-QC-xxxx` password **12345678**, URL AP http:/
 
 OTA web `/update` memakai Digest login terpisah + token form acak sekali pakai (2 menit), abort pada error/timeout, output dihentikan sebelum update, slot aplikasi tidak aktif 2MB, restart setelah sukses. Hanya **compact_qc_tester.ino.bin**, bukan merged/bootloader/partitions. NVS dan storage dipertahankan. DONE TPL diberi layanan dalam loop dan callback flash/chunk, tidak dari task yang menyembunyikan hang main loop. Upload lambat/terputus dan timing watchdog masih memerlukan tes hardware. OTA tidak mengubah bootloader/partition table.
 
-`ota_secrets.h`, `ota-access.txt`, build dan semua bin diabaikan Git. Jalankan script build untuk membuat secret lokal acak, atau copy `ota_secrets.example.h` ke `ota_secrets.h` dan isi password minimal 12 karakter. Jangan commit/publish binary yang membawa password OTA. Sampaikan password lokal ke operator melalui kanal tim yang sesuai.
+Keputusan pemilik 2026-10-12: build LAB publik memakai **admin / CompactLab050!** dari `lab_ota_defaults.h`. Nilai ini sengaja publik, bukan secret; jangan pakai di produksi/customer atau membuka OTA ke Internet. Tanpa header privat, build memakai default itu. `ota_secrets.h` tetap opsional untuk build privat yang BIN-nya tidak boleh didistribusikan. `Build-Firmware.ps1 -PublicLabRelease` menolak override privat. BIN hanya di Release assets, bukan Git history.
 
 ## Build dan handoff
 
