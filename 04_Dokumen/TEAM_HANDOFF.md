@@ -36,7 +36,7 @@ USB component offsets: bootloader **0x1000**, partitions **0x8000**, application
 - Ethernet: SPI controller/PHY link with known cable, static documentation test IP192.0.2.2, no DHCP/packet acceptance. W5100 UNKNOWN link needs separate bench verification. Reset MCP2A1 untouched(unknown polarity). SD unique temporary write/read/delete + shared CS tests; no production file overwrite.
 - RS485/RS232 external tests remain deferred. Modbus config stored namespace`qc-settings`; apply route selects MCP2A2 HIGH RS232/LOW RS485. No UART data or comms PASS. Reapply routing after reboot.
 - Measure TPL5010 DONE MCP1B7 waveform/interval/high width under load/OTA; force main-loop failure and observe hardware reset. Software pulse count alone is insufficient. Keep MCP B3–B7 preserved by LED operations.
-- OTA `/update`: Digestadmin +private password, one-use nonce2min, inactive2MB slot. Test wrong image, expired nonce, dropped/slow upload, power interruption, successful reboot/version/buildUTC; old app survives rejected/incomplete update. Watchdog/flash timing requires bench test. No bootloader/partition change via app OTA.
+- OTA `/update`: Digest admin + public LAB default or private build override, one-use nonce2min, inactive2MB slot. Test wrong image, expired nonce, dropped/slow upload, power interruption, successful reboot/version/buildUTC; old app survives rejected/incomplete update. Watchdog/flash timing requires bench test. No bootloader/partition change via app OTA.
 
 ## Evidence boundaries
 
