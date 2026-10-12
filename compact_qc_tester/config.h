@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 // PROVISIONAL profile: ESP32 classic, NOT ESP32-S3. Confirm fitted MCU first.
-constexpr char FW_VERSION[] = "0.5.0";
+constexpr char FW_VERSION[] = "0.5.1";
 // Shared internal lab profile authorized by the firmware workspace rules.
 constexpr char STA_SSID[] = "HuaweiJIN";
 constexpr char STA_PASSWORD[] = "jayaabadi100";

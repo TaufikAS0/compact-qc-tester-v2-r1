@@ -1,4 +1,16 @@
-# Team handoff: v0.5.0
+# Team handoff: v0.5.1
+
+## New standard portal install/reset
+
+Owner now authorizes standard merged USB flashing and optional Full erase + write.
+Use the validated TMC_ESP32_16M_v0.5.1_merged.bin through portal USB/COM, offset 0.
+It resets NVS and boot selection even in Fast write; Full erase also clears
+storage and every other flash region. Back up anything needed before starting.
+Bootloader/partitions/app are assembled at 0x1000/0x8000/0x20000, not Arduino
+default offsets. Factory boot selection uses erased otadata, per
+https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/ota.html.
+The legacy preserve-data procedure below remains for operators who specifically
+need to keep NVS. It does not apply to the merged reset/install image.
 
 ## Initial install via USB
 

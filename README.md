@@ -1,4 +1,18 @@
-# Compact QC Tester v0.5.0
+# Compact QC Tester v0.5.1
+
+## Standard portal USB upload (owner decision 2026-10-12)
+
+v0.5.1 produces a normal paired portal package: full/merged USB at offset 0,
+app-only at the layout's factory address 0x20000. Use the portal's normal USB/COM
+workflow, choose Fast write or Full erase + write, then upload. The validated
+merged image includes bootloader at 0x1000, partitions at 0x8000, app at 0x20000,
+and erased otadata so the factory app boots. No Arduino default boot_app0 is
+included at 0xe000. **Merged fast write resets NVS/settings inside the image;
+Full erase deletes ALL flash data including storage.** This supersedes the older
+NVS-preserving-only USB restriction for explicitly chosen LAB reset/install.
+Use Build-Firmware.ps1 -PublicLabRelease, node --test tests/portal-package.test.cjs.
+No physical flash or QC PASS is implied. Digest device /update remains available;
+automatic portal network OTA is not verified/compatible yet.
 
 Firmware QC lab **ESP32 klasik / 16 MB** untuk TOP `TMC_T_V2_R1` + BOTTOM `TMC_B_V3_R0`. Pengguna mengonfirmasi 2026-10-12 bahwa kedua PCB tetap memakai [pinlist V2_R1](https://docs.google.com/spreadsheets/d/1dNlma5VXHjytXgDrzcwWcurq-axKmhhd/edit?gid=1745042722#gid=1745042722). Jangan mengambil pinmap ESP32-S3 dari tab V3_R0 berdasarkan label bottom saja.
 

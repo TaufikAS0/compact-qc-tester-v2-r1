@@ -16,5 +16,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Firmware build failed.' }
     $binary = Join-Path $PSScriptRoot 'build\compact_qc_tester.ino.bin'
     if ((Get-Item -LiteralPath $binary).Length -ge 2097152) { throw 'Application exceeds 2MB OTA slot.' }
+    if ($PublicLabRelease) {
+        & node tools/portal-package.cjs
+        if ($LASTEXITCODE -ne 0) { throw 'Portal artifact packaging failed.' }
+    }
     Write-Host 'Build passed. No upload was performed. Follow 04_Dokumen/TEAM_HANDOFF.md.'
 } finally { Pop-Location }
