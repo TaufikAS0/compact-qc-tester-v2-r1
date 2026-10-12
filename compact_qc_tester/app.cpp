@@ -41,6 +41,11 @@ bool authorized() {
     failure("Invalid session token", 403);
     return false;
   }
+  if (!qcProfileSelected() && server.uri() != "/api/qc/new" && server.uri() != "/api/heartbeat" &&
+      server.uri() != "/api/stop") {
+    failure("Pilih device M0 atau M1 sebelum QC");
+    return false;
+  }
   return true;
 }
 bool readMcp(uint8_t reg, uint16_t &value) {

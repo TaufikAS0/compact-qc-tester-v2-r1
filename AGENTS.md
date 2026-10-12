@@ -16,3 +16,5 @@ Private OTA secrets, binaries and machine backups must never be committed. Owner
 User corrected outputs 2026-10-12: DO1/DO2 active LOW, LED MCP active HIGH; profile flags enabled after confirmation. Verify runtime BANK/SEQOP and bench fixture. Preserve MCP unrelated bits, particularly TPL MCP1B7.
 EEPROM identity region 0x3F80-0x3FFF is reserved for QC; never overwrite foreign bytes. STUSB PDO runtime only, no NVM write.
 Run firmware compile and Node UI tests; hardware acceptance must be reported separately. Do not simulate a physical PASS.
+
+QC variant is mandatory before mutations: M0 full / M1 STUSB4500 unpopulated N-A, no PD register I2C; generic ACK scan allowed. Reject PD on M1 server-side; changing profile resets session and waits for active PD. Preserve N-A applicability in overall/counters/CSV. QC1 code is evidence CRC, not security signature or PASS; never coerce INCOMPLETE/deferred/data-only to PASS. CSV keeps first ten Longhi columns, UTF8 BOM/RFC4180 and Excel formula protection.

@@ -13,3 +13,6 @@ const char *qcDisplayDetail();
 void qcRecord(const String &name, const String &status, const String &detail);
 
 void qcOutputsStopped();
+bool qcProfileSelected();
+bool qcPdEnabled();
+const char *qcVariantName();

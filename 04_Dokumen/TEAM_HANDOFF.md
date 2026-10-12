@@ -1,10 +1,10 @@
-# Team handoff — v1.0.0
+# Team handoff — v1.1.0
 
-Source baseline v0.5.0 plus integrated remote v0.5.1 packaging changes to v1.0.0. Codex prepares/builds/tests/pushes; **team uploads hardware**. Exact build UTC/hash and publication evidence are recorded in [VALIDATION](../VALIDATION.md). Read [README](../README.md) and [CHANGELOG](../CHANGELOG.md) for API changes. User confirmed final polarity: DO1/DO2 active LOW, LED MCP active HIGH. Source output/MCP profile flags are enabled; runtime I2C faults still lock commands.
+Source baseline v0.5.0 plus integrated remote v0.5.1 packaging and local validated v1.0.0 changes to v1.1.0. Codex prepares/builds/tests/pushes; **team uploads hardware**. Exact build UTC/hash and publication evidence are recorded in [VALIDATION](../VALIDATION.md). Read [README](../README.md) and [CHANGELOG](../CHANGELOG.md) for API changes. User confirmed final polarity: DO1/DO2 active LOW, LED MCP active HIGH. Source output/MCP profile flags are enabled; runtime I2C faults still lock commands.
 
 ## Build and install
 
-1. Verify actual port, classic ESP32 chip, MAC/16MB and current partition table. Last historical port was COM13 CH340; do not assume current port. Back up NVS/partition table. No Codex upload of v1.0.0 is performed.
+1. Verify actual port, classic ESP32 chip, MAC/16MB and current partition table. Last historical port was COM13 CH340; do not assume current port. Back up NVS/partition table. No Codex upload of v1.1.0 is performed.
 2. Check `config.h`: LED MCP1 active HIGH, DO GPIO32/33 active LOW, as corrected by user. Both output/MCP verification flags are true; BANK0/SEQOP0 is checked at runtime. Use a suitable isolated bench fixture and verify actual OFF before attaching loads.
 3. Install pinned dependencies from README, Python3 and Node. Run `./Build-Firmware.ps1`; this generates UTC identity before compile and validates it in binary. Without a private override, use the intentional public LAB default admin / CompactLab050! from lab_ota_defaults.h (owner decision 2026-10-12). Private override builds stay private; -PublicLabRelease refuses them and packages only committed source.
 4. Keep app and `build/firmware-manifest.json` together internally. Confirm manifest version/buildUTC/SHA-256 matches the exact `.ino.bin` to install. Build timestamp is build start, not device clock/upload time.
@@ -24,7 +24,7 @@ USB component offsets: bootloader **0x1000**, partitions **0x8000**, application
 
 ## Bench procedure
 
-- On boot verify serial `TMC` +12 uppercase STA MAC hex digits, source v1.0.0 and matching buildUTC on serial, `/api/state`, dashboard and rotating OLED screen. Wi-Fi STA HuaweiJIN; recovery AP`COMPACT-QC-xxxx`, password12345678 at192.168.4.1. Existing driver STA profile is updated only if different; unrelated NVS preserved.
+- On boot verify serial `TMC` +12 uppercase STA MAC hex digits, source v1.1.0 and matching buildUTC on serial, `/api/state`, dashboard and rotating OLED screen. Wi-Fi STA HuaweiJIN; recovery AP`COMPACT-QC-xxxx`, password12345678 at192.168.4.1. Existing driver STA profile is updated only if different; unrelated NVS preserved.
 - New Session resets RAM results/input counters and capture points, not active calibration or EEPROM. Operator name optional. Browser reload preserves firmware counters/results; device reboot resets RAM. Download report before reset/reboot. No input operator confirmation exists.
 - DI1–4 and each DMM/Normal/Webserver: provide `HIGH LOW HIGH LOW HIGH`, holding each state≥50ms. Verify counter0→1→2 and latched automatic PASS; stuck HIGH/LOW/bounce must not pass. Normal is GPIO2 LOW AND GPIO39 LOW; DMM/WS HIGH contacts confirmed. GPIO39 needs external bias.
 - OLED: inspect actual text and choose Teks terlihat or Blank. Verify every module status rotates, including OLED's own result and build UTC. Visual PASS rejected if initialization failed.
@@ -41,3 +41,15 @@ USB component offsets: bootloader **0x1000**, partitions **0x8000**, application
 ## Evidence boundaries
 
 Confirmed by user: pinmap, MCP23017-E/ML, STUSB4500QTR, M24128/C7559, AHT10, ADS1115, DS3231 Normal logic and corrected output polarity. Unknown: conditioning transfer, physical fixture acceptance, Ethernet reset circuit, ATtiny protocol, actual PD source PDO availability. Software regression/compile/browser tests do not substitute for waveform/current/voltage/physical upload acceptance. Overall intentionally stays INCOMPLETE while deferred/data-only modules lack applicable acceptance evidence.
+
+## Device variant and QC export
+
+Choose **M0 or M1 before QC**. Reboot requires choosing again; variant/session/results are RAM only, not EEPROM hardware identity. Changing variant or starting a new session stops outputs and resets results/input counters/capture points, retains active calibration and EEPROM. Requests wait for any active PD negotiation to finish before reset. M0 includes PD; M1 marks STUSB4500 **NOT APPLICABLE**, excludes it from applicable/pending/fail counts, disables its request endpoint/controls and all PD register polling/writes. Generic all-address I2C ACK scan remains available. RS485/RS232 remain deferred for both variants by the prior user decision; no fabricated PASS.
+
+QC1 code format: `QC1-M0|M1-TMC<MAC>-PASS|FAIL|INCOMPLETE-<session8hex>-<CRC32hex>`. CRC32 covers version/build UTC, selected variant, serial, session and length-prefixed ordered test names/status/details/overall. It changes when evidence changes; it is a snapshot identifier, **not a signature, certification or guaranteed unique production serial**. Production serial remains TMC + STA MAC. Live ADC/RTC readings and export date/PIC are outside this evidence checksum. Code shown by API/dashboard and included with full JSON/CSV; code may represent FAIL/INCOMPLETE.
+
+`GET /export/qc.csv?qcDate=YYYY-MM-DD&qcPic=...&productionDate=YYYY-MM-DD` returns a fresh server snapshot, UTF-8 BOM, RFC4180 quoting and CRLF. Profile must be selected. Dates optional, validated if supplied; PIC max64 bytes. Formula-leading user values are prefixed with apostrophe for Excel safety. Dashboard provides **Export CSV** and retains **Unduh JSON**. This is an actual .csv, not a renamed XLS/XLSX.
+
+The first ten columns match Longhi's order: `serialNumber,productName,productType,productionDate,qcStatus,qcDate,qcPic,status,deliveredAt,deliveredTo`. Append QC code/schema/session, firmware/build UTC, EEPROM labels/validity, calibration/ADC/current, applicable/pass/fail/pending/N-A counts and each test's `.status`, `.detail`, `.applicable`. productType=M0/M1. Inventory status/delivery values remain blank because this firmware has no warehouse data. INCOMPLETE is preserved, unlike Longhi's boolean PASS/FAIL fallback. Missing PD on M1 is N-A, not FAIL. Data-only/deferred results still prevent overall PASS; CRC is never a substitute for completing tests.
+
+Reference inspected read-only: Longhi [`fix/modbus` export](https://github.com/TaufikAS0/esp32-s3-longhi-board-test/blob/26f9a1fb7fd449d076c9b41ed0f0bf091163d0fb/02_Firmware/esp32s3_hwtest/web_server.cpp) at26f9a1f and feature/longhi-modular-upgrade3a45448. Remote develop9aa0fc1 currently lacks this exporter. No pre-existing QC code format was found, so QC1 is defined here. Longhi worktree/source were not changed.

@@ -1,5 +1,31 @@
 #include "qc_math.h"
 #include "pd_math.h"
+#include "qc_report_math.h"
+static_assert(parseVariant("M0") == DeviceVariant::M0 && parseVariant("M1") == DeviceVariant::M1);
+static_assert(parseVariant("M2") == DeviceVariant::Unselected);
+static_assert(pdApplicable(DeviceVariant::M0) && !pdApplicable(DeviceVariant::M1) &&
+              !pdApplicable(DeviceVariant::Unselected));
+static_assert(!testApplicable(DeviceVariant::M1, "STUSB4500") &&
+              testApplicable(DeviceVariant::M0, "STUSB4500") &&
+              testApplicable(DeviceVariant::M1, "OLED"));
+static_assert(qcCrc("123456789") == 0xcbf43926u && qcCrc("PASS") != qcCrc("FAIL"));
+static_assert(csvFormulaLead('=') && csvFormulaLead('@') && !csvFormulaLead('T'));
+constexpr bool csvTests() {
+  char out[40] = {};
+  qcCsvQuote("a,\"b\"\r\nc", out, sizeof(out));
+  if (std::string_view(out) != "\"a,\"\"b\"\"\r\nc\"")
+    return false;
+  qcCsvQuote(" \t=1+1", out, sizeof(out));
+  if (std::string_view(out) != "\"' \t=1+1\"")
+    return false;
+  if (qcCsvQuote("too long", out, 2))
+    return false;
+  qcCsvQuote("", out, sizeof(out));
+  return std::string_view(out) == "\"\"";
+}
+static_assert(csvTests(), "CSV quotes/newlines, formula protection and capacity bound");
+static_assert(qcIsoDate("2024-02-29") && qcIsoDate("") && !qcIsoDate("2025-02-29") &&
+              !qcIsoDate("2100-02-29") && !qcIsoDate("2026-13-01"));
 constexpr bool cyclesTest() {
   InputCycles c;
   c.update(1, 0);

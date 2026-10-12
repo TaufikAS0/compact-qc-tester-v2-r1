@@ -18,6 +18,10 @@ bool softReset() {
 }
 } // namespace
 bool requestPd(uint16_t mv, uint16_t ma, String &out) {
+  if (!qcPdEnabled()) {
+    out = "PD disabled: select M0; M1 unpopulated";
+    return false;
+  }
   if (mv < 5000 || mv > 20000 || mv % 50 || ma < 10 || ma > 5000 || ma % 10) {
     out = "Fixed PDO 5..20V/50mV; 10..5000mA/10mA";
     return false;
@@ -80,6 +84,8 @@ bool requestPd(uint16_t mv, uint16_t ma, String &out) {
 }
 bool pdNegotiating() { return pending; }
 void updatePd() {
+  if (!qcPdEnabled())
+    return;
   if (resetQueued) {
     resetQueued = false;
     if (!softReset()) {
@@ -161,6 +167,15 @@ void updatePd() {
   }
 }
 void pdState(JsonObject d) {
+  d["applicable"] = qcPdEnabled();
+  if (!qcPdEnabled()) {
+    d["valid"] = false;
+    d["pending"] = false;
+    d["status"] = qcProfileSelected() ? "NOT APPLICABLE" : "SELECT DEVICE";
+    d["detail"] =
+        qcProfileSelected() ? "M1: PD Sync unpopulated; no PD transactions" : "Pilih M0/M1 dahulu";
+    return;
+  }
   d["valid"] = registersValid;
   d["attached"] = attached;
   d["pending"] = pending;

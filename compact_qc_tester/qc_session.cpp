@@ -4,6 +4,8 @@
 #include "qc_hardware.h"
 #include "current_calibration.h"
 #include "qc_math.h"
+#include "qc_report_math.h"
+#include "qc_export.h"
 #include <Preferences.h>
 namespace {
 WebServer *web;
@@ -13,6 +15,8 @@ QcItem items[80];
 size_t count = 0, display = 0;
 uint32_t displayAt = 0;
 String operatorName, unit;
+DeviceVariant variant = DeviceVariant::Unselected;
+String sessionId;
 InputCycles cycles[7];
 bool live[13] = {}, attempted[13] = {}, onConfirmed[13] = {}, offConfirmed[13] = {};
 Preferences prefs;
@@ -62,6 +66,9 @@ bool decimal(const char *arg, float low, float high, float &v) {
 }
 String outputName(int n) { return n < 11 ? "LED:" + String(n) : "Relay:" + String(n - 11); }
 void reset() {
+  char id[9];
+  snprintf(id, sizeof(id), "%08lX", static_cast<unsigned long>(esp_random()));
+  sessionId = id;
   count = display = 0;
   for (auto &c : cycles)
     c = {};
@@ -69,7 +76,12 @@ void reset() {
     live[i] = attempted[i] = onConfirmed[i] = offConfirmed[i] = false;
   for (const char *m : {"OLED", "I2C scan", "RTC", "EEPROM", "AHT10", "ADS / 4-20mA", "STUSB4500",
                         "Ethernet", "SD"})
-    qcRecord(m, "BELUM DIUJI", "");
+    qcRecord(m,
+             variant == DeviceVariant::M1 && String(m) == "STUSB4500" ? "NOT APPLICABLE"
+                                                                      : "BELUM DIUJI",
+             variant == DeviceVariant::M1 && String(m) == "STUSB4500"
+                 ? "M1: PD Sync unpopulated; excluded from QC"
+                 : "");
   for (size_t i = 0; i < 7; ++i)
     qcRecord("Input:" + String(inputName(i)), "MENUNGGU SIGNAL",
              "Dua siklus HIGH-LOW-HIGH, debounce 50ms; tanpa konfirmasi operator");
@@ -79,7 +91,14 @@ void reset() {
   qcRecord("RS232", "DITUNDA", "External device test deferred by user");
 }
 } // namespace
+bool qcProfileSelected() { return variant != DeviceVariant::Unselected; }
+bool qcPdEnabled() { return pdApplicable(variant); }
+const char *qcVariantName() {
+  return variant == DeviceVariant::M0 ? "M0" : variant == DeviceVariant::M1 ? "M1" : "UNSELECTED";
+}
 void qcRecord(const String &name, const String &status, const String &detail) {
+  if (name == "STUSB4500" && variant == DeviceVariant::M1 && status != "NOT APPLICABLE")
+    return;
   size_t i = 0;
   for (; i < count; ++i)
     if (items[i].name == name)
@@ -111,13 +130,15 @@ void qcOutputAttempt(const String &type, int index, bool on) {
   }
 }
 const QcItem &qcDisplayItem() { return items[display]; }
-const char *qcDisplayDetail() { return "Input auto 2 cycles"; }
+const char *qcDisplayDetail() { return qcVariantName(); }
 void updateQcSession() {
   uint32_t now = millis();
   if (now - displayAt > 2500 && count) {
     displayAt = now;
     display = (display + 1) % count;
   }
+  if (!qcProfileSelected())
+    return;
   for (size_t i = 0; i < 7; ++i) {
     int level = -1;
     readInput(i, level);
@@ -131,17 +152,54 @@ void updateQcSession() {
 void qcState(JsonObject d) {
   d["unit"] = unitSerial();
   d["operator"] = operatorName;
+  d["variant"] = qcVariantName();
+  d["profileSelected"] = qcProfileSelected();
+  d["sessionId"] = sessionId;
   auto a = d["tests"].to<JsonArray>();
-  bool fail = false, all = true;
+  unsigned passed = 0, failed = 0, pending = 0, skipped = 0;
+  String canonical = String("QC1|") + FW_VERSION + "|" + FW_BUILD_UTC + "|" + qcVariantName() +
+                     "|" + unitSerial() + "|" + sessionId;
+  auto hashField = [&](const String &value) {
+    canonical += "|" + String(value.length()) + ":" + value;
+  };
   for (size_t i = 0; i < count; ++i) {
     auto p = a.add<JsonObject>();
     p["name"] = items[i].name;
     p["status"] = items[i].status;
     p["detail"] = items[i].detail;
-    fail |= items[i].status == "FAIL";
-    all &= items[i].status == "PASS";
+    bool applicable = testApplicable(variant, items[i].name.c_str());
+    p["applicable"] = applicable;
+    if (!applicable)
+      ++skipped;
+    else if (items[i].status == "FAIL")
+      ++failed;
+    else if (items[i].status == "PASS")
+      ++passed;
+    else
+      ++pending;
+    hashField(items[i].name);
+    hashField(items[i].status);
+    hashField(items[i].detail);
   }
-  d["overall"] = fail ? "FAIL" : all ? "PASS" : "INCOMPLETE";
+  const char *overall = !qcProfileSelected() ? "INCOMPLETE"
+                        : failed             ? "FAIL"
+                        : !pending && passed ? "PASS"
+                                             : "INCOMPLETE";
+  d["overall"] = overall;
+  d["applicableCount"] = passed + failed + pending;
+  d["passCount"] = passed;
+  d["failCount"] = failed;
+  d["pendingCount"] = pending;
+  d["notApplicableCount"] = qcProfileSelected() ? skipped : 0;
+  if (qcProfileSelected()) {
+    hashField(overall);
+    char crc[9];
+    snprintf(crc, sizeof(crc), "%08lX", static_cast<unsigned long>(qcCrc(canonical.c_str())));
+    d["qcCode"] = String("QC1-") + qcVariantName() + "-" + unitSerial() + "-" + overall + "-" +
+                  sessionId + "-" + crc;
+  } else
+    d["qcCode"] = "";
+  d["qcCodeSchema"] = "QC1";
   auto in = d["inputs"].to<JsonArray>();
   for (int i = 0; i < 7; ++i) {
     auto p = in.add<JsonObject>();
@@ -171,6 +229,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   authorized = authorize;
   stopSafe = stop;
   reset();
+  beginQcExport(server);
   prefs.begin("qc-settings", false);
   baud = prefs.getUInt("baud", 9600);
   parity = prefs.getString("parity", "N");
@@ -187,7 +246,17 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       error("Operator max64", 400);
       return;
     }
+    DeviceVariant selected = parseVariant(web->arg("variant").c_str());
+    if (selected == DeviceVariant::Unselected) {
+      error("Pilih variant M0 atau M1", 400);
+      return;
+    }
+    if (pdNegotiating()) {
+      error("Wait for PD negotiation before changing/resetting device");
+      return;
+    }
     stopSafe();
+    variant = selected;
     reset();
     operatorName = name;
     resetCurrentPoints();
@@ -340,6 +409,10 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   server.on("/api/pd", HTTP_POST, [] {
     if (!guard())
       return;
+    if (!qcPdEnabled()) {
+      error("M1: PD Sync unpopulated; not applicable");
+      return;
+    }
     stopSafe();
     long mv, ma;
     if (!number("mv", 5000, 20000, mv) || !number("ma", 10, 5000, ma)) {

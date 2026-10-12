@@ -1,3 +1,19 @@
+# Current validation - v1.0.0 / 2026-10-12
+
+Supersedes historical validation below. This feature integrates remote v0.5.1 portal packaging; team uploads the device. DO1/DO2 active LOW and LED MCP active HIGH are the user's final correction; both profile flags are enabled, runtime MCP fault locks retained.
+
+- Final v1.0.0 integrated compile: PASS, core3.3.10, buildUTC2026-10-12T07:46:46Z (14:46:46 UTC+7), app1147392 bytes, sketch1147250 bytes(54%), globalRAM54076 bytes(16%). SHA2569e05c99a309f163524cf77639cc691a80ee49f2ed4ad39241f0160bf9c06f169; metadata/legacy partition gate passed. No upload.
+- Node VM dashboard tests: PASS for seven automatic inputs, per-row LED/DO controls and server state confirmations, rejected capture without false PASS, EEPROM read, I2C list, AHT/RTC, safe text, fresh report without control token, reboot/disconnect handling.
+- Node portal package tests: 2/2 PASS for legacy placement/erased NVS and rejecting changed offsets/oversized/bad images. Python metadata regression: PASS for missing/stale/matching metadata and version changes. Production C++ algorithm assertions are compiled with firmware: debouncing/full cycles, least-squares gain/offset/residual, fixed PDO encoding and source RDO indexing.
+- Browser localhost preview: all eight navigation pages inspected, input/OLED containers, LED table and separate DO containers, four capture controls, AHT10/DS3231, EEPROM Read, bounded PD request and report/OTA link visible. Hardware actions reject; no fabricated physical PASS. Desktop screenshot saved in ignored build/dashboard-input-v1.png. Preview tab/process closed; live device untouched.
+- Partition parser accepts the legacy table and distinguishes a modified factory offset. Public packaging reads firmware_version.h and refuses missing/stale app identity/hash. Actual public release packaging is not performed: local build uses an ignored private OTA override and is not distributable.
+- Private OTA password and .bin/.elf/.map/generated metadata are absent from tracked source. Deliberate public LAB defaults from remote remain supported in clean checkouts. No secret or binary pushed.
+- Source NVS changes: new qc-adc/cal-v1 CRC calibration blob; existing EEPROM QC01 slots and qc-settings remain. HuaweiJIN STA, AP12345678; driver profile updates only when different, unrelated NVS preserved. Deliberate portal merged LAB reset is an exception: fast merged resets NVS, full erase also deletes storage.
+- Physical tests NOT VERIFIED: input/output levels, OLED appearance, 4-20mA independent accuracy, EEPROM persistence/power interruption, AHT/RTC hardware, STUSB actual12V VBUS/contract and detach, Ethernet packets, OTA recovery/watchdog waveform/reset. RS485/RS232 external tests remain deferred. PD software corrections are not measured proof that the reported20V issue is fixed. No device upload performed.
+- Git publication scope: feature/qc-operator-ota only, merged remote e7c72e5 without discarding team changes. No main/develop push or merge.
+
+## Historical validation - v0.5.x and earlier
+
 # Current validation - v0.5.0 / 2026-10-12
 
 v0.5.1 adds owner-authorized standard full/merged USB distribution and optional

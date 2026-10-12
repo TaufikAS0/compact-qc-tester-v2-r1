@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.1.0 — 2026-10-12
+
+Adds explicit session M0/M1 selection and Longhi-style QC export after the local validated1.0.0 build; published baseline remains0.5.1 until this feature push.
+
+- Select variant before QC mutations; required variant parameter on /api/qc/new, reject unknown models before reset. RAM profile/results/session ID reset on reboot/change, independent of EEPROM/NVS calibration. Active PD negotiation must finish before profile change.
+- M0 all current modules; M1 PD Sync unpopulated: NOT APPLICABLE, excluded from overall/pending/failure, no PD register reads/writes/polling, rejected PD requests. ACK-only I2C scan unchanged. RS485/RS232 still explicitly deferred.
+- QC1 evidence ID includes model/serial/status/random session/CRC32 of ordered evidence + version/build. API/dashboard, JSON and CSV share it; not a cryptographic signature or physical acceptance.
+- New /export/qc.csv server snapshot, Longhi ten-column prefix plus QC code, metadata and detailed applicable results. UTF8 BOM/CRLF/quoted fields, quotes doubled, formula-leading text guarded, dates validated. No invented warehouse/delivery/production metadata, no fake XLS, no INCOMPLETE-to-FAIL/PASS coercion.
+- Existing user correction retained: DO active LOW, MCP LED active HIGH. No device upload, no pin/EEPROM/WiFi credential change; no new NVS keys for variant/export.
+
 ## v1.0.0 — 2026-10-12
 
 Previous source baseline v0.5.0. Major bump because QC input acceptance and operator/output API contracts change. This is a bench firmware feature build, not a production release or a device upload.
