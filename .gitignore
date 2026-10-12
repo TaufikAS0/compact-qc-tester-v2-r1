@@ -2,3 +2,5 @@ build/
 *.bin
 *.elf
 *.map
+compact_qc_tester/ota_secrets.h
+ota-access.txt
