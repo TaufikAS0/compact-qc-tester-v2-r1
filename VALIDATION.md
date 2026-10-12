@@ -1,3 +1,20 @@
+# Current validation - v1.1.0 / 2026-10-12
+
+Published-source target0.5.1 to1.1.0 (local1.0.0 build was also validated). Team uploads the device; no USB/OTA upload by Codex.
+
+- Final compile PASS: Arduino-ESP32 core3.3.10 / FlashSize16M / maximum app2097152. BuildUTC **2026-10-12T08:25:49Z**, **2026-10-12 15:25:49 UTC+7**. This is actual build start, not device clock/uptime/upload time. Sketch1164158 bytes(55%); application **1164304 bytes**; globalRAM54100 bytes(16%). App SHA256 **b84d30b27ae73a8e39826b8e4ac512dfd70f3291434fdd44f46a0eb8ca6f6cde**. Binary contains exact metadata, CSV route/QC1/N-A and final OTA UI text; binary chip/size/legacy partition gates passed. Partition SHA256bc35a6a93f6204d86e25f28df16a6fb3e38a9052d8ca55a375c4e37c414c5c72.
+- Production C++ assertions compiled successfully: input debounce/full cycles, calibration gain/offset/residual, PDO/source-RDO, M0/M1/unknown applicability, standard CRC32 vector, CSV commas/quotes/CRLF/formula-prefix/short-buffer, leap-year/date validation. These shared functions are used in actual firmware.
+- Node dashboard tests PASS including profile selection, output lock before selection, M1 PD lock, N-A excluded from pending, fresh CSV download and server-rejection/no-download; original QC/JSON/escape/reboot/offline regressions retained. Node portal2/2 PASS; Python metadata gate regression PASS.
+- Local browser preview: startup requires M0/M1; M1 pending count31->30 and PD request/voltage/current disabled, M0 re-enables them. M1 report shows code and CSV/JSON/date/PIC controls. Browser-downloaded CSV was parsed with Python: UTF8 BOM, Longhi first10 headers, M1/INCOMPLETE/PD N-A preserved. It is explicitly mock PREVIEW evidence, not device QC. Screenshot ignored build/dashboard-M1-export-v1_1.png and mock CSV build/export-preview-M1.csv. Agent preview tab/server closed; user's device tab untouched.
+- Longhi read-only reference: remote fix/modbus26f9a1f and feature/longhi-modular-upgrade3a45448 contain CSV exporter; develop9aa0fc1 lacks it. No QC code format found there. Kept Longhi first10 columns, added QC1 schema/detailed results; no fake XLS extension, production/delivery dates or inventory data. Longhi worktree stayed clean.
+- M1 skips only STUSB4500: N-A is immutable under result updates, excluded from overall and counts, endpoint/direct request/polling gated. Generic I2C ACK scan unchanged. Both variants retain deferred external RS tests, and data-only statuses remain INCOMPLETE. No added NVS keys for variant/export; RAM session/profile reset on reboot/change. Active calibration/EEPROM retained. Code CRC is evidence identity, not signature or physical proof.
+- DO1/DO2 active LOW and MCP LEDs active HIGH retained per final user correction. Profiles enabled; boot OFF, heartbeat/timeout, fault locks and unrelated MCP/TPL bits retained. No pin/EEPROM format/WiFi change from1.0.0.
+- WiFi approved HuaweiJIN STA / AP12345678; updates only divergent driver STA profile, unrelated NVS retained. Approved public LAB OTA fallback preserved from remote; ignored private override used in this local build. Private password/artifacts absent from tracked source; no binary or secret published. Public release packaging is not executed on this private build.
+- Git publication scope: feature/qc-operator-ota only; merged remote e7c72e5, preserving portal packaging/default LAB OTA changes. No force push/main/develop merge or device flash.
+- Physical acceptance still requires team bench tests: M0/M1 workflow on actual boards, input/output/OLED levels, independent4-20 accuracy, EEPROM power cycle, sensors, actual PD12V VBUS, Ethernet packets, OTA recovery and watchdog waveform/reset. No physical PASS inferred from simulation/compile.
+
+## Historical validation
+
 # Current validation - v1.0.0 / 2026-10-12
 
 Supersedes historical validation below. This feature integrates remote v0.5.1 portal packaging; team uploads the device. DO1/DO2 active LOW and LED MCP active HIGH are the user's final correction; both profile flags are enabled, runtime MCP fault locks retained.
