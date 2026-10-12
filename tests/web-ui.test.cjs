@@ -1,19 +1,35 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
-const source=fs.readFileSync(path.join(__dirname,'../compact_qc_tester/web_ui.h'),'utf8');
-const script=source.match(/<script>([\s\S]*?)<\/script>/)[1];
-const elements=new Map();function element(id){if(!elements.has(id))elements.set(id,{value:'',textContent:'',options:[],disabled:false,checked:false,children:[],add(o){this.options.push(o)},replaceChildren(){this.children=[];this.options=[]},appendChild(c){this.children.push(c)}});return elements.get(id)}
-let blob,clicked=false,failPath='',calls=[];
-const state={board:'TMC',version:'0.5.0',chip:'ESP32',token:'session',staIP:'192.0.2.1',apIP:'192.168.4.1',tplReady:true,tplPulses:42,relayEnabled:false,ledEnabled:false,inputs:[{name:'DI1',pin:13,valid:true,value:0}],leds:['LED2'],hardware:{serial:'TMC001122AABBCC',adcValid:false,hwTop:'TMC_T_V2_R1',hwBottom:'TMC_B_V3_R0'},qc:{operator:'',active:'',tests:[{name:'OLED',status:'BELUM DIUJI',detail:'<img onerror=evil()> '},{name:'RS485',status:'DITUNDA',detail:'External fixture deferred'}],overall:'INCOMPLETE'}};
-const context=vm.createContext({document:{getElementById:element,createElement:()=>({children:[],textContent:'',appendChild(c){this.children.push(c)},click(){clicked=true}})},fetch:async(url,options)=>{calls.push({url,options});return {ok:url!==failPath,json:async()=>url===failPath?{error:'Expected input not observed'}:url==='/api/state'?JSON.parse(JSON.stringify(state)):{ok:true}}},URLSearchParams,Blob,Date,JSON,Object,Error,String,Option:function(text,value){this.text=text;this.value=value},URL:{createObjectURL(b){blob=b;return 'blob:test'},revokeObjectURL(){}},setTimeout:()=>0});
+const html=fs.readFileSync(path.join(__dirname,'../compact_qc_tester/web_ui.h'),'utf8');
+const script=html.match(/<script>([\s\S]*?)<\/script>/)[1],elements=new Map();
+class Element {
+ constructor(){this.children=[];this.value='';this.disabled=false;this.textContent='';this.style={};this.className='';this.classList={contains:c=>this.className.split(' ').includes(c),toggle:()=>{}};}
+ set id(id){this._id=id;elements.set(id,this)} get id(){return this._id}
+ append(...e){this.children.push(...e)} replaceChildren(...e){this.children=e} setAttribute(k,v){this[k]=v} click(){clicked=true}
+}
+const element=id=>{if(!elements.has(id)){const e=new Element();e.id=id;}return elements.get(id)};
+let clicked=false,blob,failPath='',disconnect=false,calls=[];
+const state={board:'TMC',version:'1.0.0',buildUTC:'2026-10-12T00:00:00Z',token:'test-session',staConnected:true,staIP:'192.0.2.1',relayEnabled:false,ledEnabled:false,tplReady:true,tplPulses:42,inputs:Array.from({length:7},(_,i)=>({name:['DI1','DI2','DI3','DI4','DMM mode','Normal mode','Webserver mode'][i],pin:[13,14,25,26,2,'GPIO2 LOW & GPIO39 LOW',39][i],valid:true,value:0})),leds:Array.from({length:11},(_,i)=>'LED'+i),hardware:{serial:'TMC001122AABBCC',oledReady:true,adcValid:true,adcRaw:8000,adcVoltage:1,currentMA:10,calibration:{pending:-1,points:Array.from({length:4},()=>({captured:false})),detail:'Not calibrated'},ahtValid:true,temperatureC:28.1,humidityRH:65.2,rtc:{valid:true,time:'2026-10-12 12:00:00',temperatureC:27.5,detail:'DS3231'},identityValid:false,identityDetail:'No valid QC identity'},qc:{overall:'INCOMPLETE',inputs:Array.from({length:7},()=>({cycles:0})),outputs:Array.from({length:13},()=>({commandedOn:false,attempted:false,onConfirmed:false})),tests:[{name:'OLED',status:'BELUM DIUJI',detail:'<img onerror=evil()>'},{name:'RS485',status:'DITUNDA',detail:'External test deferred'}]}};
+const context=vm.createContext({document:{getElementById:element,createElement:()=>new Element(),createElementNS:()=>new Element(),querySelectorAll:()=>[]},location:{hash:''},window:{addEventListener(){}},fetch:async(url,options)=>{if(disconnect)throw Error('offline');calls.push({url,options});return {ok:url!==failPath,json:async()=>url===failPath?{error:'Capture rejected by firmware'}:url==='/api/state'?structuredClone(state):url==='/api/i2c'?{devices:[{address:56,name:'AHT10'}]}:{ok:true}}},URLSearchParams,Blob,Date,JSON,Object,Error,String,Number,Math,AbortSignal,URL:{createObjectURL(b){blob=b;return 'blob:test'},revokeObjectURL(){}},setInterval:()=>0});
 vm.runInContext(script,context);
-(async()=>{await new Promise(r=>setImmediate(r));assert.equal(element('ledOn').disabled,true);assert.equal(element('relayOn').disabled,true);assert.match(element('tpl').textContent,/42/);assert.equal(element('results').children[0].children[2].textContent,state.qc.tests[0].detail,'operator notes render as text, not HTML');
- element('inputItem').value='0';element('onLevel').value='0';await element('startInput').onclick();let body=new URLSearchParams(calls.at(-1).options.body);assert.equal(body.get('expectedOn'),'0');assert.equal(body.get('index'),'0');assert.equal(body.get('token'),'session');
- failPath='/api/qc/feedback';await element('pass').onclick();assert.match(element('error').textContent,/not observed/,'server rejection visible; UI never fabricates PASS');assert.equal(state.qc.tests[0].status,'BELUM DIUJI');failPath='';
- await element('download').onclick();assert.equal(clicked,false,'report requires inspection identity');state.qc.operator='Tester';await element('download').onclick();let report=JSON.parse(await blob.text());assert.equal(report.qc.overall,'INCOMPLETE');assert.equal(report.token,undefined,'download must exclude control token');assert.equal(report.hardware.serial,'TMC001122AABBCC');assert.equal(report.qc.tests[1].status,'DITUNDA');assert.equal(report.watchdogPhysicalResetVerified,false);
- state.qc.tests[0].status='FAIL';state.qc.overall='FAIL';await element('download').onclick();report=JSON.parse(await blob.text());assert.equal(report.qc.overall,'FAIL','fresh server report, no stale browser verdict');
- element('adcVerified').checked=false;await element('adcConfig').onclick();body=new URLSearchParams(calls.at(-1).options.body);assert.equal(body.get('verified'),'no');
- state.tplReady=false;state.tplError='MCP unavailable';await vm.runInContext('poll()',context);assert.match(element('tpl').textContent,/MCP unavailable/);assert.equal(element('ledOn').disabled,true);
- state.qc.tests.push({name:'I2C:60',status:'DETECTED',detail:'unknown'});await vm.runInContext('poll()',context);assert.ok(element('manualItem').options.some(o=>o.value==='I2C:60'),'discovered module receives manual observation selector');
- state.token='reboot';await vm.runInContext('poll()',context);assert.match(element('error').textContent,/restart/);
- console.log('PASS: UI syntax, locks, stimulus arguments, server-rejection handling, safe text, fresh report, no token export, deferred status, ADC verification, watchdog, reboot');
+const body=()=>new URLSearchParams(calls.findLast(c=>c.options?.method==='POST').options.body);
+(async()=>{
+ await new Promise(r=>setImmediate(r));
+ assert.equal(element('di').children.length,4);assert.equal(element('switches').children.length,3);
+ assert.equal(element('ledRows').children.length,11);assert.equal(element('output1').children.length,1);assert.equal(element('output2').children.length,1);
+ assert.equal(element('ledRows').children[0].children[2].children[0].disabled,true,'locked ON');
+ assert.equal(element('ledRows').children[0].children[3].children[0].disabled,true,'unattempted confirmation');
+ assert.equal(element('tests').children[0].children[2].textContent,'<img onerror=evil()>','render notes as text');
+ assert.equal(element('ahtRH').textContent,'65.20');assert.match(element('build').textContent,/UTC/);
+ state.ledEnabled=true;state.relayEnabled=true;await vm.runInContext('poll()',context);
+ await element('ledRows').children[2].children[2].children[0].onclick();assert.equal(body().get('kind'),'led');assert.equal(body().get('index'),'2');assert.equal(body().get('state'),'on');
+ state.qc.outputs[2]={commandedOn:true,attempted:true};await vm.runInContext('poll()',context);await element('ledRows').children[2].children[3].children[0].onclick();assert.equal(body().get('state'),'on');assert.equal(body().get('verdict'),'PASS');assert.equal(body().get('token'),'test-session');
+ await element('output2').children[0].children[2].children[1].onclick();assert.equal(body().get('kind'),'relay');assert.equal(body().get('index'),'1');assert.equal(body().get('state'),'off');
+ failPath='/api/current/capture';await element('capture0').onclick();assert.match(element('message').textContent,/rejected/);assert.equal(state.qc.overall,'INCOMPLETE');failPath='';
+ await element('identityRead').onclick();assert.ok(calls.some(c=>c.url==='/api/identity/read'));
+ await element('scan').onclick();assert.equal(element('i2cRows').children[0].children[0].textContent,'0x38');
+ state.qc.tests[0].status='FAIL';state.qc.overall='FAIL';await element('download').onclick();assert.equal(clicked,true);const report=JSON.parse(await blob.text());assert.equal(report.token,undefined);assert.equal(report.qc.overall,'FAIL');assert.equal(report.qc.tests[1].status,'DITUNDA');
+ state.token='reboot';await vm.runInContext('poll()',context);assert.match(element('message').textContent,/restart/);
+ disconnect=true;await vm.runInContext('poll()',context);assert.equal(element('ledRows').children[0].children[2].children[0].disabled,true);clicked=false;await element('download').onclick();assert.equal(clicked,false,'stale report rejected');
+ assert.ok(!html.includes('startInput')&&!html.includes('Konfirmasi operator'));
+ console.log('PASS: 7 automatic inputs, per-row output controls/locks, confirmation state, capture rejection, EEPROM read, I2C list, AHT/RTC, fresh report, safe text, no token export, reboot/disconnect');
 })().catch(e=>{console.error(e);process.exitCode=1});

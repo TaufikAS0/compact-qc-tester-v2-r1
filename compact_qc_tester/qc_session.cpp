@@ -2,35 +2,33 @@
 #include "config.h"
 #include "ota_manager.h"
 #include "qc_hardware.h"
-#include <Arduino.h>
+#include "current_calibration.h"
+#include "qc_math.h"
 #include <Preferences.h>
 namespace {
 WebServer *web;
 bool (*authorized)();
 void (*stopSafe)();
-QcItem items[160];
+QcItem items[80];
 size_t count = 0, display = 0;
 uint32_t displayAt = 0;
-String operatorName, unit, active, kind;
-uint32_t activeAt = 0, lastSignalAt = 0;
-int expected = 0, inputIndex = -1, observed = -1;
-bool onConfirmed = false, observedExpected = false;
-float targetMA = 0, tolerance = 0;
-String frozenEvidence;
+String operatorName, unit;
+InputCycles cycles[7];
+bool live[13] = {}, attempted[13] = {}, onConfirmed[13] = {}, offConfirmed[13] = {};
 Preferences prefs;
 uint32_t baud = 9600;
 uint8_t slave = 1, functionCode = 3;
 uint16_t regAddress = 0, regCount = 1;
 String parity = "N", route = "RS485";
 void send(JsonDocument &d, int code = 200) {
-  String body;
-  serializeJson(d, body);
+  String b;
+  serializeJson(d, b);
   web->sendHeader("Cache-Control", "no-store");
-  web->send(code, "application/json", body);
+  web->send(code, "application/json", b);
 }
-void error(const char *detail, int code = 409) {
+void error(const char *s, int code = 409) {
   JsonDocument d;
-  d["error"] = detail;
+  d["error"] = s;
   send(d, code);
 }
 bool guard() {
@@ -42,284 +40,122 @@ bool guard() {
   }
   return true;
 }
-bool number(const char *arg, long low, long high, long &value) {
-  if (!web->hasArg(arg))
-    return false;
+bool number(const char *arg, long low, long high, long &v) {
   String s = web->arg(arg);
-  if (s.isEmpty())
+  if (s.isEmpty() || s.length() > 10)
     return false;
   for (auto c : s)
     if (!isDigit(c))
       return false;
-  value = s.toInt();
-  return value >= low && value <= high;
+  char *end;
+  long long n = strtoll(s.c_str(), &end, 10);
+  if (*end || n < low || n > high)
+    return false;
+  v = n;
+  return true;
 }
 bool decimal(const char *arg, float low, float high, float &v) {
-  if (!web->hasArg(arg))
-    return false;
   String s = web->arg(arg);
   char *end;
   v = strtof(s.c_str(), &end);
-  return end != s.c_str() && *end == 0 && isfinite(v) && v >= low && v <= high;
+  return end != s.c_str() && !*end && isfinite(v) && v >= low && v <= high;
 }
+String outputName(int n) { return n < 11 ? "LED:" + String(n) : "Relay:" + String(n - 11); }
 void reset() {
-  count = 0;
-  active = "";
-  kind = "";
-  onConfirmed = false;
-  observedExpected = false;
-  frozenEvidence = "";
-  display = 0;
-  const char *modules[] = {
-      "OLED",      "I2C scan",     "RTC", "EEPROM", "AHT",          "MCP1",
-      "MCP2",      "ADS / 4-20mA", "4mA", "12mA",   "20mA",         "STUSB4500",
-      "ATtiny404", "Ethernet",     "SD",  "LoRa",   "Reset button", "TPL physical reset"};
-  for (auto name : modules)
-    qcRecord(name, "BELUM DIUJI", "");
-  for (size_t i = 0; i < inputCount(); i++)
-    qcRecord(String("Input:") + inputName(i), "BELUM DIUJI", "");
-  for (int i = 0; i < 11; i++)
-    qcRecord("LED:" + String(i), "BELUM DIUJI", "");
-  for (int i = 0; i < 2; i++)
-    qcRecord("Relay:" + String(i), "BELUM DIUJI", "");
-  qcRecord("RS485", "DITUNDA", "External device test deferred by team");
-  qcRecord("RS232", "DITUNDA", "External device test deferred by team");
-}
-void start() {
-  if (!guard())
-    return;
-  if (operatorName.isEmpty()) {
-    error("Start inspection with operator identity first");
-    return;
-  }
-  stopSafe();
-  onConfirmed = false;
-  observedExpected = false;
-  observed = -1;
-  inputIndex = -1;
-  frozenEvidence = "";
-  active = "";
-  kind = web->arg("kind");
-  activeAt = millis();
-  if (kind == "input") {
-    long i, on;
-    if (!number("index", 0, inputCount() - 1, i) || !number("expectedOn", 0, 1, on)) {
-      error("Input index/ON level invalid", 400);
-      return;
-    }
-    inputIndex = i;
-    expected = on;
-    active = "Input:" + String(inputName(i));
-  } else if (kind == "current") {
-    if (!decimal("target", 4, 20, targetMA) || !decimal("tolerance", 0.01, 2, tolerance)) {
-      error("Current target/tolerance invalid", 400);
-      return;
-    }
-    float ma;
-    int16_t raw;
-    uint32_t age;
-    if (!currentSample(ma, raw, age)) {
-      error("Verify ADS1115 profile and wait for fresh sample");
-      return;
-    }
-    active = "ADS / 4-20mA";
-    if (targetMA == 4 || targetMA == 12 || targetMA == 20)
-      qcRecord(String((int)targetMA) + "mA", "MENUNGGU USER",
-               "Apply calibrator signal, then confirm");
-  } else if (kind == "manual") {
-    String item = web->arg("item");
-    bool found = false;
-    for (size_t i = 0; i < count; i++)
-      if (items[i].name == item)
-        found = true;
-    if (!found || item.startsWith("Input:") || item.startsWith("Relay:") ||
-        item.startsWith("LED:") || item == "RS485" || item == "RS232" ||
-        (item == "ADS / 4-20mA" || item == "4mA" || item == "12mA" || item == "20mA")) {
-      error("Unsupported manual item", 400);
-      return;
-    }
-    active = item;
-  } else {
-    error("Unknown test kind", 400);
-    return;
-  }
-  qcRecord(active, "MENUNGGU USER",
-           kind == "input" ? "Apply ON stimulus; hold stable, then confirm"
-                           : "Apply stimulus and compare with external reference");
-  JsonDocument d;
-  d["ok"] = true;
-  send(d);
-}
-void feedback() {
-  if (!guard())
-    return;
-  if (active.isEmpty()) {
-    error("No active test");
-    return;
-  }
-  String verdict = web->arg("verdict");
-  if (verdict != "PASS" && verdict != "FAIL") {
-    error("PASS/FAIL required", 400);
-    return;
-  }
-  if ((uint32_t)(millis() - activeAt) > 180000) {
-    error("Test expired; start again");
-    return;
-  }
-  String detail = web->arg("note");
-  if (detail.length() > 240) {
-    error("Note too long", 400);
-    return;
-  }
-  if (verdict == "FAIL") {
-    stopSafe();
-    if (kind == "current" && (targetMA == 4 || targetMA == 12 || targetMA == 20))
-      qcRecord(String((int)targetMA) + "mA", "FAIL", detail);
-    qcRecord(active, "FAIL", frozenEvidence + "; " + detail);
-    active = "";
-  } else if (kind == "input") {
-    int live;
-    if (!readInput(inputIndex, live) || live != expected || !observedExpected) {
-      error("Expected input not observed stable for 300ms");
-      return;
-    }
-    frozenEvidence += String(onConfirmed ? " OFF=" : " ON=") + live;
-    if (!onConfirmed) {
-      onConfirmed = true;
-      expected = 1 - expected;
-      observedExpected = false;
-      observed = -1;
-      activeAt = millis();
-      qcRecord(active, "MENUNGGU OFF", frozenEvidence + "; apply opposite stimulus, confirm again");
-    } else {
-      qcRecord(active, "PASS", frozenEvidence + "; operator confirmed both states; " + detail);
-      active = "";
-    }
-  } else if (kind == "current") {
-    float ma;
-    int16_t raw;
-    uint32_t age;
-    if (!currentSample(ma, raw, age) || fabs(ma - targetMA) > tolerance) {
-      error("Fresh measured current outside target tolerance");
-      return;
-    }
-    String evidence = "Target=" + String(targetMA, 3) + "mA, measured=" + String(ma, 3) +
-                      "mA, raw=" + String(raw) + ", tolerance=" + String(tolerance, 3) +
-                      "mA; operator confirmed; " + detail;
-    String point = targetMA == 4    ? "4mA"
-                   : targetMA == 12 ? "12mA"
-                   : targetMA == 20 ? "20mA"
-                                    : "Current custom point";
-    qcRecord(point, "PASS", evidence);
-    bool all = true;
-    for (const char *name : {"4mA", "12mA", "20mA"}) {
-      bool pass = false;
-      for (size_t i = 0; i < count; i++)
-        if (items[i].name == name)
-          pass = items[i].status == "PASS";
-      all &= pass;
-    }
-    qcRecord(active, all ? "PASS" : "INCOMPLETE",
-             all ? "4/12/20mA measured + confirmed" : evidence + "; complete 4/12/20mA points");
-    active = "";
-  } else if (kind == "output") {
-    if (!onConfirmed) {
-      onConfirmed = true;
-      stopSafe();
-      qcRecord(active, "MENUNGGU OFF", "ON confirmed; outputs stopped; confirm physical OFF");
-      activeAt = millis();
-    } else {
-      qcRecord(active, "PASS", "Operator confirmed ON and OFF; " + detail);
-      active = "";
-    }
-  } else {
-    if (detail.isEmpty()) {
-      error("Describe observed result/reference in note", 400);
-      return;
-    }
-    qcRecord(active, "PASS", "Operator observation: " + detail);
-    active = "";
-  }
-  JsonDocument d;
-  d["ok"] = true;
-  send(d);
+  count = display = 0;
+  for (auto &c : cycles)
+    c = {};
+  for (int i = 0; i < 13; ++i)
+    live[i] = attempted[i] = onConfirmed[i] = offConfirmed[i] = false;
+  for (const char *m : {"OLED", "I2C scan", "RTC", "EEPROM", "AHT10", "ADS / 4-20mA", "STUSB4500",
+                        "Ethernet", "SD"})
+    qcRecord(m, "BELUM DIUJI", "");
+  for (size_t i = 0; i < 7; ++i)
+    qcRecord("Input:" + String(inputName(i)), "MENUNGGU SIGNAL",
+             "Dua siklus HIGH-LOW-HIGH, debounce 50ms; tanpa konfirmasi operator");
+  for (int i = 0; i < 13; ++i)
+    qcRecord(outputName(i), "BELUM DIUJI", "");
+  qcRecord("RS485", "DITUNDA", "External device test deferred by user");
+  qcRecord("RS232", "DITUNDA", "External device test deferred by user");
 }
 } // namespace
 void qcRecord(const String &name, const String &status, const String &detail) {
   size_t i = 0;
-  for (; i < count; i++)
+  for (; i < count; ++i)
     if (items[i].name == name)
       break;
   if (i == count) {
-    if (count >= 160)
+    if (count >= 80)
       return;
-    count++;
+    ++count;
+  }
+  if (items[i].status != status || items[i].detail != detail) {
+    display = i;
+    displayAt = millis();
   }
   items[i] = {name, status, detail};
-  display = i;
-  displayAt = millis();
+}
+void qcOutputsStopped() {
+  for (auto &b : live)
+    b = false;
 }
 void qcOutputAttempt(const String &type, int index, bool on) {
-  active = (type == "led" ? "LED:" : "Relay:") + String(index);
-  kind = "output";
-  activeAt = millis();
-  onConfirmed = false;
-  qcRecord(active, "MENUNGGU USER",
-           on ? "Command sent; confirm physical ON, then OFF" : "Confirm physical OFF");
+  int n = type == "led" ? index : 11 + index;
+  if (n < 0 || n >= 13)
+    return;
+  live[n] = on;
+  if (on) {
+    attempted[n] = true;
+    onConfirmed[n] = offConfirmed[n] = false;
+    qcRecord(outputName(n), "MENUNGGU USER", "Command ON; konfirmasi bahwa output fisik menyala");
+  }
 }
 const QcItem &qcDisplayItem() { return items[display]; }
-const char *qcDisplayDetail() {
-  return active.isEmpty() ? "Review all QC items"
-                          : (onConfirmed ? "Confirm OFF" : "Confirm observation");
-}
+const char *qcDisplayDetail() { return "Input auto 2 cycles"; }
 void updateQcSession() {
   uint32_t now = millis();
   if (now - displayAt > 2500 && count) {
     displayAt = now;
     display = (display + 1) % count;
   }
-  if (!active.isEmpty() && now - activeAt > 180000) {
-    stopSafe();
-    qcRecord(active, "TIMEOUT", "No operator completion in 180 seconds");
-    active = "";
-  }
-  if (kind == "input" && !active.isEmpty()) {
-    int value;
-    if (!readInput(inputIndex, value)) {
-      observedExpected = false;
-      observed = -1;
-      lastSignalAt = now;
-      return;
-    }
-    if (value != observed) {
-      observed = value;
-      lastSignalAt = now;
-      observedExpected = false;
-    }
-    if (value == expected && now - lastSignalAt >= 300)
-      observedExpected = true;
+  for (size_t i = 0; i < 7; ++i) {
+    int level = -1;
+    readInput(i, level);
+    unsigned before = cycles[i].cycles;
+    cycles[i].update(level, now);
+    if (before != cycles[i].cycles)
+      qcRecord("Input:" + String(inputName(i)), cycles[i].cycles >= 2 ? "PASS" : "MENUNGGU SIGNAL",
+               String(cycles[i].cycles) + "/2 complete HIGH-LOW-HIGH cycles, stable >=50ms");
   }
 }
 void qcState(JsonObject d) {
-  d["unit"] = unit;
+  d["unit"] = unitSerial();
   d["operator"] = operatorName;
-  d["active"] = active;
-  d["kind"] = kind;
-  d["phase"] = onConfirmed ? "OFF" : "ON";
-  d["targetMA"] = targetMA;
-  d["expected"] = expected;
-  d["signalReady"] = observedExpected;
   auto a = d["tests"].to<JsonArray>();
-  bool failed = false, all = true;
-  for (size_t i = 0; i < count; i++) {
-    auto item = a.add<JsonObject>();
-    item["name"] = items[i].name;
-    item["status"] = items[i].status;
-    item["detail"] = items[i].detail;
-    failed |= items[i].status == "FAIL";
+  bool fail = false, all = true;
+  for (size_t i = 0; i < count; ++i) {
+    auto p = a.add<JsonObject>();
+    p["name"] = items[i].name;
+    p["status"] = items[i].status;
+    p["detail"] = items[i].detail;
+    fail |= items[i].status == "FAIL";
     all &= items[i].status == "PASS";
   }
-  d["overall"] = failed ? "FAIL" : all ? "PASS" : "INCOMPLETE";
+  d["overall"] = fail ? "FAIL" : all ? "PASS" : "INCOMPLETE";
+  auto in = d["inputs"].to<JsonArray>();
+  for (int i = 0; i < 7; ++i) {
+    auto p = in.add<JsonObject>();
+    p["cycles"] = cycles[i].cycles;
+    p["stable"] = cycles[i].stable;
+  }
+  auto outputs = d["outputs"].to<JsonArray>();
+  for (int i = 0; i < 13; ++i) {
+    auto p = outputs.add<JsonObject>();
+    p["commandedOn"] = live[i];
+    p["attempted"] = attempted[i];
+    p["onConfirmed"] = onConfirmed[i];
+    p["offConfirmed"] = offConfirmed[i];
+  }
   auto m = d["modbus"].to<JsonObject>();
   m["baud"] = baud;
   m["parity"] = parity;
@@ -347,20 +183,86 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       return;
     String name = web->arg("operator");
     name.trim();
-    if (name.isEmpty() || name.length() > 64) {
-      error("Operator required, maximum 64 characters", 400);
+    if (name.length() > 64) {
+      error("Operator max64", 400);
       return;
     }
     stopSafe();
     reset();
     operatorName = name;
-    unit = unitSerial();
+    resetCurrentPoints();
     JsonDocument d;
     d["ok"] = true;
     send(d);
   });
-  server.on("/api/qc/start", HTTP_POST, start);
-  server.on("/api/qc/feedback", HTTP_POST, feedback);
+  server.on("/api/qc/confirm", HTTP_POST, [] {
+    if (!guard())
+      return;
+    String type = web->arg("kind"), verdict = web->arg("verdict");
+    if (verdict != "PASS" && verdict != "FAIL") {
+      error("PASS/FAIL required", 400);
+      return;
+    }
+    if (type == "oled") {
+      JsonDocument h;
+      hardwareState(h.to<JsonObject>());
+      if (verdict == "PASS" && !h["oledReady"].as<bool>()) {
+        error("OLED initialization unavailable");
+        return;
+      }
+      qcRecord("OLED", verdict,
+               verdict == "PASS" ? "User confirms OLED text visible"
+                                 : "User reports blank/unreadable OLED");
+    } else if (type == "led" || type == "relay") {
+      long index;
+      if (!number("index", 0, type == "led" ? 10 : 1, index)) {
+        error("Invalid index", 400);
+        return;
+      }
+      int n = type == "led" ? index : 11 + index;
+      String expected = web->arg("state");
+      if (expected != "on" && expected != "off") {
+        error("Expected state required", 400);
+        return;
+      }
+      if (!attempted[n] || (expected == "on" && !live[n]) ||
+          (expected == "off" && (live[n] || !onConfirmed[n]))) {
+        error("Confirm only attempted current state; ON confirmation required before OFF");
+        return;
+      }
+      if (verdict == "FAIL") {
+        stopSafe();
+        qcRecord(outputName(n), "FAIL",
+                 "User physical observation differs from commanded " + expected);
+      } else {
+        if (expected == "on")
+          onConfirmed[n] = true;
+        else
+          offConfirmed[n] = true;
+        qcRecord(outputName(n), "PASS",
+                 offConfirmed[n] ? "User confirmed physical ON and OFF"
+                                 : "User confirmed physical ON; OFF remains unconfirmed");
+      }
+    } else {
+      error("Only OLED/LED/output accepts visual confirmation", 400);
+      return;
+    }
+    JsonDocument d;
+    d["ok"] = true;
+    send(d);
+  });
+  server.on("/api/identity/read", HTTP_POST, [] {
+    if (!guard())
+      return;
+    String detail;
+    bool ok = readIdentity(detail);
+    qcRecord("EEPROM", ok ? "DATA VALID" : "FAIL", detail);
+    JsonDocument d;
+    d["ok"] = ok;
+    d["detail"] = detail;
+    hardwareState(d["hardware"].to<JsonObject>());
+    send(d);
+  });
   server.on("/api/identity", HTTP_POST, [] {
     if (!guard())
       return;
@@ -369,45 +271,59 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     bool ok = saveIdentity(web->arg("top"), web->arg("bottom"), detail);
     qcRecord("EEPROM", ok ? "PASS" : "FAIL", detail);
     JsonDocument d;
-    d["status"] = ok ? "PASS" : "FAIL";
+    d["ok"] = ok;
     d["detail"] = detail;
     send(d, ok ? 200 : 409);
+  });
+  server.on("/api/current/capture", HTTP_POST, [] {
+    if (!guard())
+      return;
+    long i;
+    float ma;
+    if (!number("index", 0, 3, i) || !decimal("ma", 4, 20, ma)) {
+      error("Invalid calibration point", 400);
+      return;
+    }
+    String detail;
+    if (pdNegotiating()) {
+      error("Wait for PD negotiation before ADC capture");
+      return;
+    }
+    bool ok = captureCurrentPoint(i, ma, detail);
+    JsonDocument d;
+    d["detail"] = detail;
+    send(d, ok ? 200 : 409);
+  });
+  server.on("/api/current/save", HTTP_POST, [] {
+    if (!guard())
+      return;
+    float residual;
+    if (!decimal("residual", .01, 1, residual)) {
+      error("Residual limit .01..1mA", 400);
+      return;
+    }
+    String detail;
+    bool ok = saveCurrentCalibration(residual, detail);
+    JsonDocument d;
+    d["detail"] = detail;
+    send(d, ok ? 200 : 409);
+  });
+  server.on("/api/current/reset", HTTP_POST, [] {
+    if (!guard())
+      return;
+    resetCurrentPoints();
+    JsonDocument d;
+    d["ok"] = true;
+    send(d);
   });
   server.on("/api/aht/config", HTTP_POST, [] {
     if (!guard())
       return;
-    if (web->arg("model") != "AHT20" || web->arg("verified") != "yes") {
-      error("Confirm AHT20 fitted first", 400);
-      return;
-    }
-    if (!configureAht20()) {
-      error("AHT20 initialization failed");
-      return;
-    }
+    bool ok = configureAht10();
     JsonDocument d;
-    d["ok"] = true;
-    send(d);
-  });
-  server.on("/api/current/config", HTTP_POST, [] {
-    if (!guard())
-      return;
-    stopSafe();
-    float shunt, gain, offset;
-    if (!decimal("shunt", 1, 1000, shunt) || !decimal("gain", 0.001, 100, gain) ||
-        !decimal("offset", -6, 6, offset) || web->arg("model") != "ADS1115" ||
-        web->arg("verified") != "yes") {
-      error("Verify ADS1115 and physical transfer function first", 400);
-      return;
-    }
-    if (!configureCurrent(true, shunt, gain, offset)) {
-      error("ADS configuration/readback failed");
-      return;
-    }
-    for (const char *name : {"ADS / 4-20mA", "4mA", "12mA", "20mA"})
-      qcRecord(name, "BELUM DIUJI", "ADC profile changed; repeat calibration points");
-    JsonDocument d;
-    d["ok"] = true;
-    send(d);
+    d["ok"] = ok;
+    d["detail"] = ok ? "AHT10 init sent; waiting measurement" : "AHT10 init failed";
+    send(d, ok ? 200 : 409);
   });
   server.on("/api/ethernet", HTTP_POST, [] {
     if (!guard())
@@ -415,15 +331,10 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     stopSafe();
     String detail;
     bool ok = testEthernet(detail);
-    qcRecord("Ethernet", ok ? "MENUNGGU USER" : "FAIL", detail);
-    if (ok) {
-      active = "Ethernet";
-      kind = "manual";
-      activeAt = millis();
-    }
+    qcRecord("Ethernet", ok ? "DETECTED" : "FAIL", detail);
     JsonDocument d;
-    d["detail"] = detail;
     d["ok"] = ok;
+    d["detail"] = detail;
     send(d);
   });
   server.on("/api/pd", HTTP_POST, [] {
@@ -432,20 +343,20 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     stopSafe();
     long mv, ma;
     if (!number("mv", 5000, 20000, mv) || !number("ma", 10, 5000, ma)) {
-      error("PD voltage/current invalid", 400);
+      error("Invalid PDO", 400);
       return;
     }
     String detail;
-    bool ok = requestPd(mv, ma, detail);
-    qcRecord("STUSB4500", ok ? "MENUNGGU USER" : "FAIL", detail);
-    if (ok) {
-      active = "STUSB4500";
-      kind = "manual";
-      activeAt = millis();
+    JsonDocument calibration;
+    calibrationState(calibration.to<JsonObject>());
+    if (calibration["pending"].as<int>() >= 0) {
+      error("Wait for ADC capture before PD negotiation");
+      return;
     }
+    bool ok = requestPd(mv, ma, detail);
+    qcRecord("STUSB4500", ok ? "NEGOTIATING" : "FAIL", detail);
     JsonDocument d;
     d["detail"] = detail;
-    d["ok"] = ok;
     send(d, ok ? 200 : 409);
   });
   server.on("/api/modbus/config", HTTP_POST, [] {

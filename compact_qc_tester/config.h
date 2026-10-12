@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 // PROVISIONAL profile: ESP32 classic, NOT ESP32-S3. Confirm fitted MCU first.
-constexpr char FW_VERSION[] = "0.5.0";
+#include "firmware_version.h"
 // Shared internal lab profile authorized by the firmware workspace rules.
 constexpr char STA_SSID[] = "HuaweiJIN";
 constexpr char STA_PASSWORD[] = "jayaabadi100";
@@ -18,14 +18,17 @@ constexpr int RELAY_PINS[] = {32, 33};
 // Enable ONLY after checking schematic, chip identity, polarity and bench wiring.
 // With false, firmware never configures relays or LED outputs.
 // The independent TPL watchdog may configure MCP1 B7 only.
-constexpr bool OUTPUT_PROFILE_VERIFIED = false;
-constexpr bool RELAY_ACTIVE_HIGH = true; // Unknown until verified.
-constexpr bool LED_ACTIVE_HIGH = true;   // Unknown until verified.
-constexpr unsigned OUTPUT_PULSE_MS = 1200;
+constexpr bool OUTPUT_PROFILE_VERIFIED =
+    true; // User confirmed polarity: LED HIGH, DO1/DO2 LOW, 2026-10-12.
+constexpr bool RELAY_ACTIVE_HIGH = false;
+constexpr bool LED_ACTIVE_HIGH = true;
+constexpr unsigned OUTPUT_PULSE_MS =
+    60000; // Maximum ON time; explicit OFF or lost heartbeat stops earlier.
 constexpr unsigned SESSION_TIMEOUT_MS = 3500;
 
 // Only valid if MCP1 is confirmed as MCP23017 with BANK=0, SEQOP=0.
-constexpr bool MCP23017_PROFILE_VERIFIED = false;
+constexpr bool MCP23017_PROFILE_VERIFIED =
+    true; // Confirmed MCP23017-E/ML; BANK/SEQOP checked at runtime.
 constexpr uint8_t MCP1_ADDR = 0x20;
 constexpr uint8_t LED_BITS[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 constexpr char const *LED_NAMES[] = {"LED2 WiFi",        "LED3 Critical",    "LED4 Radio",

@@ -78,6 +78,7 @@ void stopOutputs() {
     }
   }
   outputActive = false;
+  qcOutputsStopped();
 }
 void initOutputs() {
   if (!OUTPUT_PROFILE_VERIFIED)
@@ -110,6 +111,8 @@ void stateHandler() {
   JsonDocument d;
   d["board"] = "TMC TOP V2_R1 / BOTTOM V3_R0";
   d["version"] = FW_VERSION;
+  d["buildUTC"] = FW_BUILD_UTC;
+  d["buildIdentity"] = FW_BUILD_ID;
   d["appMD5"] = ESP.getSketchMD5();
   d["chip"] = ESP.getChipModel();
   d["ssid"] = ssid;
@@ -127,6 +130,8 @@ void stateHandler() {
   d["relayEnabled"] = OUTPUT_PROFILE_VERIFIED && !fault;
   d["ledEnabled"] = OUTPUT_PROFILE_VERIFIED && mcpReady && !fault;
   d["outputActive"] = outputActive;
+  d["outputFault"] = fault;
+  d["watchdogPhysicalResetVerified"] = false;
   auto a = d["inputs"].to<JsonArray>();
   for (size_t i = 0; i < inputCount(); i++) {
     auto v = a.add<JsonObject>();
@@ -137,7 +142,7 @@ void stateHandler() {
     if (inputPin(i, pin))
       v["pin"] = pin;
     else
-      v["pin"] = "MCP1B3";
+      v["pin"] = "GPIO2 LOW & GPIO39 LOW";
   }
   auto l = d["leds"].to<JsonArray>();
   for (auto n : LED_NAMES)
@@ -249,6 +254,27 @@ void outputHandler() {
     failure("MCP profile unavailable");
     return;
   }
+  String state = server.arg("state");
+  if (state != "on" && state != "off") {
+    failure("Output state on/off required", 400);
+    return;
+  }
+  if (state == "off") {
+    // Only the selected output is changed. No other output is implicitly confirmed.
+    if (kind == "relay")
+      digitalWrite(RELAY_PINS[index], RELAY_ACTIVE_HIGH ? LOW : HIGH);
+    else if (!mcpBit(MCP1_ADDR, LED_BITS[index], !LED_ACTIVE_HIGH)) {
+      fault = true;
+      stopOutputs();
+      failure("MCP OFF write failed");
+      return;
+    }
+    qcOutputAttempt(kind, index, false);
+    JsonDocument d;
+    d["ok"] = true;
+    reply(d);
+    return;
+  }
   stopOutputs();
   if (fault) {
     failure("Cannot deactivate previous output");
@@ -319,7 +345,8 @@ void beginApp() {
   server.onNotFound([] { failure("Not found", 404); });
   beginWebOta(server, stopOutputs);
   server.begin();
-  Serial.printf("Serial: %s\n", unitSerial());
+  Serial.printf("Serial: %s\nBuild UTC: %s\n", unitSerial(), FW_BUILD_UTC);
+  Serial.println(FW_BUILD_ID);
   Serial.printf("\nCompact QC %s\nMCU: %s\nAP: %s\nURL: http://192.168.4.1\nOutputs: %s\n",
                 FW_VERSION, ESP.getChipModel(), ssid.c_str(),
                 OUTPUT_PROFILE_VERIFIED ? "verified configuration" : "LOCKED");

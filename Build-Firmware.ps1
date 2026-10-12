@@ -18,9 +18,17 @@ try {
         [System.IO.File]::WriteAllText((Join-Path $PSScriptRoot 'ota-access.txt'),"OTA username: admin`nOTA password: $password`nURL: /update`nKeep this file private.`n")
         Write-Host 'Created ignored local OTA credentials in ota-access.txt; no password printed.'
     }
+    $cores = & $ArduinoCli core list --format json | ConvertFrom-Json
+    if (-not ($cores.platforms | Where-Object { $_.id -eq 'esp32:esp32' -and $_.installed_version -eq '3.3.10' })) { throw 'Required Arduino ESP32 core 3.3.10 not installed.' }
+    python scripts/firmware_metadata.py generate
+    if ($LASTEXITCODE -ne 0) { throw 'Metadata generation failed.' }
     & $ArduinoCli compile --jobs 4 --fqbn esp32:esp32:esp32:FlashSize=16M --build-property upload.maximum_size=2097152 --output-dir build compact_qc_tester
     if ($LASTEXITCODE -ne 0) { throw 'Firmware build failed.' }
     $binary = Join-Path $PSScriptRoot 'build\compact_qc_tester.ino.bin'
     if ((Get-Item -LiteralPath $binary).Length -ge 2097152) { throw 'Application exceeds 2MB OTA slot.' }
+    python scripts/firmware_metadata.py verify
+    if ($LASTEXITCODE -ne 0) { throw 'Binary identity verification failed.' }
+    python scripts/verify_partitions.py
+    if ($LASTEXITCODE -ne 0) { throw 'Legacy partition verification failed.' }
     Write-Host 'Build passed. No upload was performed. Follow 04_Dokumen/TEAM_HANDOFF.md.'
 } finally { Pop-Location }

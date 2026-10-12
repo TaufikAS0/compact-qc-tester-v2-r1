@@ -1,6 +1,7 @@
 #include "qc_hardware.h"
 #include "config.h"
 #include "qc_session.h"
+#include "current_calibration.h"
 #include "tpl_watchdog.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -18,8 +19,9 @@ int16_t adcRaw = 0;
 uint32_t sampledAt = 0, lastAdc = 0, lastOled = 0, lastAht = 0, ahtStarted = 0;
 bool ahtPending = false, ahtVerified = false;
 char serial[24] = "TMCUNKN";
+bool identityValid = false;
+uint32_t identityGeneration = 0;
 String storedTop, storedBottom, identityDetail = "BELUM DIBACA";
-uint32_t pdRequested = 0; // No software PDO request has been sent this boot.
 bool readReg(uint8_t address, uint8_t reg, uint8_t *data, size_t len) {
   updateTplWatchdog();
   Wire.beginTransmission(address);
@@ -85,6 +87,10 @@ bool freeSlot(const Identity &r) {
   return true;
 }
 void loadIdentity() {
+  identityValid = false;
+  storedTop = "";
+  storedBottom = "";
+  identityGeneration = 0;
   Identity slots[2];
   if (!eepromRead(IDENTITY_BASE, (uint8_t *)slots, 128)) {
     identityDetail = "EEPROM read failed";
@@ -97,6 +103,8 @@ void loadIdentity() {
   }
   const Identity &r =
       (b && (!a || (int32_t)(slots[1].generation - slots[0].generation) > 0)) ? slots[1] : slots[0];
+  identityValid = true;
+  identityGeneration = r.generation;
   storedTop = r.top;
   storedBottom = r.bottom;
   identityDetail = "CRC valid; identity read from EEPROM";
@@ -141,40 +149,40 @@ bool mcpBit(uint8_t address, uint8_t bit, bool level) {
   dir &= ~mask;
   return writeReg(address, port, &dir, 1);
 }
-size_t inputCount() { return sizeof(INPUT_PINS) / sizeof(INPUT_PINS[0]) + 2; }
+size_t inputCount() { return 7; }
 const char *inputName(size_t i) {
-  if (i < 9)
-    return INPUT_NAMES[i];
-  return i == 9 ? "Display button" : "Boot button";
+  static const char *names[] = {"DI1",      "DI2",         "DI3",           "DI4",
+                                "DMM mode", "Normal mode", "Webserver mode"};
+  return i < 7 ? names[i] : "Invalid";
 }
 bool inputPin(size_t i, int &pin) {
-  if (i < 9) {
+  if (i < 4)
     pin = INPUT_PINS[i];
-    return true;
-  }
-  if (i == 10) {
-    pin = 0;
-    return true;
-  }
-  pin = -1;
-  return false;
+  else if (i == 4)
+    pin = 2;
+  else if (i == 6)
+    pin = 39;
+  else
+    return false;
+  return true;
 }
 bool readInput(size_t i, int &v) {
-  if (i >= inputCount())
+  if (i >= 7)
     return false;
-  if (i < 9) {
-    v = digitalRead(INPUT_PINS[i]);
-    return true;
+  if (i == 5)
+    v = digitalRead(2) == LOW && digitalRead(39) == LOW;
+  else {
+    int pin;
+    if (!inputPin(i, pin))
+      return false;
+    v = digitalRead(pin);
   }
-  if (i == 10) {
-    v = digitalRead(0);
-    return true;
-  }
-  uint8_t gpio;
-  if (!readReg(MCP1_ADDR, 0x13, &gpio, 1))
-    return false;
-  v = (gpio >> 3) & 1;
   return true;
+}
+bool readIdentity(String &detail) {
+  loadIdentity();
+  detail = identityDetail;
+  return identityValid;
 }
 const char *unitSerial() { return serial; }
 void beginQcHardware() {
@@ -192,11 +200,18 @@ void beginQcHardware() {
   if (Wire.endTransmission() == 0)
     oledReady = oled.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false);
   loadIdentity();
+  configureAht10();
+  configureCurrent(true, 100, 1,
+                   0); // User confirmed ADS1115; provisional conversion is labelled uncalibrated.
+  beginCurrentCalibration();
   qcRecord("OLED", oledReady ? "MENUNGGU USER" : "FAIL",
            oledReady ? "Display initialized; visual operator confirmation required"
                      : "OLED missing or initialization failed");
 }
 void updateQcHardware() {
+  updatePd();
+  if (pdNegotiating())
+    return; // Prioritize short-lived Source_Capabilities over OLED/ADC work.
   uint32_t now = millis();
   if (adcReady && now - lastAdc >= 150) {
     lastAdc = now;
@@ -207,34 +222,36 @@ void updateQcHardware() {
       sampledAt = now;
     }
   }
+  updateCurrentCalibration();
   if (ahtVerified && !ahtPending && now - lastAht >= 2000) {
     lastAht = now;
+    ahtValid = false;
     uint8_t command[] = {0x33, 0};
     if (writeReg(0x38, 0xac, command, 2)) {
       ahtPending = true;
       ahtStarted = now;
-    }
+    } else
+      qcRecord("AHT10", "FAIL", "Measurement trigger failed");
   }
   if (ahtPending && now - ahtStarted >= 90) {
     ahtPending = false;
     updateTplWatchdog();
     ahtValid = false;
-    if (Wire.requestFrom((uint8_t)0x38, (uint8_t)7) == 7) {
-      uint8_t b[7];
+    if (Wire.requestFrom((uint8_t)0x38, (uint8_t)6) == 6) {
+      uint8_t b[6];
       for (auto &x : b)
         x = Wire.read();
-      uint8_t c = 0xff;
-      for (int i = 0; i < 6; i++) {
-        c ^= b[i];
-        for (int k = 0; k < 8; k++)
-          c = (c & 0x80) ? (c << 1) ^ 0x31 : c << 1;
-      }
-      if (!(b[0] & 0x80) && (b[0] & 8) && c == b[6]) {
+      if (!(b[0] & 0x80) && (b[0] & 8)) {
         humidity = ((uint32_t)b[1] << 12 | b[2] << 4 | b[3] >> 4) * 100.0 / 1048576;
         temperature = (((uint32_t)b[3] & 15) << 16 | b[4] << 8 | b[5]) * 200.0 / 1048576 - 50;
-        ahtValid = isfinite(temperature) && humidity >= 0 && humidity <= 100;
+        ahtValid = isfinite(temperature) && temperature >= -40 && temperature <= 85 &&
+                   humidity >= 0 && humidity <= 100;
+        qcRecord("AHT10", ahtValid ? "DATA VALID" : "FAIL",
+                 ahtValid ? "Temperature/humidity sample received" : "Measurement out of range");
       }
     }
+    if (!ahtValid)
+      qcRecord("AHT10", "FAIL", "Measurement read/status/range invalid");
   }
   if (oledReady && now - lastOled >= 700) {
     lastOled = now;
@@ -245,7 +262,13 @@ void updateQcHardware() {
     oled.printf("QC %s\n%s\n", FW_VERSION, serial);
     const QcItem &item = qcDisplayItem();
     oled.printf("%s\n%s\n", item.name.c_str(), item.status.c_str());
-    oled.println(qcDisplayDetail());
+    // Build UTC rotates onto its own screen so all 20 timestamp characters fit.
+    if ((now / 7000) % 2) {
+      oled.clearDisplay();
+      oled.setCursor(0, 0);
+      oled.printf("QC %s\nBuild UTC\n%s\n", FW_VERSION, FW_BUILD_UTC);
+    } else
+      oled.println(qcDisplayDetail());
     oled.println(storedTop.isEmpty() ? HW_TOP : storedTop.c_str());
     oled.println(storedBottom.isEmpty() ? HW_BOTTOM : storedBottom.c_str());
     oled.display();
@@ -259,12 +282,16 @@ void hardwareState(JsonObject d) {
   d["hwTop"] = storedTop;
   d["hwBottom"] = storedBottom;
   d["identityDetail"] = identityDetail;
+  d["identityValid"] = identityValid;
+  d["identityGeneration"] = identityGeneration;
+  rtcState(d["rtc"].to<JsonObject>());
+  calibrationState(d["calibration"].to<JsonObject>());
   d["oledReady"] = oledReady;
   d["ahtVerified"] = ahtVerified;
   d["ahtValid"] = ahtValid;
   if (ahtValid) {
     d["temperatureC"] = temperature;
-    d["humidityPercent"] = humidity;
+    d["humidityRH"] = humidity;
   }
   float ma;
   int16_t raw;
@@ -274,21 +301,22 @@ void hardwareState(JsonObject d) {
   d["adcGain"] = amplifier;
   d["adcOffsetV"] = zero;
   d["adcModel"] = adcVerified ? "ADS1115" : "UNCONFIRMED";
-  d["adcValid"] = currentSample(ma, raw, age);
-  if (adcValid) {
+  uint32_t sampleAt;
+  bool rawValid = rawCurrentSample(raw, sampleAt);
+  d["adcValid"] = rawValid;
+  bool converted = currentSample(ma, raw, age);
+  if (rawValid) {
     d["adcRaw"] = raw;
     d["adcAgeMs"] = age;
-    d["currentMA"] = ma;
+    d["adcVoltage"] = raw * 0.000125;
+    if (converted)
+      d["currentMA"] = ma;
+    d["currentCalibrated"] = calibratedCurrent(raw, ma);
   }
-  d["pdRequestedMV"] = pdRequested;
-  uint8_t rdo[4], fsm;
-  if (readReg(0x28, 0x29, &fsm, 1))
-    d["pdState"] = fsm;
-  if (readReg(0x28, 0x91, rdo, 4))
-    d["pdRdo"] = ((uint32_t)rdo[3] << 24 | rdo[2] << 16 | rdo[1] << 8 | rdo[0]);
+  pdState(d["pd"].to<JsonObject>());
 }
 void scanBus(JsonArray a) {
-  for (uint8_t address = 8; address < 120; address++) {
+  for (uint8_t address = 8; address < 120; ++address) {
     updateTplWatchdog();
     Wire.beginTransmission(address);
     if (Wire.endTransmission() != 0)
@@ -297,74 +325,9 @@ void scanBus(JsonArray a) {
     v["address"] = address;
     v["name"] = knownName(address);
     v["status"] = "DETECTED";
-    uint8_t b[16];
-    String detail = "ACK only; operator/protocol verification required";
-    if (address == 0x20 || address == 0x21) {
-      if (readReg(address, 0x0a, b, 1))
-        detail = (b[0] & 0xa0) ? "MCP BANK/SEQOP incompatible"
-                               : "MCP register read valid; GPIO requires stimulus";
-    }
-    if (address == 0x68 && readReg(address, 0, b, 7)) {
-      bool plausible = (b[0] & 0x7f) <= 0x59 && (b[1] & 0x7f) <= 0x59;
-      detail = plausible ? "RTC clock registers read; verify time and tick (model unconfirmed)"
-                         : "RTC register values invalid";
-      v["clockRawSeconds"] = b[0];
-    }
-    if (address == 0x57) {
-      loadIdentity();
-      detail = identityDetail;
-    }
-    if (address == 0x38)
-      detail = ahtValid ? "AHT20-compatible measurement + CRC valid; compare reference"
-                        : "Confirm AHT20 fitted and initialize from web before measurement";
-    if (address == 0x48)
-      detail = adcVerified ? "ADS1115 A0 selected; use calibrator test"
-                           : "Select/verify ADS1115 model and transfer function in 4-20 panel";
-    if (address == 0x3c)
-      detail = oledReady ? "Display initialized; operator must inspect OLED"
-                         : "Display initialization failed";
-    if (address == 0x28 && readReg(address, 0x2f, b, 1)) {
-      v["deviceId"] = b[0];
-      detail = "PD device ID read; use request panel + external voltage measurement";
-    }
-    if (address == 0x77)
-      detail = "ATtiny protocol unspecified; no commands sent; manual feedback";
-    v["detail"] = detail;
-    String item;
-    switch (address) {
-    case 0x20:
-      item = "MCP1";
-      break;
-    case 0x21:
-      item = "MCP2";
-      break;
-    case 0x28:
-      item = "STUSB4500";
-      break;
-    case 0x38:
-      item = "AHT";
-      break;
-    case 0x3c:
-      item = "OLED";
-      break;
-    case 0x48:
-      item = "ADS / 4-20mA";
-      break;
-    case 0x57:
-      item = "EEPROM";
-      break;
-    case 0x68:
-      item = "RTC";
-      break;
-    case 0x77:
-      item = "ATtiny404";
-      break;
-    default:
-      item = "I2C:" + String(address, HEX);
-    }
-    qcRecord(item, "DETECTED", detail);
   }
 }
+
 bool saveIdentity(const String &top, const String &bottom, String &detail) {
   if (top.length() == 0 || bottom.length() == 0 || top.length() > 19 || bottom.length() > 19) {
     detail = "Version must be 1..19 characters";
@@ -432,9 +395,10 @@ bool saveIdentity(const String &top, const String &bottom, String &detail) {
   detail = identityDetail;
   return true;
 }
-bool configureAht20() {
+bool configureAht10() {
+  ahtValid = ahtPending = false;
   uint8_t data[] = {8, 0};
-  ahtVerified = writeReg(0x38, 0xbe, data, 2);
+  ahtVerified = writeReg(0x38, 0xe1, data, 2);
   lastAht = millis();
   return ahtVerified;
 }
@@ -457,11 +421,19 @@ bool configureCurrent(bool verified, float shunt, float gain, float offset) {
   adcReady = adcVerified = true;
   return true;
 }
-bool currentSample(float &ma, int16_t &raw, uint32_t &age) {
-  age = millis() - sampledAt;
+bool rawCurrentSample(int16_t &raw, uint32_t &at) {
   raw = adcRaw;
-  ma = ((raw * 0.000125) - zero) / resistance / amplifier * 1000;
-  return adcVerified && adcValid && age < SAMPLE_MAX_AGE_MS && raw != INT16_MAX && raw != INT16_MIN;
+  at = sampledAt;
+  return adcVerified && adcValid && millis() - sampledAt < SAMPLE_MAX_AGE_MS && raw >= 0 &&
+         raw < 26400; // AIN0 conservative 0..3.3 V.
+}
+bool currentSample(float &ma, int16_t &raw, uint32_t &age) {
+  uint32_t at;
+  bool ok = rawCurrentSample(raw, at);
+  age = millis() - at;
+  if (!calibratedCurrent(raw, ma))
+    ma = ((raw * 0.000125) - zero) / resistance / amplifier * 1000;
+  return ok && isfinite(ma);
 }
 bool testEthernet(String &detail) {
   uint8_t mac[6];
@@ -490,48 +462,43 @@ bool testEthernet(String &detail) {
   digitalWrite(ETH_CS, HIGH);
   return hw != EthernetNoHardware && link != LinkOFF;
 }
-bool requestPd(uint16_t mv, uint16_t ma, String &detail) {
-  if (mv < 5000 || mv > 20000 || mv % 50 || ma < 10 || ma > 5000 || ma % 10) {
-    detail = "Fixed PDO: 5000..20000mV step50; 10..5000mA step10";
-    return false;
+bool qcReadReg(uint8_t a, uint8_t r, uint8_t *data, size_t n) { return readReg(a, r, data, n); }
+bool qcWriteReg(uint8_t a, uint8_t r, const uint8_t *data, size_t n) {
+  return writeReg(a, r, data, n);
+}
+void rtcState(JsonObject d) {
+  uint8_t b[19];
+  if (!readReg(0x68, 0, b, 19)) {
+    d["valid"] = false;
+    d["detail"] = "DS3231 read failed";
+    qcRecord("RTC", "FAIL", "DS3231 read failed");
+    return;
   }
-  uint8_t id, port;
-  if (!readReg(0x28, 0x2f, &id, 1) || (id != 0x25 && id != 0x21) ||
-      !readReg(0x28, 0x0e, &port, 1) || !(port & 1)) {
-    detail = "STUSB4500 ID/attachment unavailable";
-    return false;
+  auto dec = [](uint8_t x) {
+    return (x >> 4) <= 9 && (x & 15) <= 9 ? (x >> 4) * 10 + (x & 15) : -1;
+  };
+  int sec = dec(b[0] & 127), minute = dec(b[1] & 127), hour;
+  if (b[2] & 64) {
+    int h = dec(b[2] & 31);
+    hour = h < 1 || h > 12 ? -1 : h % 12 + ((b[2] & 32) ? 12 : 0);
+  } else
+    hour = dec(b[2] & 63);
+  int day = dec(b[4] & 63), month = dec(b[5] & 31), year = dec(b[6]);
+  bool ok = sec >= 0 && sec < 60 && minute >= 0 && minute < 60 && hour >= 0 && hour < 24 &&
+            day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 0;
+  d["valid"] = ok;
+  qcRecord("RTC", ok ? "DATA VALID" : "FAIL",
+           ok ? "DS3231 BCD clock and temperature read; OSF status in RTC card"
+              : "Invalid BCD clock");
+  d["oscillatorStopped"] = (b[15] & 128) != 0;
+  d["temperatureC"] = (int8_t)b[17] + (b[18] >> 6) * .25;
+  if (ok) {
+    char t[24];
+    snprintf(t, sizeof(t), "%04d-%02d-%02d %02d:%02d:%02d", 2000 + year + ((b[5] & 128) ? 100 : 0),
+             month, day, hour, minute, sec);
+    d["time"] = t;
   }
-  uint8_t old[12], count;
-  if (!readReg(0x28, 0x85, old, 12) || !readReg(0x28, 0x70, &count, 1)) {
-    detail = "Cannot snapshot PDO";
-    return false;
-  }
-  uint8_t data[8];
-  uint32_t pdo1 = (old[0] | old[1] << 8 | old[2] << 16 | (uint32_t)old[3] << 24);
-  pdo1 = (pdo1 & ~0xfffffu) | (100u << 10) | (ma / 10);
-  uint32_t pdo2 = (uint32_t)(mv / 50) << 10 | (ma / 10);
-  for (int i = 0; i < 4; i++) {
-    data[i] = pdo1 >> (8 * i);
-    data[i + 4] = pdo2 >> (8 * i);
-  }
-  uint8_t n = mv == 5000 ? 1 : 2;
-  bool ok = writeReg(0x28, 0x85, data, 8) && writeReg(0x28, 0x70, &n, 1);
-  uint8_t verify[8], vc;
-  ok = ok && readReg(0x28, 0x85, verify, 8) && !memcmp(data, verify, 8) &&
-       readReg(0x28, 0x70, &vc, 1) && vc == n;
-  if (!ok) {
-    writeReg(0x28, 0x85, old, 12);
-    writeReg(0x28, 0x70, &count, 1);
-    detail = "PDO verification failed; restoration attempted";
-    return false;
-  }
-  uint8_t header[] = {0x0d, 0}, command = 0x26;
-  if (!writeReg(0x28, 0x51, header, 2) || !writeReg(0x28, 0x1a, &command, 1)) {
-    detail = "PDO updated but renegotiation command failed";
-    return false;
-  }
-  pdRequested = mv;
-  detail = "Volatile PDO request sent; NOT NVM. Wait for negotiation, measure actual voltage, "
-           "confirm manually. Source can fall back to 5V.";
-  return true;
+  d["detail"] = !ok             ? "Invalid BCD clock"
+                : (b[15] & 128) ? "OSF set: time may be invalid; check battery/time"
+                                : "DS3231 clock/temperature read; timezone is not stored by RTC";
 }

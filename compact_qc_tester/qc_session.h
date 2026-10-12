@@ -11,3 +11,5 @@ void qcOutputAttempt(const String &kind, int index, bool on);
 const QcItem &qcDisplayItem();
 const char *qcDisplayDetail();
 void qcRecord(const String &name, const String &status, const String &detail);
+
+void qcOutputsStopped();

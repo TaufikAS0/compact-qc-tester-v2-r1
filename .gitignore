@@ -4,3 +4,6 @@ build/
 *.map
 compact_qc_tester/ota_secrets.h
 ota-access.txt
+compact_qc_tester/build_metadata.h
+__pycache__/
+*.pyc
