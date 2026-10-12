@@ -15,3 +15,5 @@ Previous source baseline v0.5.0. Major bump because QC input acceptance and oper
 - Wi-Fi remains approved HuaweiJIN STA and AP password12345678, targeted driver-profile migration preserves other NVS. OTA auth, TPL MCP1B7 bit preservation and legacy partitions remain. RS485/RS232 external tests remain deferred; Modbus configuration and MCP2A2 routing remain available.
 
 Validation, actual build UTC, binary size/hash and publication evidence: [VALIDATION.md](VALIDATION.md). Physical upload is assigned to the team.
+
+- Integrated remote v0.5.1 portal packaging and intentional public LAB OTA defaults; version parsing now uses firmware_version.h and packaging requires matching binary metadata/hash. Private overrides remain excluded from distribution.

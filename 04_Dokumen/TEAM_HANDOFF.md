@@ -1,14 +1,14 @@
 # Team handoff — v1.0.0
 
-Source baseline v0.5.0 changes to v1.0.0. Codex prepares/builds/tests/pushes; **team uploads hardware**. Exact build UTC/hash and publication evidence are recorded in [VALIDATION](../VALIDATION.md). Read [README](../README.md) and [CHANGELOG](../CHANGELOG.md) for API changes. User confirmed final polarity: DO1/DO2 active LOW, LED MCP active HIGH. Source output/MCP profile flags are enabled; runtime I2C faults still lock commands.
+Source baseline v0.5.0 plus integrated remote v0.5.1 packaging changes to v1.0.0. Codex prepares/builds/tests/pushes; **team uploads hardware**. Exact build UTC/hash and publication evidence are recorded in [VALIDATION](../VALIDATION.md). Read [README](../README.md) and [CHANGELOG](../CHANGELOG.md) for API changes. User confirmed final polarity: DO1/DO2 active LOW, LED MCP active HIGH. Source output/MCP profile flags are enabled; runtime I2C faults still lock commands.
 
 ## Build and install
 
 1. Verify actual port, classic ESP32 chip, MAC/16MB and current partition table. Last historical port was COM13 CH340; do not assume current port. Back up NVS/partition table. No Codex upload of v1.0.0 is performed.
 2. Check `config.h`: LED MCP1 active HIGH, DO GPIO32/33 active LOW, as corrected by user. Both output/MCP verification flags are true; BANK0/SEQOP0 is checked at runtime. Use a suitable isolated bench fixture and verify actual OFF before attaching loads.
-3. Install pinned dependencies from README, Python3 and Node. Run `./Build-Firmware.ps1`; this generates UTC identity before compile and validates it in binary. Preserve private `ota_secrets.h`; if absent a local random password is generated and recorded in ignored `ota-access.txt`. Share it privately with operator. Never publish the app binary or secret in public Git.
+3. Install pinned dependencies from README, Python3 and Node. Run `./Build-Firmware.ps1`; this generates UTC identity before compile and validates it in binary. Without a private override, use the intentional public LAB default admin / CompactLab050! from lab_ota_defaults.h (owner decision 2026-10-12). Private override builds stay private; -PublicLabRelease refuses them and packages only committed source.
 4. Keep app and `build/firmware-manifest.json` together internally. Confirm manifest version/buildUTC/SHA-256 matches the exact `.ino.bin` to install. Build timestamp is build start, not device clock/upload time.
-5. For initial USB installation use verified legacy offsets below; never Arduino default/merged uploader. For an installed OTA-capable firmware, `/update` uses application `.ino.bin` only.
+5. For initial USB installation use verified legacy offsets below; never Arduino default offsets; validated portal merged is allowed for deliberate LAB reset. For an installed OTA-capable firmware, `/update` uses application `.ino.bin` only.
 
 | Partition | Offset | Size |
 | --- | --- | --- |
@@ -20,7 +20,7 @@ Source baseline v0.5.0 changes to v1.0.0. Codex prepares/builds/tests/pushes; **
 | ota_1 | 0x420000 | 0x200000 |
 | storage | 0x620000 | 0xF0000 |
 
-USB component offsets: bootloader **0x1000**, partitions **0x8000**, application **0x20000**. If boot selection must be reset to factory, erase **only** otadata0x17000/0x2000. Preserve NVS/storage. Verify write hashes. Do not write Arduino boot_app0.bin at0xE000, merged.bin or erase full flash. These instructions depend on matching the device's current layout first.
+USB component offsets: bootloader **0x1000**, partitions **0x8000**, application **0x20000**. If boot selection must be reset to factory, erase **only** otadata0x17000/0x2000. Preserve NVS/storage. Verify write hashes. Do not write Arduino boot_app0.bin at0xE000. Validated portal merged at offset0 is an alternative for deliberate LAB reset: even fast write resets NVS/settings; Full erase + write additionally deletes storage. Build this package with -PublicLabRelease in a clean checkout without a private override. Component USB is the data-preserving option. These instructions depend on matching the device's current layout first.
 
 ## Bench procedure
 

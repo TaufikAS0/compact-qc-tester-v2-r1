@@ -1,5 +1,11 @@
 # Current validation - v0.5.0 / 2026-10-12
 
+v0.5.1 adds owner-authorized standard full/merged USB distribution and optional
+full erase, with explicit destructive-data warnings. This changes the runtime
+version and release packaging only, not hardware output locks or the QC logic.
+Build, package verification and portal tests must be completed for its release;
+no physical v0.5.1 flash or QC evidence is claimed here.
+
 This section supersedes historical local/uncommitted status below. Source prepared for team USB installation and future web OTA; v0.5.0 has not been uploaded to a device in this turn.
 
 - Feature branch: feature/qc-operator-ota, renamed from feature/lab-wifi-com12; local develop baseline is upstream main 35733ba because remote develop does not yet exist. No direct main/develop push or merge.

@@ -1,4 +1,4 @@
-param([string]$ArduinoCli = 'arduino-cli')
+param([string]$ArduinoCli = 'arduino-cli', [switch]$PublicLabRelease)
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {
@@ -8,16 +8,10 @@ try {
         $ArduinoCli = $candidate
     }
     $secretPath = Join-Path $PSScriptRoot 'compact_qc_tester\ota_secrets.h'
-    if (-not (Test-Path -LiteralPath $secretPath)) {
-        $bytes = New-Object byte[] 24
-        $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-        try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
-        $password = [Convert]::ToBase64String($bytes)
-        $header = "#pragma once`nconstexpr char OTA_USERNAME[] = `"admin`";`nconstexpr char OTA_PASSWORD[] = `"$password`";`n"
-        [System.IO.File]::WriteAllText($secretPath,$header)
-        [System.IO.File]::WriteAllText((Join-Path $PSScriptRoot 'ota-access.txt'),"OTA username: admin`nOTA password: $password`nURL: /update`nKeep this file private.`n")
-        Write-Host 'Created ignored local OTA credentials in ota-access.txt; no password printed.'
+    if ($PublicLabRelease -and (Test-Path -LiteralPath $secretPath)) {
+        throw 'Public release refuses a private ota_secrets.h override. Build in a clean checkout without that file.'
     }
+    Write-Host 'Without a private override, firmware uses the intentional public LAB default.'
     $cores = & $ArduinoCli core list --format json | ConvertFrom-Json
     if (-not ($cores.platforms | Where-Object { $_.id -eq 'esp32:esp32' -and $_.installed_version -eq '3.3.10' })) { throw 'Required Arduino ESP32 core 3.3.10 not installed.' }
     python scripts/firmware_metadata.py generate
@@ -30,5 +24,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Binary identity verification failed.' }
     python scripts/verify_partitions.py
     if ($LASTEXITCODE -ne 0) { throw 'Legacy partition verification failed.' }
+    if ($PublicLabRelease) {
+        & node tools/portal-package.cjs
+        if ($LASTEXITCODE -ne 0) { throw 'Portal artifact packaging failed.' }
+    }
     Write-Host 'Build passed. No upload was performed. Follow 04_Dokumen/TEAM_HANDOFF.md.'
 } finally { Pop-Location }

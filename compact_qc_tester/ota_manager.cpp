@@ -1,5 +1,9 @@
 #include "ota_manager.h"
-#include "ota_secrets.h"
+#if __has_include("ota_secrets.h")
+#include "ota_secrets.h" // PRIVATE override: that build must not be distributed.
+#else
+#include "lab_ota_defaults.h" // Intentional public default for shared LAB builds.
+#endif
 #include "tpl_watchdog.h"
 #include <Arduino.h>
 #include <Update.h>

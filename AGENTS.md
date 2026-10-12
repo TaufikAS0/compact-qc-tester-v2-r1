@@ -11,8 +11,8 @@ Do not equate ACK, output command, software pulse count, PHY link, regression re
 User confirmed ADS1115, DS3231 and AHT10. Do not send AHT20 initialization/CRC commands to AHT10.
 Calibration namespace qc-adc/cal-v1 is independent of production namespaces and PCB EEPROM. No erase/clear of unrelated keys.
 RS485/RS232 external-device tests are deferred by user; do not silently activate them.
-Preserve legacy partitions.csv and all unrelated NVS/storage. No merged/default Arduino USB upload on existing hardware.
-OTA secrets, binaries and machine backups must never be committed. Shared HuaweiJIN lab profile is authorized; AP recovery 12345678. Customer credentials require explicit profile.
+Preserve legacy partitions.csv. Owner decision 2026-10-12 permits validated portal merged USB / full erase for deliberate LAB reset: merged fast write resets NVS, full erase also deletes storage. Component USB and app-only OTA preserve unrelated NVS/storage. Never Arduino default 0x10000/boot_app0 offsets.
+Private OTA secrets, binaries and machine backups must never be committed. Owner decision 2026-10-12 permits public lab_ota_defaults.h in source/release assets; PublicLabRelease refuses private overrides. Shared HuaweiJIN lab profile is authorized; AP recovery 12345678. Customer credentials require explicit profile.
 User corrected outputs 2026-10-12: DO1/DO2 active LOW, LED MCP active HIGH; profile flags enabled after confirmation. Verify runtime BANK/SEQOP and bench fixture. Preserve MCP unrelated bits, particularly TPL MCP1B7.
 EEPROM identity region 0x3F80-0x3FFF is reserved for QC; never overwrite foreign bytes. STUSB PDO runtime only, no NVM write.
 Run firmware compile and Node UI tests; hardware acceptance must be reported separately. Do not simulate a physical PASS.
