@@ -6,6 +6,8 @@
 #include "ota_manager.h"
 #include "qc_hardware.h"
 #include "qc_session.h"
+#include "serial_qc.h"
+#include "radio_qc.h"
 #include "tpl_watchdog.h"
 #include "web_ui.h"
 #include "wifi_manager.h"
@@ -46,6 +48,15 @@ bool authorized() {
     failure("Pilih device M0 atau M1 sebelum QC");
     return false;
   }
+  if (serialQcActive() && server.uri() != "/api/heartbeat" && server.uri() != "/api/stop" &&
+      server.uri() != "/api/rs232/stop" && server.uri() != "/api/serial/stop" && server.uri() != "/api/qc/new") {
+    failure("RS232 test owns UART/routing; stop it before other QC actions");
+    return false;
+  }
+  if (radioQcActive() && server.uri() != "/api/heartbeat" && server.uri() != "/api/stop") {
+    failure("Radio test/mode restoration active; wait before other QC actions");
+    return false;
+  }
   return true;
 }
 bool readMcp(uint8_t reg, uint16_t &value) {
@@ -73,6 +84,8 @@ bool writeLedBits(uint16_t bits) {
   return writeMcp(0x14, (current & ~LED_MASK) | (bits & LED_MASK));
 }
 void stopOutputs() {
+  cancelSerialQc("Cancelled by stop/new session/OTA");
+  cancelRadioQc("Cancelled by stop/OTA");
   if (OUTPUT_PROFILE_VERIFIED) {
     for (int p : RELAY_PINS)
       digitalWrite(p, RELAY_ACTIVE_HIGH ? LOW : HIGH);
@@ -320,6 +333,8 @@ void beginApp() {
   beginTplWatchdog();
   beginQcSession(server, authorized, stopOutputs);
   beginQcHardware();
+  beginSerialQc(server, authorized, stopOutputs);
+  beginRadioQc(server, authorized, stopOutputs);
   uint64_t mac = ESP.getEfuseMac();
   char name[32];
   snprintf(name, sizeof(name), "COMPACT-QC-%04X", (unsigned)(mac & 0xffff));
@@ -363,6 +378,8 @@ void updateApp() {
   updateWebOta();
   updateLabWiFi();
   updateQcSession();
+  updateSerialQc();
+  updateRadioQc();
   if (!webOtaBusy())
     updateQcHardware();
   updateTplWatchdog();

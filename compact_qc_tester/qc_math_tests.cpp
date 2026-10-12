@@ -68,3 +68,22 @@ static_assert(sourceContractMV(4u << 28, src, 4) == 20000);
 static_assert(sourceContractMV(7u << 28, src, 4) == 0 && sourceContractMV(0, src, 4) == 0);
 constexpr uint32_t apdo[] = {3u << 30};
 static_assert(sourceContractMV(1u << 28, apdo, 1) == 0);
+
+#include "serial_qc_protocol.h"
+constexpr bool serialProtocolTests() {
+  using namespace SerialQc;
+  const uint8_t digits[] = {'1','2','3','4','5','6','7','8','9'};
+  if (crc16(digits, 9) != 0x29b1) return false;
+  uint8_t req[MAX_FRAME] = {}, reply[MAX_FRAME] = {};
+  for (uint16_t seq = 0; seq < 4; ++seq) {
+    size_t n = frame(req, REQUEST, 0x12345678, seq);
+    size_t m = frame(reply, RESPONSE, 0x12345678, seq);
+    if (!valid(req, n) || !valid(reply, m) || n != m || get16(req+10) != payloadSize(seq)) return false;
+    for (size_t i = HEADER; i < n - 2; ++i) if ((req[i] ^ reply[i]) != 0xa5) return false;
+    reply[HEADER] ^= 1;
+    if (valid(reply, m)) return false;
+    if (valid(req, n-1)) return false;
+  }
+  return frame(req, ACK, 1, 0) == 14 && valid(req, 14);
+}
+static_assert(serialProtocolTests(), "RS232 CRC/frame/transformed-payload invariants");

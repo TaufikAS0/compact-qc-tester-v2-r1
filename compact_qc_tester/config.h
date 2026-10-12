@@ -47,6 +47,9 @@ constexpr uint32_t TPL_DONE_HIGH_MS = 1;
 // Pinlist V2_R1 confirmed unchanged for TOP V2_R1 + BOTTOM V3_R0.
 constexpr uint8_t MCP2_ADDR = 0x21;
 constexpr int SERIAL_RX = 4, SERIAL_TX = 5;
+// V2_R1 E5:G11: E70 radio UART2, M0/M1 through MCP1 B4/B5.
+constexpr int RADIO_RX = 16, RADIO_TX = 17;
+constexpr uint8_t RADIO_M0_BIT = 12, RADIO_M1_BIT = 13;
 constexpr char HW_TOP[] = "TMC_T_V2_R1", HW_BOTTOM[] = "TMC_B_V3_R0";
 constexpr uint8_t EEPROM_ADDR = 0x57;
 constexpr uint16_t EEPROM_BYTES = 16384, IDENTITY_BASE = EEPROM_BYTES - 128;

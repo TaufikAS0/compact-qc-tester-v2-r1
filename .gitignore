@@ -7,3 +7,5 @@ ota-access.txt
 compact_qc_tester/build_metadata.h
 __pycache__/
 *.pyc
+tools/laptop-qc/reports/
+tools/laptop-qc/.venv/

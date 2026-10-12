@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 — 2026-10-12
+
+- Reopen RS232 and RS485 QC per user, automatic RS485 direction confirmed. Separate local laptop web/backend defaults9600/8N1/100packets; CRC/pattern/sequence/ACK and matching device result required. Echo/timeout/corruption/restart cannot PASS. Cancellation INCOMPLETE. JSON/CSV automatic local reports; tokens excluded.
+- Add `/api/serial/start`, `/api/serial/stop`, legacy `/api/rs232/*` aliases and `qc.serial`. UART1 RX4/TX5, route MCP2A2 HIGH RS232/LOW RS485 with readback. Conflicting QC operations blocked, UART loop bounded, no new NVS.
+- Add `/api/radio/start` and `qc.radio`: E70-915NW14S CC1310/15.4 star, not LoRa; UART2 RX16/TX17, mode MCP1B4/B5 temporarily HIGH with masked restoration including Stop/OTA. Read-only AT and seven target comparisons; unreadable UNVERIFIED. Editable factory references are not approved production profile. No SF/BW/CR/LoRaCRC PASS, RF payload test or persistent radio write.
+- Version1.1.0 ->1.2.0, generated UTC build identity retained. Wi-Fi, partitions, EEPROM, calibration and OTA credentials unchanged. Team uploads; no Codex flash.
+
 ## v1.1.0 — 2026-10-12
 
 Adds explicit session M0/M1 selection and Longhi-style QC export after the local validated1.0.0 build; published baseline remains0.5.1 until this feature push.

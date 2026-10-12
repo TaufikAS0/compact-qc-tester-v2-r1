@@ -1,4 +1,4 @@
-param([string]$ArduinoCli = 'arduino-cli', [switch]$PublicLabRelease)
+param([string]$ArduinoCli = 'arduino-cli', [switch]$PublicLabRelease, [switch]$VerboseCompile)
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {
@@ -16,7 +16,10 @@ try {
     if (-not ($cores.platforms | Where-Object { $_.id -eq 'esp32:esp32' -and $_.installed_version -eq '3.3.10' })) { throw 'Required Arduino ESP32 core 3.3.10 not installed.' }
     python scripts/firmware_metadata.py generate
     if ($LASTEXITCODE -ne 0) { throw 'Metadata generation failed.' }
-    & $ArduinoCli compile --jobs 4 --fqbn esp32:esp32:esp32:FlashSize=16M --build-property upload.maximum_size=2097152 --output-dir build compact_qc_tester
+    $compileArgs = @('compile', '--jobs', '4', '--fqbn', 'esp32:esp32:esp32:FlashSize=16M', '--build-property', 'upload.maximum_size=2097152', '--output-dir', 'build')
+    if ($VerboseCompile) { $compileArgs += '--verbose' }
+    $compileArgs += 'compact_qc_tester'
+    & $ArduinoCli @compileArgs
     if ($LASTEXITCODE -ne 0) { throw 'Firmware build failed.' }
     $binary = Join-Path $PSScriptRoot 'build\compact_qc_tester.ino.bin'
     if ((Get-Item -LiteralPath $binary).Length -ge 2097152) { throw 'Application exceeds 2MB OTA slot.' }

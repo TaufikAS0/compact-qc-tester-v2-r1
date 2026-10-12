@@ -6,6 +6,8 @@
 #include "qc_math.h"
 #include "qc_report_math.h"
 #include "qc_export.h"
+#include "serial_qc.h"
+#include "radio_qc.h"
 #include <Preferences.h>
 namespace {
 WebServer *web;
@@ -66,6 +68,7 @@ bool decimal(const char *arg, float low, float high, float &v) {
 }
 String outputName(int n) { return n < 11 ? "LED:" + String(n) : "Relay:" + String(n - 11); }
 void reset() {
+  resetSerialQc(); resetRadioQc();
   char id[9];
   snprintf(id, sizeof(id), "%08lX", static_cast<unsigned long>(esp_random()));
   sessionId = id;
@@ -87,8 +90,10 @@ void reset() {
              "Dua siklus HIGH-LOW-HIGH, debounce 50ms; tanpa konfirmasi operator");
   for (int i = 0; i < 13; ++i)
     qcRecord(outputName(i), "BELUM DIUJI", "");
-  qcRecord("RS485", "DITUNDA", "External device test deferred by user");
-  qcRecord("RS232", "DITUNDA", "External device test deferred by user");
+  qcRecord("RS485", "BELUM DIUJI", "Laptop USB-RS485; automatic direction confirmed by user");
+  qcRecord("RS232", "BELUM DIUJI", "Laptop USB-RS232 QC protocol required");
+  qcRecord("Radio communication", "BELUM DIUJI", "E70-915NW14S UART AT readback");
+  qcRecord("Radio configuration", "BELUM DIUJI", "Compare supported parameters; LoRa SF/BW/CR unsupported");
 }
 } // namespace
 bool qcProfileSelected() { return variant != DeviceVariant::Unselected; }
@@ -222,7 +227,9 @@ void qcState(JsonObject d) {
   m["register"] = regAddress;
   m["count"] = regCount;
   m["route"] = route;
-  m["testStatus"] = "DITUNDA";
+  m["testStatus"] = "MODBUS DITUNDA; raw serial QC available";
+  serialQcState(d["serial"].to<JsonObject>());
+  radioQcState(d["radio"].to<JsonObject>());
 }
 void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   web = &server;
@@ -445,7 +452,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       error("Invalid Modbus parameters", 400);
       return;
     }
-    // User deferred external communication tests. Only routing/configuration is enabled.
+    // Modbus transactions remain deferred; laptop serial QC selects its own route.
     if (!mcpBit(MCP2_ADDR, 2, mode == "RS232")) {
       error("MCP2A2 route write failed");
       return;
@@ -465,8 +472,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     prefs.putUShort("count", regCount);
     JsonDocument d;
     d["status"] = "DITUNDA";
-    d["detail"] = "Config saved; MCP2A2 selected. No UART/Modbus traffic until external fixture "
-                  "test is enabled.";
+    d["detail"] = "Config saved; MCP2A2 selected. Modbus remains deferred; use laptop serial QC for byte transactions.";
     send(d);
   });
 }
