@@ -1,5 +1,7 @@
 # Compact QC Tester v1.2.0
 
+Pending revisions: [task checklist and resume checkpoint](ai/tasks/2026-10-13-qc-revision-backlog.md), [branch worklog](ai/branches/feature--qc-operator-ota.md). These are recorded requests; implementation has not started and awaits the user's `kerjakan` instruction. Firmware remains1.2.0.
+
 New communication QC: [laptop serial and E70 procedure](04_Dokumen/COMMUNICATION_QC.md). Run `./Start-Laptop-QC.ps1` and open http://127.0.0.1:8770/. RS232 and RS485 binary QC now enabled at user request; RS485 automatic TX/RX confirmed. Modbus remains deferred. E70-915NW14S uses CC1310/15.4 star, not LoRa: separate communication/readback target tests, no permanent configuration writes. UART1 GPIO4/5, UART2 GPIO16/17. Version1.1.0 ->1.2.0, no new NVS/EEPROM or Wi-Fi changes. Team uploads; source/build is separate from physical acceptance.
 
 Bench QC firmware for **classic ESP32 / 16MB**, TOP `TMC_T_V2_R1` + BOTTOM `TMC_B_V3_R0`, unchanged [V2_R1 pinlist](https://docs.google.com/spreadsheets/d/1dNlma5VXHjytXgDrzcwWcurq-axKmhhd/edit?gid=1745042722#gid=1745042722). Source is `compact_qc_tester/`; the sketch is thin and drivers/session/network/OTA/watchdog/calibration remain separate. Version truth: `firmware_version.h`. See [changes](CHANGELOG.md), [validation](VALIDATION.md), and [team installation/bench handoff](04_Dokumen/TEAM_HANDOFF.md).

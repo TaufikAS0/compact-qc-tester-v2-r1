@@ -1,5 +1,7 @@
 # Compact QC firmware
 
+Resume entry: read CURRENT and first two updates in ai/branches/feature--qc-operator-ota.md, then ai/tasks/2026-10-13-qc-revision-backlog.md before new QC work. New backlog is documentation-only until user explicitly says kerjakan. It records intended revisions, not completed changes. Update task IDs/checkpoint/worklog after each meaningful step and before stopping; record local vs pushed state and next action. Backlog supersedes prior serial deferral/read-only radio scope only when implementation is authorized; protect unrelated NVS and preserve hardware evidence boundaries.
+
 Read README.md, VALIDATION.md and 04_Dokumen/TEAM_HANDOFF.md before editing/build/upload.
 Use feature branches from develop; never push directly to main or merge without review.
 Read workspace vault `01_Rules/Rules_Versioning.md` and `01_Rules/Rules_Change_Notifications.md` fully before firmware/build/push. Links are in `../2026 Vault Firmware Rules/00_Start_Here/Firmware_AI_Vault_Home.md`.
