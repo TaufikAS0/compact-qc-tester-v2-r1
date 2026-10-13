@@ -19,9 +19,9 @@ constexpr int RELAY_PINS[] = {32, 33};
 // With false, firmware never configures relays or LED outputs.
 // The independent TPL watchdog may configure MCP1 B7 only.
 constexpr bool OUTPUT_PROFILE_VERIFIED =
-    true; // User confirmed polarity: LED HIGH, DO1/DO2 LOW, 2026-10-12.
+    true; // Latest user correction: LED and DO1/DO2 LOW, 2026-10-13.
 constexpr bool RELAY_ACTIVE_HIGH = false;
-constexpr bool LED_ACTIVE_HIGH = true;
+constexpr bool LED_ACTIVE_HIGH = false;
 constexpr unsigned OUTPUT_PULSE_MS =
     60000; // Maximum ON time; explicit OFF or lost heartbeat stops earlier.
 constexpr unsigned SESSION_TIMEOUT_MS = 3500;

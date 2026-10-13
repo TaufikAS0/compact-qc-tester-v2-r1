@@ -147,7 +147,11 @@ bool mcpBit(uint8_t address, uint8_t bit, bool level) {
   if (!writeReg(address, 0x14 + port, &latch, 1))
     return false;
   dir &= ~mask;
-  return writeReg(address, port, &dir, 1);
+  if (!writeReg(address, port, &dir, 1)) return false;
+  uint8_t actualLatch, actualDir;
+  return readReg(address, 0x14 + port, &actualLatch, 1) &&
+         readReg(address, port, &actualDir, 1) &&
+         (actualLatch & mask) == (latch & mask) && !(actualDir & mask);
 }
 size_t inputCount() { return 7; }
 const char *inputName(size_t i) {

@@ -87,3 +87,23 @@ constexpr bool serialProtocolTests() {
   return frame(req, ACK, 1, 0) == 14 && valid(req, 14);
 }
 static_assert(serialProtocolTests(), "RS232 CRC/frame/transformed-payload invariants");
+
+#include "output_state.h"
+constexpr bool independentOutputsTest() {
+  OutputState bank;
+  if (bank.any()) return false;
+  bank.set(11, true, 100);
+  bank.set(12, true, 200);
+  if (!bank.on[11] || !bank.on[12]) return false;
+  bank.set(11, false, 300);
+  if (bank.on[11] || !bank.on[12]) return false;
+  bank.set(11, true, 400);
+  if (!bank.expired(12, 1200, 1000) || bank.expired(11, 1200, 1000)) return false;
+  bank.set(12, false, 1200);
+  if (!bank.on[11]) return false;
+  bank.clear();
+  if (bank.any()) return false;
+  bank.set(0, true, 0xfffffff0u);
+  return bank.expired(0, 0x20u, 48u) && !bank.expired(0, 0x20u, 49u);
+}
+static_assert(independentOutputsTest(), "Independent output timers, OFF and millis wrap");

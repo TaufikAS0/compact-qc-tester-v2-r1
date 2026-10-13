@@ -1,6 +1,6 @@
-# Compact QC Tester v1.2.0 — local v1.3.0 work in progress
+# Compact QC Tester v1.3.0
 
-Pending revisions: [task checklist and resume checkpoint](ai/tasks/2026-10-13-qc-revision-backlog.md), [branch worklog](ai/branches/feature--qc-operator-ota.md). The new1.3.0 source is local and uncommitted until compile validation; the remote firmware baseline is1.2.0. Time-bounded implementation authorized until 2026-10-13 13:52 UTC+7. Firmware1.2.0 ->1.3.0: independent outputs, corrected active-LOW LEDs, latched visual QC, I2C scan confirmation and clearer local result badges. Remaining requests are tracked separately; physical acceptance is pending.
+Pending revisions: [task checklist and resume checkpoint](ai/tasks/2026-10-13-qc-revision-backlog.md), [branch worklog](ai/branches/feature--qc-operator-ota.md). User resumed after the13:52 checkpoint; output baseline now compiles and the remaining batch is active. Firmware1.2.0 ->1.3.0: independent outputs, corrected active-LOW LEDs, latched visual QC, I2C scan confirmation and clearer local result badges. Remaining requests are tracked separately; physical acceptance is pending.
 
 New communication QC: [laptop serial and E70 procedure](04_Dokumen/COMMUNICATION_QC.md). Run `./Start-Laptop-QC.ps1` and open http://127.0.0.1:8770/. RS232 and RS485 binary QC now enabled at user request; RS485 automatic TX/RX confirmed. Modbus remains deferred. E70-915NW14S uses CC1310/15.4 star, not LoRa: separate communication/readback target tests, no permanent configuration writes. UART1 GPIO4/5, UART2 GPIO16/17. Version1.1.0 ->1.2.0, no new NVS/EEPROM or Wi-Fi changes. Team uploads; source/build is separate from physical acceptance.
 

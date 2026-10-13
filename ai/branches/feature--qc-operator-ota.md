@@ -1,4 +1,4 @@
-CURRENT | V1.2 | 2026-10-13 before13:52 UTC+7 | Codex | STOPPED per deadline; source1.3.0 local, tests PASS, compile interrupted | Next: user authorization then complete compile/review/push
+CURRENT | V1.3 | 2026-10-13 resumed | Codex | User resumed; 1.3.0 output/I2C compile + binary gates PASS; source publication | Next: gated push then AHT10 and remaining checklist
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,12 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V1.3 | 2026-10-13 resumed | Codex
+
+- Did: new explicit user continuation revokes previous deadline pause; no new deadline. Read8 mandatory vault rules and audited dirty feature branch. Build PID12988 fresh metadata; no source edits while this output baseline compiles.
+- Next: complete1.3.0 compile/review/push, then AHT10 busy/status state machine, five-point analog QC and Modbus tags. No upload/merge.
+
 
 ### V1.2 | 2026-10-13 13:49 UTC+7 | Codex
 
@@ -30,3 +36,5 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Next: **tunggu `kerjakan`**; implementasi belum dimulai. Setelah diizinkan, audit preview vs live device, lalu mulai ID output/status sambil memperbarui checklist/CURRENT.
 
 Final V1.2 checkpoint: task-owned build parent32532 and descendants stopped before13:52 while compiling libraries. No new gated binary. Documentation-only checkpoint pushed on feature branch; local firmware/tests remain uncommitted. Remote source is still1.2.0/218f208. Working tree expected9 modified firmware/test files + untracked output_state.h; docs committed. Next exact action: Build-Firmware.ps1 fresh metadata, inspect source/review, publish only after gate passes, then QC-07.
+
+V1.3 validation: generated1.3.0|2026-10-13T08:16:19Z,1193632-byte app SHA25658af51e3a11de0885e45433cdcad613263a15738491c46937e0fc2fa1631663e. Metadata/legacy partition gates PASS. Source publication includes output_state.h. Physical tests remain pending; no upload. Next implement AHT10 and analog5-point QC.

@@ -21,6 +21,9 @@ DeviceVariant variant = DeviceVariant::Unselected;
 String sessionId;
 InputCycles cycles[7];
 bool live[13] = {}, attempted[13] = {}, onConfirmed[13] = {}, offConfirmed[13] = {};
+bool finalized[13] = {};
+bool i2cScanned = false;
+unsigned i2cDevices = 0;
 Preferences prefs;
 uint32_t baud = 9600;
 uint8_t slave = 1, functionCode = 3;
@@ -73,10 +76,11 @@ void reset() {
   snprintf(id, sizeof(id), "%08lX", static_cast<unsigned long>(esp_random()));
   sessionId = id;
   count = display = 0;
+  i2cScanned = false; i2cDevices = 0;
   for (auto &c : cycles)
     c = {};
   for (int i = 0; i < 13; ++i)
-    live[i] = attempted[i] = onConfirmed[i] = offConfirmed[i] = false;
+    live[i] = attempted[i] = onConfirmed[i] = offConfirmed[i] = finalized[i] = false;
   for (const char *m : {"OLED", "I2C scan", "RTC", "EEPROM", "AHT10", "ADS / 4-20mA", "STUSB4500",
                         "Ethernet", "SD"})
     qcRecord(m,
@@ -123,12 +127,18 @@ void qcOutputsStopped() {
   for (auto &b : live)
     b = false;
 }
+void qcNoteI2cScan(unsigned devices) {
+  i2cScanned = true; i2cDevices = devices;
+  qcRecord("I2C scan", devices ? "DETECTED" : "FAIL",
+           devices ? "ACK list ready; awaiting user PASS/FAIL, not protocol proof"
+                   : "No I2C addresses acknowledged");
+}
 void qcOutputAttempt(const String &type, int index, bool on) {
   int n = type == "led" ? index : 11 + index;
   if (n < 0 || n >= 13)
     return;
   live[n] = on;
-  if (on) {
+  if (on && !finalized[n]) {
     attempted[n] = true;
     onConfirmed[n] = offConfirmed[n] = false;
     qcRecord(outputName(n), "MENUNGGU USER", "Command ON; konfirmasi bahwa output fisik menyala");
@@ -160,6 +170,8 @@ void qcState(JsonObject d) {
   d["variant"] = qcVariantName();
   d["profileSelected"] = qcProfileSelected();
   d["sessionId"] = sessionId;
+  auto scan = d["i2c"].to<JsonObject>();
+  scan["scanned"] = i2cScanned; scan["devices"] = i2cDevices;
   auto a = d["tests"].to<JsonArray>();
   unsigned passed = 0, failed = 0, pending = 0, skipped = 0;
   String canonical = String("QC1|") + FW_VERSION + "|" + FW_BUILD_UTC + "|" + qcVariantName() +
@@ -218,6 +230,7 @@ void qcState(JsonObject d) {
     p["attempted"] = attempted[i];
     p["onConfirmed"] = onConfirmed[i];
     p["offConfirmed"] = offConfirmed[i];
+    p["finalized"] = finalized[i];
   }
   auto m = d["modbus"].to<JsonObject>();
   m["baud"] = baud;
@@ -279,7 +292,14 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       error("PASS/FAIL required", 400);
       return;
     }
-    if (type == "oled") {
+    if (type == "i2c") {
+      if (!i2cScanned || (verdict == "PASS" && !i2cDevices)) {
+        error("Run I2C scan first; empty scan cannot PASS"); return;
+      }
+      qcRecord("I2C scan", verdict,
+               "User confirms scanned ACK list " + String(verdict == "PASS" ? "sesuai" : "tidak sesuai") +
+               "; " + String(i2cDevices) + " addresses; no IC/protocol acceptance inferred");
+    } else if (type == "oled") {
       JsonDocument h;
       hardwareState(h.to<JsonObject>());
       if (verdict == "PASS" && !h["oledReady"].as<bool>()) {
@@ -296,16 +316,20 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
         return;
       }
       int n = type == "led" ? index : 11 + index;
+      if (finalized[n]) {
+        error("QC result already final; start a new session to repeat QC");
+        return;
+      }
       String expected = web->arg("state");
       if (expected != "on" && expected != "off") {
         error("Expected state required", 400);
         return;
       }
-      if (!attempted[n] || (expected == "on" && !live[n]) ||
-          (expected == "off" && (live[n] || !onConfirmed[n]))) {
-        error("Confirm only attempted current state; ON confirmation required before OFF");
+      if (!attempted[n] || (expected == "on") != live[n]) {
+        error("Confirm only attempted current state");
         return;
       }
+      finalized[n] = true;
       if (verdict == "FAIL") {
         stopSafe();
         qcRecord(outputName(n), "FAIL",
@@ -315,9 +339,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
           onConfirmed[n] = true;
         else
           offConfirmed[n] = true;
-        qcRecord(outputName(n), "PASS",
-                 offConfirmed[n] ? "User confirmed physical ON and OFF"
-                                 : "User confirmed physical ON; OFF remains unconfirmed");
+        qcRecord(outputName(n), "PASS", "User confirms output sesuai commanded " + expected);
       }
     } else {
       error("Only OLED/LED/output accepts visual confirmation", 400);

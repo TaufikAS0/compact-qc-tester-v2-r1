@@ -1,6 +1,6 @@
 # Compact QC firmware
 
-Resume entry: read CURRENT and first two updates in ai/branches/feature--qc-operator-ota.md, then ai/tasks/2026-10-13-qc-revision-backlog.md before new QC work. User authorized implementation on 2026-10-13 until 13:52 UTC+7. After that deadline stop and await fresh authorization; read the checkpoint for completed versus pending work. Update task IDs/checkpoint/worklog after each meaningful step and before stopping; record local vs pushed state and next action. Backlog supersedes prior serial deferral/read-only radio scope only when implementation is authorized; protect unrelated NVS and preserve hardware evidence boundaries.
+Resume entry: read CURRENT and first two updates in ai/branches/feature--qc-operator-ota.md, then ai/tasks/2026-10-13-qc-revision-backlog.md before new QC work. User resumed implementation after the 2026-10-13 13:52 UTC+7 checkpoint; latest continuation has no new deadline. Read the checkpoint for completed versus pending work. Update task IDs/checkpoint/worklog after each meaningful step and before stopping; record local vs pushed state and next action. Backlog supersedes prior serial deferral/read-only radio scope only when implementation is authorized; protect unrelated NVS and preserve hardware evidence boundaries.
 
 Read README.md, VALIDATION.md and 04_Dokumen/TEAM_HANDOFF.md before editing/build/upload.
 Use feature branches from develop; never push directly to main or merge without review.

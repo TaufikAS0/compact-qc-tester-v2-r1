@@ -13,6 +13,7 @@ const char *qcDisplayDetail();
 void qcRecord(const String &name, const String &status, const String &detail);
 
 void qcOutputsStopped();
+void qcNoteI2cScan(unsigned devices);
 bool qcProfileSelected();
 bool qcPdEnabled();
 const char *qcVariantName();

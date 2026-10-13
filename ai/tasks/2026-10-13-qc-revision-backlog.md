@@ -2,7 +2,7 @@
 
 ## Status saat handoff
 
-- **Tahap: implementasi terbatas; wajib berhenti13:52 UTC+7 pada2026-10-13.**
+- **Tahap: user resumed after checkpoint; implementation ACTIVE without new deadline.**
 - Pengguna meminta menampung tugas, lalu mencatat dan push sebelum mulai. **Instruksi kerjakan telah diterima untuk sesi ini, sampai13:52 UTC+7; sesudahnya tunggu izin melanjutkan.** Izin mencatat/push dokumen bukan izin memulai implementasi.
 - Baseline source: firmware **1.2.0**, commit `218f2081f0e11f7753586a5c6f6c46b46e157855`, branch `feature/qc-operator-ota`.
 - Build baseline tercatat di VALIDATION.md: `2026-10-12T17:00:08Z` / 13 Oktober 2026 00:00:08 UTC+7. Build baru1.3.0 dimulai2026-10-13T06:44:01Z /13:44:01 UTC+7; lihat VALIDATION untuk hasil akhirnya.
@@ -18,13 +18,13 @@ Status `TODO` = belum diimplementasikan atau diverifikasi. Jangan mengubah statu
 | ID | Status | Tugas | Kriteria selesai |
 | --- | --- | --- | --- |
 | QC-01 | PARTIAL | Hasil QC jelas pada setiap menu, termasuk OLED dan semua modul komunikasi | Badge/teks PASS atau FAIL besar, warna dan alasan hasil terlihat di container modul, konsisten dengan Ringkasan QC dan report; jangan hanya menampilkan raw JSON. Belum diuji/berjalan/tidak berlaku dibedakan dari hasil final. |
-| QC-02 | IMPLEMENTED — NOT VALIDATED | Perbaiki ON/OFF LED yang dilaporkan terbalik | Perintah ON menyalakan LED, OFF mematikan LED; verifikasi mapping/polaritas aktual. Pengguna menyatakan output module sudah benar: jangan membalik DO. |
-| QC-03 | IMPLEMENTED — NOT VALIDATED | DO1 dan DO2 independen | ON/OFF DO1 tidak mengubah DO2, dan sebaliknya; keduanya dapat ON bersamaan. Kontrol/konfirmasi/QC per modul tetap terpisah. Stop semua, reset sesi dan OTA tetap eksplisit mematikan semua. |
-| QC-04 | IMPLEMENTED — NOT VALIDATED | Highlight ON/OFF mengikuti status, default OFF | Biru berpindah ke OFF ketika OFF diterima, kembali ke ON ketika ON diterima; startup semua output OFF. Status UI berasal dari state firmware/perintah yang berhasil, bukan warna ON permanen atau optimisme setelah request gagal. |
+| QC-02 | DONE — SOFTWARE | Perbaiki ON/OFF LED yang dilaporkan terbalik | Perintah ON menyalakan LED, OFF mematikan LED; verifikasi mapping/polaritas aktual. Pengguna menyatakan output module sudah benar: jangan membalik DO. |
+| QC-03 | DONE — SOFTWARE | DO1 dan DO2 independen | ON/OFF DO1 tidak mengubah DO2, dan sebaliknya; keduanya dapat ON bersamaan. Kontrol/konfirmasi/QC per modul tetap terpisah. Stop semua, reset sesi dan OTA tetap eksplisit mematikan semua. |
+| QC-04 | DONE — SOFTWARE | Highlight ON/OFF mengikuti status, default OFF | Biru berpindah ke OFF ketika OFF diterima, kembali ke ON ketika ON diterima; startup semua output OFF. Status UI berasal dari state firmware/perintah yang berhasil, bukan warna ON permanen atau optimisme setelah request gagal. |
 | QC-05 | PARTIAL | Perbaiki kegagalan komunikasi kontrol output | Cari penyebab request output sering gagal; tampilkan error sebenarnya dan state terakhir tanpa mengklaim berhasil. Verifikasi cepat berganti ON/OFF, polling, heartbeat/session, reconnect dan akses tiap baris. Penyebab saat ini belum terbukti. |
-| QC-06 | IMPLEMENTED — NOT VALIDATED | Sederhanakan konfirmasi fisik output dan latch hasil | Hanya pilihan **Sesuai** / **Tidak sesuai**. Setelah hasil QC PASS/FAIL final, tidak perlu meminta konfirmasi lagi; pengguna tetap bisa ON/OFF tanpa menghapus hasil. Reset hanya melalui mekanisme tes/sesi ulang yang jelas. |
+| QC-06 | DONE — SOFTWARE | Sederhanakan konfirmasi fisik output dan latch hasil | Hanya pilihan **Sesuai** / **Tidak sesuai**. Setelah hasil QC PASS/FAIL final, tidak perlu meminta konfirmasi lagi; pengguna tetap bisa ON/OFF tanpa menghapus hasil. Reset hanya melalui mekanisme tes/sesi ulang yang jelas. |
 | QC-07 | TODO | AHT10 terdeteksi tetapi gagal membaca data | Diagnosis init/status busy/timing/read length/I2C; tampilkan temperature dan humidity valid atau alasan gagal yang jelas. ACK alamat saja tidak menghasilkan data/PASS. Tetap AHT10 sesuai konfirmasi pengguna. |
-| QC-08 | IMPLEMENTED — NOT VALIDATED | Tambah konfirmasi QC I2C oleh pengguna | Setelah scan, daftar alamat tetap ada; sediakan tombol PASS/FAIL user dan hasil jelas dalam menu/report. Label hasil sebagai konfirmasi pengguna atas scan, bukan bukti identitas IC atau seluruh protokol. |
+| QC-08 | DONE — SOFTWARE | Tambah konfirmasi QC I2C oleh pengguna | Setelah scan, daftar alamat tetap ada; sediakan tombol PASS/FAIL user dan hasil jelas dalam menu/report. Label hasil sebagai konfirmasi pengguna atas scan, bukan bukti identitas IC atau seluruh protokol. |
 | QC-09 | CLOSED — USER | ADS1115 tidak terdeteksi | **Dibatalkan sebagai perbaikan firmware:** pengguna memastikan masalah hardware dan sudah OK. Jangan membuka kembali tanpa bukti baru. |
 | QC-10 | TODO | QC akurasi 4–20 mA dengan lima titik | Container baru, lima target uji, nilai hasil pembacaan/capture dan konfirmasi Sesuai/Tidak sesuai per titik. Kelima titik sesuai -> PASS; titik tidak sesuai -> FAIL; titik belum selesai tidak PASS. Kalibrasi empat titik yang sudah berhasil tetap dipertahankan dan terpisah dari QC. |
 | QC-11 | TODO | Modbus RS485 master dengan dua tag independen | Dua config terpisah, Request masing-masing, transaksi ke slave/register tertentu, data hasil tampil, konfirmasi Sesuai/Tidak sesuai menjadi QC. Config mengikuti rincian di bawah. Request sungguhan diperlukan; menyimpan config bukan PASS. |
@@ -119,3 +119,5 @@ QC-02/03/04/06/08: source selesai; tes UI lulus, compile dihentikan sebelum dead
 Files source: app.cpp, config.h, firmware_version.h, qc_hardware.cpp, qc_math_tests.cpp, qc_session.cpp/.h, web_ui.h, output_state.h; test web-ui.test.cjs. No upload. Next: diagnosis AHT10 actual busy/init/read evidence, lalu QC lima titik dan master Modbus dua tag. Jangan menganggap data mock sebagai PASS hardware.
 
 Final checkpoint: STOPPED before13:52 UTC+7 per user. Final1.3.0 build interrupted during library compilation; no new valid manifest/binary. Only documentation checkpoint committed/pushed;10 firmware/test files remain local (9 modified plus new output_state.h). Remote source remains1.2.0/218f208. Resume requires new user authorization and completing Build-Firmware.ps1 before source publication.
+
+Resumed checkpoint:1.3.0 final compile/metadata/partition gates PASS (2026-10-13T08:16:19Z). QC-02/03/04/06/08 DONE SOFTWARE; physical acceptance still pending.5/15 software completed,2 partial,8 TODO. User continuation reauthorizes remaining work.

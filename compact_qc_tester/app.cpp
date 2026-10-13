@@ -6,6 +6,7 @@
 #include "ota_manager.h"
 #include "qc_hardware.h"
 #include "qc_session.h"
+#include "output_state.h"
 #include "serial_qc.h"
 #include "radio_qc.h"
 #include "tpl_watchdog.h"
@@ -20,8 +21,9 @@
 
 WebServer server(80);
 String ssid, token;
-uint32_t lastHeartbeat = 0, outputStarted = 0;
-bool outputActive = false, mcpReady = false, fault = false;
+uint32_t lastHeartbeat = 0;
+OutputState outputState;
+bool mcpReady = false, fault = false;
 uint16_t savedLatch = 0, savedDirection = 0;
 const uint8_t addresses[] = {0x68, 0x57, 0x38, 0x20, 0x21, 0x3c, 0x77, 0x28, 0x48};
 const char *deviceNames[] = {"RTC",  "EEPROM",    "AHT",          "MCP1", "MCP2",
@@ -95,7 +97,7 @@ void stopOutputs() {
         fault = true;
     }
   }
-  outputActive = false;
+  outputState.clear();
   qcOutputsStopped();
 }
 void initOutputs() {
@@ -147,7 +149,7 @@ void stateHandler() {
   d["tplPulses"] = tplWatchdogPulses();
   d["relayEnabled"] = OUTPUT_PROFILE_VERIFIED && !fault;
   d["ledEnabled"] = OUTPUT_PROFILE_VERIFIED && mcpReady && !fault;
-  d["outputActive"] = outputActive;
+  d["outputActive"] = outputState.any();
   d["outputFault"] = fault;
   d["watchdogPhysicalResetVerified"] = false;
   auto a = d["inputs"].to<JsonArray>();
@@ -175,8 +177,7 @@ void scanHandler() {
   stopOutputs();
   JsonDocument d;
   scanBus(d["devices"].to<JsonArray>());
-  qcRecord("I2C scan", d["devices"].size() ? "DETECTED" : "FAIL",
-           "Scan all non-reserved 7-bit addresses. ACK is not functional PASS.");
+  qcNoteI2cScan(d["devices"].size());
   reply(d);
 }
 void sdHandler() {
@@ -244,10 +245,6 @@ void outputHandler() {
     failure("Outputs locked: verify config.h and wiring");
     return;
   }
-  if ((uint32_t)(millis() - lastHeartbeat) > SESSION_TIMEOUT_MS) {
-    failure("Heartbeat expired");
-    return;
-  }
   String raw = server.arg("index");
   if (raw.length() == 0) {
     failure("Missing index", 400);
@@ -277,44 +274,23 @@ void outputHandler() {
     failure("Output state on/off required", 400);
     return;
   }
-  if (state == "off") {
-    // Only the selected output is changed. No other output is implicitly confirmed.
-    if (kind == "relay")
-      digitalWrite(RELAY_PINS[index], RELAY_ACTIVE_HIGH ? LOW : HIGH);
-    else if (!mcpBit(MCP1_ADDR, LED_BITS[index], !LED_ACTIVE_HIGH)) {
-      fault = true;
-      stopOutputs();
-      failure("MCP OFF write failed");
-      return;
-    }
-    qcOutputAttempt(kind, index, false);
-    JsonDocument d;
-    d["ok"] = true;
-    reply(d);
-    return;
-  }
-  stopOutputs();
-  if (fault) {
-    failure("Cannot deactivate previous output");
-    return;
-  }
+  // An authenticated explicit command is fresh operator activity. Heartbeat loss
+  // still turns active outputs OFF; OFF must never require a preceding heartbeat.
+  lastHeartbeat = millis();
+  const bool on = state == "on";
   if (kind == "relay")
-    digitalWrite(RELAY_PINS[index], RELAY_ACTIVE_HIGH ? HIGH : LOW);
-  else {
-    uint16_t bits =
-        LED_ACTIVE_HIGH ? (1u << LED_BITS[index]) : (LED_MASK & ~(1u << LED_BITS[index]));
-    if (!writeLedBits(bits)) {
-      fault = true;
-      stopOutputs();
-      failure("MCP write failed");
-      return;
-    }
+    digitalWrite(RELAY_PINS[index], on == RELAY_ACTIVE_HIGH ? HIGH : LOW);
+  else if (!mcpBit(MCP1_ADDR, LED_BITS[index], on == LED_ACTIVE_HIGH)) {
+    fault = true;
+    stopOutputs();
+    failure("MCP command/readback failed; outputs stopped");
+    return;
   }
-  outputStarted = millis();
-  outputActive = true;
-  qcOutputAttempt(kind, index, true);
+  outputState.set(kind == "led" ? index : 11 + index, on, millis());
+  qcOutputAttempt(kind, index, on);
   JsonDocument d;
-  d["status"] = "PERLU KONFIRMASI";
+  d["ok"] = true;
+  d["commandedOn"] = on;
   reply(d);
 }
 void beginApp() {
@@ -372,9 +348,17 @@ void beginApp() {
                 OUTPUT_PROFILE_VERIFIED ? "verified configuration" : "LOCKED");
 }
 void updateApp() {
-  if (outputActive && ((uint32_t)(millis() - outputStarted) >= OUTPUT_PULSE_MS ||
-                       (uint32_t)(millis() - lastHeartbeat) >= SESSION_TIMEOUT_MS))
+  if (outputState.any() && uint32_t(millis() - lastHeartbeat) >= SESSION_TIMEOUT_MS)
     stopOutputs();
+  for (int n = 0; n < OutputState::COUNT; ++n) {
+    if (!outputState.expired(n, millis(), OUTPUT_PULSE_MS)) continue;
+    if (n >= 11) digitalWrite(RELAY_PINS[n - 11], RELAY_ACTIVE_HIGH ? LOW : HIGH);
+    else if (!mcpBit(MCP1_ADDR, LED_BITS[n], !LED_ACTIVE_HIGH)) {
+      fault = true; stopOutputs(); break;
+    }
+    outputState.set(n, false, millis());
+    qcOutputAttempt(n < 11 ? "led" : "relay", n < 11 ? n : n - 11, false);
+  }
   updateWebOta();
   updateLabWiFi();
   updateQcSession();
