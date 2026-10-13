@@ -7,26 +7,19 @@
 
 namespace {
 HardwareSerial radio(2);
-bool active = false, saved = false, entered = false, matchedEntry = false;
+bool active = false, saved = false, entered = false, matchedEntry = false, applyConfig = false;
 uint8_t oldDir = 0, oldLatch = 0;
 uint32_t at = 0;
 int stage = 0, command = 0;
 String buffer, line, version, commStatus = "BELUM DIUJI", configStatus = "BELUM DIUJI", radioDetail;
-// Manufacturer manual pp17-20. Read-only queries; no config writes or guessed LoRa settings.
+// Manufacturer manual pp17-20. Writes only when explicit apply=1; no guessed LoRa parameters.
 const char *keys[] = {"CNCFG", "WMCFG", "TMCFG", "PIDCFG", "UBCFG", "UPCFG", "PWCFG"};
 const char *labels[] = {"Channel", "WMCFG", "TMCFG", "PIDCFG", "UBCFG", "UPCFG", "PWCFG"};
 const int maxima[] = {63, 4, 1, 65535, 7, 2, 3};
 int expected[7] = {0, 4, 1, 65535, 7, 0, 0}, actual[7];
 bool restore() {
   if (!saved) return true;
-  uint8_t latch, dir;
-  if (!qcReadReg(MCP1_ADDR, 0x15, &latch, 1) || !qcReadReg(MCP1_ADDR, 0x01, &dir, 1)) return false;
-  latch = (latch & ~0x30) | (oldLatch & 0x30);
-  dir = (dir & ~0x30) | (oldDir & 0x30);
-  if (!qcWriteReg(MCP1_ADDR, 0x15, &latch, 1) || !qcWriteReg(MCP1_ADDR, 0x01, &dir, 1)) return false;
-  uint8_t l, d;
-  return qcReadReg(MCP1_ADDR, 0x15, &l, 1) && qcReadReg(MCP1_ADDR, 0x01, &d, 1) &&
-         (l & 0x30) == (oldLatch & 0x30) && (d & 0x30) == (oldDir & 0x30);
+  return mcpRestorePortBits(MCP1_ADDR,1,0x30,oldLatch,oldDir);
 }
 void publish() {
   qcRecord("Radio communication", commStatus, radioDetail);
@@ -50,9 +43,13 @@ void evaluate() {
     else if (actual[i] != expected[i]) mismatch = true;
   }
   commStatus = entered && actual[0] >= 0 ? "PASS" : "FAIL";
-  configStatus = mismatch ? "FAIL" : missing ? "UNVERIFIED" : "PASS";
+  configStatus = mismatch || missing ? "FAIL" : "PASS";
+  if (applyConfig) radioDetail += "; explicit AT writes acknowledged + settings readback; some parameters need radio restart to become active";
   radioDetail += "; SF/BW/CR/LoRa CRC NOT SUPPORTED; RF link not tested";
   exitMode();
+}
+void sendWrite() {
+  buffer = line = ""; radio.print(String("AT+")+keys[command]+"="+String(expected[command])+"\r\n"); at=millis(); stage=5;
 }
 void sendQuery() {
   buffer = line = "";
@@ -111,6 +108,8 @@ void beginRadioQc(WebServer &web, bool (*authorize)(), void (*stop)()) {
     if (!authorize()) return;
     JsonDocument d;
     int next[7]; bool valid = true;
+    String apply = web.arg("apply");
+    if (apply.length() && apply != "0" && apply != "1") valid=false;
     for (int i = 0; i < 7; ++i) {
       String s = web.arg(keys[i]);
       if (!s.length() || s.length() > 5) valid = false;
@@ -146,9 +145,10 @@ void beginRadioQc(WebServer &web, bool (*authorize)(), void (*stop)()) {
             radioDetail = restored ? "Radio UART2 init failed" : "Radio UART init AND mode restore failed"; publish();
             String body; serializeJson(d, body); web.send(409, "application/json", body); return;
           }
+          applyConfig = apply == "1";
           entered = matchedEntry = false; command = stage = 0; buffer = line = version = "";
           active = true; at = millis(); commStatus = configStatus = "TESTING";
-          radioDetail = "Read-only E70 AT test; temporary M0/M1 HIGH, no NVM writes"; publish();
+          radioDetail = applyConfig ? "Explicit E70 AT configuration writes; temporary M0/M1 HIGH, readback required" : "Read-only E70 AT test; temporary M0/M1 HIGH, no configuration writes"; publish();
           d["ok"] = true;
         }
       }
@@ -171,16 +171,23 @@ void updateRadioQc() {
   if (stage == 0 && now - at >= 200) { radio.write(uint8_t(0)); stage = 1; at = now; }
   else if (stage == 1 && now - at >= 120) { radio.print("+++"); stage = 2; at = now; }
   else if (stage == 2) {
-    if (matchedEntry || buffer.indexOf("Enter AT Mode") >= 0) { entered = true; sendQuery(); }
+    if (matchedEntry || buffer.indexOf("Enter AT Mode") >= 0) { entered = true; if(applyConfig)sendWrite();else sendQuery(); }
     else if (now - at >= 1500) {
-      commStatus = "FAIL"; configStatus = "UNVERIFIED"; radioDetail = "No valid Enter AT Mode response; verify E70 power/UART/mode"; exitMode();
+      commStatus = "FAIL"; configStatus = "FAIL"; radioDetail = "No valid Enter AT Mode response; verify E70 power/UART/mode"; exitMode();
+    }
+  } else if (stage == 5) {
+    if (buffer.indexOf("+OK") >= 0) {
+      if (++command < 7) sendWrite(); else { command=0; sendQuery(); }
+    } else if (buffer.indexOf("ERROR") >= 0 || now-at >= 1500) {
+      commStatus="UNVERIFIED"; configStatus="FAIL";
+      radioDetail="AT write rejected/timeout at "+String(keys[command])+"; earlier settings may have changed, read/reapply before use"; exitMode();
     }
   } else if (stage == 3 && ((command < 7 && actual[command] >= 0) || now - at >= 1500)) {
     if (line.length()) consumeLine();
     if (++command <= 7) sendQuery(); else evaluate();
   } else if (stage == 4 && (buffer.indexOf("Exit AT Mode") >= 0 || now - at >= 500)) {
     if (buffer.indexOf("Exit AT Mode") < 0 && entered) {
-      commStatus = configStatus = "UNVERIFIED"; radioDetail += "; AT exit unconfirmed; module may need power cycle";
+      commStatus = configStatus = "FAIL"; radioDetail += "; AT exit unconfirmed; module may need power cycle";
     }
     finish();
   }

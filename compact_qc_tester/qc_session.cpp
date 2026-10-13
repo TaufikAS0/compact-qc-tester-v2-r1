@@ -4,6 +4,8 @@
 #include "qc_hardware.h"
 #include "current_calibration.h"
 #include "current_qc.h"
+#include "modbus_qc.h"
+#include "network_qc.h"
 #include "qc_math.h"
 #include "qc_report_math.h"
 #include "qc_export.h"
@@ -72,7 +74,7 @@ bool decimal(const char *arg, float low, float high, float &v) {
 }
 String outputName(int n) { return n < 11 ? "LED:" + String(n) : "Relay:" + String(n - 11); }
 void reset() {
-  resetSerialQc(); resetRadioQc(); resetCurrentQc();
+  resetSerialQc(); resetRadioQc(); resetCurrentQc(); resetModbusQc(); resetNetworkQc();
   char id[9];
   snprintf(id, sizeof(id), "%08lX", static_cast<unsigned long>(esp_random()));
   sessionId = id;
@@ -95,6 +97,7 @@ void reset() {
              "Dua siklus HIGH-LOW-HIGH, debounce 50ms; tanpa konfirmasi operator");
   for (int i = 0; i < 13; ++i)
     qcRecord(outputName(i), "BELUM DIUJI", "");
+  for (const char *name : {"Modbus tag:1", "Modbus tag:2", "WiFi network", "Ethernet network", "MQTT"}) qcRecord(name, "BELUM DIUJI", "");
   qcRecord("RS485", "BELUM DIUJI", "Laptop USB-RS485; automatic direction confirmed by user");
   qcRecord("RS232", "BELUM DIUJI", "Laptop USB-RS232 QC protocol required");
   qcRecord("Radio communication", "BELUM DIUJI", "E70-915NW14S UART AT readback");
@@ -241,7 +244,9 @@ void qcState(JsonObject d) {
   m["register"] = regAddress;
   m["count"] = regCount;
   m["route"] = route;
-  m["testStatus"] = "MODBUS DITUNDA; raw serial QC available";
+  m["testStatus"] = "Modbus master2 tags; CRC response and user confirmation";
+  modbusQcState(m);
+  networkQcState(d["network"].to<JsonObject>());
   serialQcState(d["serial"].to<JsonObject>());
   radioQcState(d["radio"].to<JsonObject>());
 }
@@ -355,7 +360,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       return;
     String detail;
     bool ok = readIdentity(detail);
-    qcRecord("EEPROM", ok ? "DATA VALID" : "FAIL", detail);
+    qcRecord("EEPROM", ok ? "PASS" : identityBusReadable() ? "DETECTED" : "FAIL", detail);
     JsonDocument d;
     d["ok"] = ok;
     d["detail"] = detail;
@@ -430,7 +435,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     stopSafe();
     String detail;
     bool ok = testEthernet(detail);
-    qcRecord("Ethernet", ok ? "DETECTED" : "FAIL", detail);
+    qcRecord("Ethernet", ok ? "PASS" : detail.indexOf("UNKNOWN") >= 0 ? "UNVERIFIED" : "FAIL", detail);
     JsonDocument d;
     d["ok"] = ok;
     d["detail"] = detail;
@@ -461,6 +466,12 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     JsonDocument d;
     d["detail"] = detail;
     send(d, ok ? 200 : 409);
+  });
+  server.on("/api/serial/route", HTTP_POST, [] {
+    if (!guard()) return;
+    String next = web->arg("route"); if (next != "RS232" && next != "RS485") { error("Choose RS232/RS485", 400); return; }
+    stopSafe(); if (!mcpBit(MCP2_ADDR, 2, next == "RS232")) { error("MCP2A2 route readback failed"); return; }
+    route=next; JsonDocument d; d["detail"]="Route selected; this is not communication PASS"; send(d);
   });
   server.on("/api/modbus/config", HTTP_POST, [] {
     if (!guard())

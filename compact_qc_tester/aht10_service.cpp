@@ -49,7 +49,7 @@ void updateAht10() {
     pollAt = now;
     if (!status()) { if (age >= 300) fail("AHT10 status read missing after init"); return; }
     if ((statusByte & 0x88) == 0x08) {
-      initialized = true; retries = 0;
+      initialized = true;
       wait(Stage::Idle, "AHT10 calibrated; first measurement pending"); return;
     }
     if (age >= 300) fail("AHT10 init status not calibrated/busy: " + String(statusByte, HEX));
@@ -75,10 +75,10 @@ void updateAht10() {
     temperature = (((uint32_t(b[3]) & 15) << 16) | (uint32_t(b[4]) << 8) | b[5]) * 200.0f / 1048576 - 50;
     valid = isfinite(temperature) && temperature >= -40 && temperature <= 85 && humidity >= 0 && humidity <= 100;
     if (!valid) { fail("AHT10 decoded measurement out of range"); return; }
-    sampleAt = now;
+    sampleAt = now; retries = 0;
     ahtDetail = "AHT10 calibrated status + six-byte measurement valid";
     qcRecord("AHT10", "PASS", ahtDetail + "; sensor accuracy requires reference comparison");
-    wait(Stage::Idle, ahtDetail.c_str()); return;
+    wait(Stage::Idle, "AHT10 calibrated status + six-byte measurement valid"); return;
   }
   case Stage::Retry:
     if (age >= 2000 && retries < 3) { ++retries; wait(Stage::PowerWait, "AHT10 bounded recovery retry"); }

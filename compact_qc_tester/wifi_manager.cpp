@@ -37,7 +37,7 @@ void beginLabWiFi(const char *apSsid) {
 void updateLabWiFi() {
   const bool connected = WiFi.status() == WL_CONNECTED;
   if (connected != wasConnected) {
-    Serial.printf("STA: %s; SSID: %s; IP: %s\n", connected ? "CONNECTED" : "DISCONNECTED", STA_SSID,
+    Serial.printf("STA: %s; SSID: %s; IP: %s\n", connected ? "CONNECTED" : "DISCONNECTED", WiFi.SSID().c_str(),
                   WiFi.localIP().toString().c_str());
     wasConnected = connected;
   }

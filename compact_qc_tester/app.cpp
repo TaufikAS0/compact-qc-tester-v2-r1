@@ -8,6 +8,8 @@
 #include "qc_session.h"
 #include "output_state.h"
 #include "current_qc.h"
+#include "modbus_qc.h"
+#include "network_qc.h"
 #include "serial_qc.h"
 #include "radio_qc.h"
 #include "tpl_watchdog.h"
@@ -51,6 +53,12 @@ bool authorized() {
     failure("Pilih device M0 atau M1 sebelum QC");
     return false;
   }
+  if (networkQcBusy() && server.uri() != "/api/heartbeat" && server.uri() != "/api/stop") {
+    failure("Network worker owns SPI/settings; wait or Stop before other QC actions"); return false;
+  }
+  if (modbusQcActive() && server.uri() != "/api/heartbeat" && server.uri() != "/api/stop" && server.uri() != "/api/modbus/stop") {
+    failure("Modbus owns UART/routing; wait or Stop before other QC actions"); return false;
+  }
   if (serialQcActive() && server.uri() != "/api/heartbeat" && server.uri() != "/api/stop" &&
       server.uri() != "/api/rs232/stop" && server.uri() != "/api/serial/stop" && server.uri() != "/api/qc/new") {
     failure("RS232 test owns UART/routing; stop it before other QC actions");
@@ -87,6 +95,7 @@ bool writeLedBits(uint16_t bits) {
   return writeMcp(0x14, (current & ~LED_MASK) | (bits & LED_MASK));
 }
 void stopOutputs() {
+  cancelModbusQc(); cancelNetworkQc();
   cancelSerialQc("Cancelled by stop/new session/OTA");
   cancelRadioQc("Cancelled by stop/OTA");
   if (OUTPUT_PROFILE_VERIFIED) {
@@ -312,6 +321,8 @@ void beginApp() {
   beginQcHardware();
   beginCurrentQc(server, authorized);
   beginSerialQc(server, authorized, stopOutputs);
+  beginModbusQc(server, authorized, stopOutputs);
+  beginNetworkQc(server, authorized, stopOutputs);
   beginRadioQc(server, authorized, stopOutputs);
   uint64_t mac = ESP.getEfuseMac();
   char name[32];
@@ -364,6 +375,8 @@ void updateApp() {
   updateWebOta();
   updateLabWiFi();
   updateQcSession();
+  updateModbusQc();
+  updateNetworkQc();
   updateSerialQc();
   updateRadioQc();
   if (!webOtaBusy())

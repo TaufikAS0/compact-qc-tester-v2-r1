@@ -2,14 +2,13 @@
 
 ## Status saat handoff
 
-- **Tahap: user resumed after checkpoint; implementation ACTIVE without new deadline.**
-- Pengguna meminta menampung tugas, lalu mencatat dan push sebelum mulai. **Instruksi kerjakan telah diterima untuk sesi ini, sampai13:52 UTC+7; sesudahnya tunggu izin melanjutkan.** Izin mencatat/push dokumen bukan izin memulai implementasi.
-- Baseline source: firmware **1.2.0**, commit `218f2081f0e11f7753586a5c6f6c46b46e157855`, branch `feature/qc-operator-ota`.
-- Build baseline tercatat di VALIDATION.md: `2026-10-12T17:00:08Z` / 13 Oktober 2026 00:00:08 UTC+7. Build baru1.3.0 dimulai2026-10-13T06:44:01Z /13:44:01 UTC+7; lihat VALIDATION untuk hasil akhirnya.
-- Source baseline bukan bukti versi yang kini terpasang pada ESP. Pengguna melaporkan temuan pengujian; versi perangkat dan log error belum diperiksa pada tahap pencatatan.
-- Upload perangkat tetap oleh tim pengguna. Tidak ada USB/OTA upload oleh Codex pada tahap ini.
-- Progres: **5 tugas telah diimplementasikan tetapi belum diterima sampai compile gate lulus;2 parsial,8 TODO**; satu laporan ADS1115 ditutup oleh pengguna sebagai masalah hardware yang sudah diperbaiki.
-- Posisi terakhir: kontrol output/I2C dan badge telah diubah; physical acceptance tetap pending. Lanjutkan QC-07 setelah izin sesi berikutnya.
+- **Implementasi source1.5.0 selesai/diverifikasi software; physical acceptance belum dilakukan.** User melanjutkan setelah checkpoint13:52, tanpa deadline baru.
+-14 dari15 tugas aktif DONE SOFTWARE. QC-16 DIAGNOSED/BENCH FOLLOWUP; ADS QC-09 CLOSED USER. Jangan menyamakan software DONE dengan hardware PASS.
+- Branch feature/qc-operator-ota. Source checkpoints1.3.0 (468e781),1.4.0 (b36f3d6); final1.5.0 akan dipush pada branch yang sama. Tidak merge main/develop.
+- Final build **2026-10-13T09:34:41Z /2026-10-13 16:34:41 UTC+7**, app1260416 bytes, metadata/partition gates PASS; rincian lengkap VALIDATION.md.
+- Actual device192.168.1.55 masih1.2.0/build2026-10-12T21:08:39Z. No upload; tim pengguna menginstal firmware lalu menjalankan QC_OPERATOR_GUIDE.md.
+- QC-16 fakta: EEPROM57 merespons tetapi belum ada identitas QC valid; slot kosong/foreign/corrupt belum diketahui pada firmware lama. PD28 tidak merespons scan pada M0; periksa populasi/power/bus atau pilihM1 jika memang unpopulated. Source menambahkan diagnosis/read raw/protocol retry; tidak mengarang keberhasilan tegangan.
+- Next: team install, physical tests pada guide dan feedback untuk hardware followup. Tidak ada tugas source lain yang sengaja ditinggalkan tanpa implementasi.
 
 ## Checklist dengan ID tetap
 
@@ -17,22 +16,22 @@ Status `TODO` = belum diimplementasikan atau diverifikasi. Jangan mengubah statu
 
 | ID | Status | Tugas | Kriteria selesai |
 | --- | --- | --- | --- |
-| QC-01 | PARTIAL | Hasil QC jelas pada setiap menu, termasuk OLED dan semua modul komunikasi | Badge/teks PASS atau FAIL besar, warna dan alasan hasil terlihat di container modul, konsisten dengan Ringkasan QC dan report; jangan hanya menampilkan raw JSON. Belum diuji/berjalan/tidak berlaku dibedakan dari hasil final. |
+| QC-01 | DONE — SOFTWARE | Hasil QC jelas pada setiap menu, termasuk OLED dan semua modul komunikasi | Badge/teks PASS atau FAIL besar, warna dan alasan hasil terlihat di container modul, konsisten dengan Ringkasan QC dan report; jangan hanya menampilkan raw JSON. Belum diuji/berjalan/tidak berlaku dibedakan dari hasil final. |
 | QC-02 | DONE — SOFTWARE | Perbaiki ON/OFF LED yang dilaporkan terbalik | Perintah ON menyalakan LED, OFF mematikan LED; verifikasi mapping/polaritas aktual. Pengguna menyatakan output module sudah benar: jangan membalik DO. |
 | QC-03 | DONE — SOFTWARE | DO1 dan DO2 independen | ON/OFF DO1 tidak mengubah DO2, dan sebaliknya; keduanya dapat ON bersamaan. Kontrol/konfirmasi/QC per modul tetap terpisah. Stop semua, reset sesi dan OTA tetap eksplisit mematikan semua. |
 | QC-04 | DONE — SOFTWARE | Highlight ON/OFF mengikuti status, default OFF | Biru berpindah ke OFF ketika OFF diterima, kembali ke ON ketika ON diterima; startup semua output OFF. Status UI berasal dari state firmware/perintah yang berhasil, bukan warna ON permanen atau optimisme setelah request gagal. |
-| QC-05 | PARTIAL | Perbaiki kegagalan komunikasi kontrol output | Cari penyebab request output sering gagal; tampilkan error sebenarnya dan state terakhir tanpa mengklaim berhasil. Verifikasi cepat berganti ON/OFF, polling, heartbeat/session, reconnect dan akses tiap baris. Penyebab saat ini belum terbukti. |
+| QC-05 | DONE — SOFTWARE | Perbaiki kegagalan komunikasi kontrol output | Cari penyebab request output sering gagal; tampilkan error sebenarnya dan state terakhir tanpa mengklaim berhasil. Verifikasi cepat berganti ON/OFF, polling, heartbeat/session, reconnect dan akses tiap baris. Penyebab saat ini belum terbukti. |
 | QC-06 | DONE — SOFTWARE | Sederhanakan konfirmasi fisik output dan latch hasil | Hanya pilihan **Sesuai** / **Tidak sesuai**. Setelah hasil QC PASS/FAIL final, tidak perlu meminta konfirmasi lagi; pengguna tetap bisa ON/OFF tanpa menghapus hasil. Reset hanya melalui mekanisme tes/sesi ulang yang jelas. |
 | QC-07 | DONE — SOFTWARE | AHT10 terdeteksi tetapi gagal membaca data | Diagnosis init/status busy/timing/read length/I2C; tampilkan temperature dan humidity valid atau alasan gagal yang jelas. ACK alamat saja tidak menghasilkan data/PASS. Tetap AHT10 sesuai konfirmasi pengguna. |
 | QC-08 | DONE — SOFTWARE | Tambah konfirmasi QC I2C oleh pengguna | Setelah scan, daftar alamat tetap ada; sediakan tombol PASS/FAIL user dan hasil jelas dalam menu/report. Label hasil sebagai konfirmasi pengguna atas scan, bukan bukti identitas IC atau seluruh protokol. |
 | QC-09 | CLOSED — USER | ADS1115 tidak terdeteksi | **Dibatalkan sebagai perbaikan firmware:** pengguna memastikan masalah hardware dan sudah OK. Jangan membuka kembali tanpa bukti baru. |
 | QC-10 | DONE — SOFTWARE | QC akurasi 4–20 mA dengan lima titik | Container baru, lima target uji, nilai hasil pembacaan/capture dan konfirmasi Sesuai/Tidak sesuai per titik. Kelima titik sesuai -> PASS; titik tidak sesuai -> FAIL; titik belum selesai tidak PASS. Kalibrasi empat titik yang sudah berhasil tetap dipertahankan dan terpisah dari QC. |
-| QC-11 | TODO | Modbus RS485 master dengan dua tag independen | Dua config terpisah, Request masing-masing, transaksi ke slave/register tertentu, data hasil tampil, konfirmasi Sesuai/Tidak sesuai menjadi QC. Config mengikuti rincian di bawah. Request sungguhan diperlukan; menyimpan config bukan PASS. |
-| QC-12 | TODO | Skenario dan QC RS232 jelas saat mode dipilih | Jelaskan wiring laptop USB-RS232, default serial, langkah pengujian, pola paket, timeout/CRC dan kriteria PASS/FAIL. Saat memilih RS232 tampilkan UI QC yang relevan; jangan hanya form Modbus. Pertahankan integrasi penguji laptop lokal yang telah dibuat. |
-| QC-13 | TODO | Pisahkan menu RS485/RS232, komunikasi dan peripheral SPI | Menu khusus RS485/RS232. Peripheral SPI memuat SD card dan pemeriksaan ETH melalui SPI. Komunikasi memuat jaringan ETH/Wi-Fi, MQTT serta tes/config radio. Bedakan pemeriksaan chip ETH dari konektivitas jaringan ETH. |
-| QC-14 | TODO | QC jaringan Wi-Fi/ETH dan config MQTT | Setting jaringan/broker MQTT, IP aktual, status koneksi dan hasil QC yang jelas. Koneksi jaringan/IP dan keberhasilan koneksi MQTT harus terbukti, bukan sekadar config tersimpan atau PHY link ON. Secret tidak ikut report/log/push. |
-| QC-15 | TODO | Hasil radio jelas, baca data dan konfigurasi E70 | Pengguna menyebut LoRa; hardware terkonfirmasi E70-915NW14S. Tampilkan hasil komunikasi dan konfigurasi dengan jelas, data terbaca dan hasil config/readback; jangan hanya raw JSON. Rincian write/volatile/NVM perlu ditentukan sebelum implementasi, tidak otomatis menulis NVM. |
-| QC-16 | TODO | Diagnosis fitur identitas EEPROM / PD Sync masih error | Screenshot terakhir memuat keduanya; perlakukan keduanya sebagai perlu diagnosis sampai diketahui fitur mana yang gagal. Perbaiki Write+verify/Read EEPROM dan/atau Request PDO sesuai bukti. Tidak ada pesan error lengkap yang diberikan; jangan menganggap record kosong atau sourcePDO kosong sebagai akar masalah. |
+| QC-11 | DONE — SOFTWARE | Modbus RS485 master dengan dua tag independen | Dua config terpisah, Request masing-masing, transaksi ke slave/register tertentu, data hasil tampil, konfirmasi Sesuai/Tidak sesuai menjadi QC. Config mengikuti rincian di bawah. Request sungguhan diperlukan; menyimpan config bukan PASS. |
+| QC-12 | DONE — SOFTWARE | Skenario dan QC RS232 jelas saat mode dipilih | Jelaskan wiring laptop USB-RS232, default serial, langkah pengujian, pola paket, timeout/CRC dan kriteria PASS/FAIL. Saat memilih RS232 tampilkan UI QC yang relevan; jangan hanya form Modbus. Pertahankan integrasi penguji laptop lokal yang telah dibuat. |
+| QC-13 | DONE — SOFTWARE | Pisahkan menu RS485/RS232, komunikasi dan peripheral SPI | Menu khusus RS485/RS232. Peripheral SPI memuat SD card dan pemeriksaan ETH melalui SPI. Komunikasi memuat jaringan ETH/Wi-Fi, MQTT serta tes/config radio. Bedakan pemeriksaan chip ETH dari konektivitas jaringan ETH. |
+| QC-14 | DONE — SOFTWARE | QC jaringan Wi-Fi/ETH dan config MQTT | Setting jaringan/broker MQTT, IP aktual, status koneksi dan hasil QC yang jelas. Koneksi jaringan/IP dan keberhasilan koneksi MQTT harus terbukti, bukan sekadar config tersimpan atau PHY link ON. Secret tidak ikut report/log/push. |
+| QC-15 | DONE — SOFTWARE | Hasil radio jelas, baca data dan konfigurasi E70 | Pengguna menyebut LoRa; hardware terkonfirmasi E70-915NW14S. Tampilkan hasil komunikasi dan konfigurasi dengan jelas, data terbaca dan hasil config/readback; jangan hanya raw JSON. Rincian write/volatile/NVM perlu ditentukan sebelum implementasi, tidak otomatis menulis NVM. |
+| QC-16 | DIAGNOSED — BENCH FOLLOWUP | Diagnosis fitur identitas EEPROM / PD Sync masih error | Screenshot terakhir memuat keduanya; perlakukan keduanya sebagai perlu diagnosis sampai diketahui fitur mana yang gagal. Perbaiki Write+verify/Read EEPROM dan/atau Request PDO sesuai bukti. Tidak ada pesan error lengkap yang diberikan; jangan menganggap record kosong atau sourcePDO kosong sebagai akar masalah. |
 
 ## Rincian dan batas yang harus dibawa ke implementasi
 
@@ -123,3 +122,7 @@ Final checkpoint: STOPPED before13:52 UTC+7 per user. Final1.3.0 build interrupt
 Resumed checkpoint:1.3.0 final compile/metadata/partition gates PASS (2026-10-13T08:16:19Z). QC-02/03/04/06/08 DONE SOFTWARE; physical acceptance still pending.5/15 software completed,2 partial,8 TODO. User continuation reauthorizes remaining work.
 
 1.4.0 checkpoint: QC-07 and QC-10 software implementation/build PASS; physical acceptance pending.7/15 software DONE,2 partial,6 TODO. Read-only actual device192.168.1.55 still1.2.0; EEPROM no valid identity, STUSB28 no ACK. Next Modbus2 tags/menu/network/radio and diagnostics.
+
+Active1.5.0 checkpoint: QC-01/05/11/12/13/14/15 implemented locally, final compile/browser gate pending. QC-16 diagnosis implemented: actual olddevice1.2.0 at192.168.1.55 has EEPROM ACK but no valid identity; PD0x28 absent. EEPROM raw-slot diagnostic and precise PD errors added; no physical write/PDO or upload. Node/Python tests PASS. Latest build PID38844; see worklog.
+
+Final1.5.0 gate PASS. Operator guide/checkpoint documents all revised flows and remaining physical tests. No source TODO:14 software DONE,1 diagnosed hardware/bench followup,ADSclosed. Source push follows final verification; see branch history for commit.

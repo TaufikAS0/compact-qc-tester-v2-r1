@@ -27,3 +27,7 @@ void updatePd();
 void pdState(JsonObject out);
 
 bool pdNegotiating();
+
+bool identityBusReadable();
+
+bool mcpRestorePortBits(uint8_t address,uint8_t port,uint8_t mask,uint8_t oldLatch,uint8_t oldDir);

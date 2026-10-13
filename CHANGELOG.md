@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.0 — 2026-10-13
+
+- Real asynchronous Modbus master2 independent tags (FC01/02/03/04, CRC/slave/function/length/exception, count1–2, datatype/word order, user verdicts). Separate serial/SPI/network menus and explicit RS232 fixture scenario.
+- Add network worker: WiFi association/IP, Ethernet DHCP/static and MQTT3.1.1 TCP CONNACK test. StaticIP alone UNVERIFIED; successful MQTT overEthernet proves its network path. Volatile settings and credentials; credentials excluded from state/report. PubSubClient2.8 pinned dependency. Conflicting operations blocked; watchdog remains serviced.
+- Explicit E70 Apply AT config + ACK/readback, persistent settings may require radio restart. Read mode remains non-mutating; no guessed LoRa parameters, no factory reset.
+- MCP LED/radio RMW no longer calls TPL service between snapshot and write; preserves live unrelated/watchdog bits. Larger local PASS/FAIL badges and aggregate color.
+- EEPROM Read adds slot/raw QC-region diagnostics, distinguishes readable uninitialized/foreign data from bus failure, preserves foreign data. PD diagnostics separate missing IC/unknown ID/USB-C not attached; bounded source capability retry and explicit negotiation outcomes. Actual1.2.0 device192.168.1.55 has EEPROM ACK/no valid identity and noPD28 ACK; no write/PDO/upload in diagnosis.
+- Explicit WiFi QC reapplies credentials even on the same SSID; MQTT password without username rejected. AHT recovery budget resets only after valid measurement.
+- Version1.4.0 ->1.5.0; new RAM/API only, no new ESP NVS keys, no pin remap/partition change. Hardware acceptance pending.
+
 ## 1.4.0 — 2026-10-13
 
 - Replace one-shot AHT10 read with asynchronous power settling/reset/E1/status/measurement state machine; busy retry up to500ms, bounded recovery, exact failure diagnostics and fresh-data validity. Valid six-byte protocol reading yields PASS for communication/data availability, not calibrated sensor accuracy. No AHT20 CRC/init.

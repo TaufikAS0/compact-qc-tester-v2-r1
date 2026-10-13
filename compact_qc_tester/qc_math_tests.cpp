@@ -113,3 +113,23 @@ constexpr int qcFourPass[5]={1,1,1,1,0}, qcFivePass[5]={1,1,1,1,1}, qcOneFail[5]
 static_assert(fivePointVerdict(qcFourPass)==0, "Four points cannot PASS five-point QC");
 static_assert(fivePointVerdict(qcFivePass)==1, "Five confirmed points PASS");
 static_assert(fivePointVerdict(qcOneFail)==-1, "One failed point fails aggregate");
+
+#include "modbus_math.h"
+constexpr uint8_t mbReadVector[]={1,3,0,0x6b,0,3};
+static_assert(QcModbus::crc(mbReadVector,6)==0x1774, "Modbus published request CRC vector");
+constexpr uint8_t mbValidResponse[]={1,4,2,0xff,0xff,0xb8,0x80};
+constexpr uint8_t mbBadResponse[]={1,4,2,0xfe,0xff,0xb8,0x80};
+static_assert(QcModbus::valid(mbValidResponse,7), "CRC-valid Modbus register frame");
+static_assert(!QcModbus::valid(mbBadResponse,7), "Corruption rejects Modbus data");
+static_assert(QcModbus::bytes(1,2)==1 && QcModbus::bytes(3,2)==4, "Bit vs register byte count");
+
+#include "mcp_math.h"
+static_assert(mcpMaskedByte(0x80,0x30,0x30)==0xb0, "Radio restoration preserves high TPL B7");
+static_assert(mcpMaskedByte(0x50,0x30,0)==0x40, "Radio restoration preserves unrelated B6 and low TPL");
+static_assert(mcpMaskedByte(0x8f,1,0)==0x8e, "LED update preserves other LEDs and watchdog");
+
+static_assert(QcModbus::validate(mbValidResponse,7,1,4,1)==QcModbus::Response::Valid, "Matching request passes");
+static_assert(QcModbus::validate(mbValidResponse,7,2,4,1)==QcModbus::Response::Slave, "Wrong slave rejected");
+static_assert(QcModbus::validate(mbValidResponse,7,1,3,1)==QcModbus::Response::Function, "Wrong function rejected");
+static_assert(QcModbus::validate(mbValidResponse,7,1,4,2)==QcModbus::Response::Length, "Wrong register count rejected");
+static_assert(QcModbus::validate(mbValidResponse,4,1,4,1)==QcModbus::Response::Short, "Partial response cannot PASS");

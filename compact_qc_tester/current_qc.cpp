@@ -21,7 +21,7 @@ void record() {
            String(passed) + "/5 points sesuai; " + analogDetail + evidence);
 }
 void response(WebServer &web, bool ok, const String &message) {
-  JsonDocument d; d[ok ? "analogDetail" : "error"] = message; d["ok"] = ok;
+  JsonDocument d; d[ok ? "detail" : "error"] = message; d["ok"] = ok;
   String body; serializeJson(d, body); web.send(ok ? 200 : 409, "application/json", body);
 }
 bool index(WebServer &web, int &n) {

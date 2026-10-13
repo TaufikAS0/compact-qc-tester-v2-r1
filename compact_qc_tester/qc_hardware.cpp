@@ -1,6 +1,7 @@
 #include "qc_hardware.h"
 #include "aht10_service.h"
 #include "current_qc.h"
+#include "mcp_math.h"
 #include "config.h"
 #include "qc_session.h"
 #include "current_calibration.h"
@@ -14,6 +15,8 @@
 #include <esp_mac.h>
 
 namespace {
+String identityRawHex, identitySlots[2];
+bool identityReadable = false;
 Adafruit_SSD1306 oled(OLED_WIDTH, OLED_HEIGHT, &Wire, -1);
 bool oledReady = false, adcVerified = false, adcReady = false, adcValid = false, ahtValid = false;
 float resistance = 0, amplifier = 1, zero = 0, temperature = 0, humidity = 0;
@@ -24,8 +27,7 @@ char serial[24] = "TMCUNKN";
 bool identityValid = false;
 uint32_t identityGeneration = 0;
 String storedTop, storedBottom, identityDetail = "BELUM DIBACA";
-bool readReg(uint8_t address, uint8_t reg, uint8_t *data, size_t len) {
-  updateTplWatchdog();
+bool rawReadReg(uint8_t address, uint8_t reg, uint8_t *data, size_t len) {
   Wire.beginTransmission(address);
   Wire.write(reg);
   if (Wire.endTransmission(false) != 0 || Wire.requestFrom(address, (uint8_t)len) != len)
@@ -34,12 +36,17 @@ bool readReg(uint8_t address, uint8_t reg, uint8_t *data, size_t len) {
     data[i] = Wire.read();
   return true;
 }
-bool writeReg(uint8_t address, uint8_t reg, const uint8_t *data, size_t len) {
-  updateTplWatchdog();
+bool rawWriteReg(uint8_t address, uint8_t reg, const uint8_t *data, size_t len) {
   Wire.beginTransmission(address);
   Wire.write(reg);
   Wire.write(data, len);
   return Wire.endTransmission() == 0;
+}
+bool readReg(uint8_t address, uint8_t reg, uint8_t *data, size_t len) {
+  updateTplWatchdog(); return rawReadReg(address,reg,data,len);
+}
+bool writeReg(uint8_t address,uint8_t reg,const uint8_t *data,size_t len) {
+  updateTplWatchdog(); return rawWriteReg(address,reg,data,len);
 }
 bool eepromRead(uint16_t at, uint8_t *data, size_t len) {
   while (len) {
@@ -89,6 +96,7 @@ bool freeSlot(const Identity &r) {
   return true;
 }
 void loadIdentity() {
+  identityReadable = false; identityRawHex=""; identitySlots[0]=identitySlots[1]="READ FAILED";
   identityValid = false;
   storedTop = "";
   storedBottom = "";
@@ -98,9 +106,11 @@ void loadIdentity() {
     identityDetail = "EEPROM read failed";
     return;
   }
+  identityReadable = true;
+  for(int i=0;i<2;++i){ identitySlots[i]=valid(slots[i])?"CRC VALID":freeSlot(slots[i])?"EMPTY FF":memcmp(slots[i].magic,"QC01",4)==0?"QC RECORD CRC INVALID":"FOREIGN DATA - PROTECTED"; const uint8_t *bytes=(const uint8_t *)&slots[i]; for(int n=0;n<64;++n){char hex[4];snprintf(hex,sizeof(hex),"%02X ",bytes[n]);identityRawHex+=hex;} identityRawHex+="\n"; }
   bool a = valid(slots[0]), b = valid(slots[1]);
   if (!a && !b) {
-    identityDetail = "No valid QC identity";
+    identityDetail = "EEPROM read OK; no valid QC identity. Slot1="+identitySlots[0]+"; Slot2="+identitySlots[1]+". Write identity if empty; foreign bytes preserved.";
     return;
   }
   const Identity &r =
@@ -138,22 +148,31 @@ const char *knownName(uint8_t a) {
 } // namespace
 
 bool mcpBit(uint8_t address, uint8_t bit, bool level) {
+  updateTplWatchdog(); // One service before the complete cooperative RMW transaction.
   if (bit > 15)
     return false;
   uint8_t bank, dir, latch;
   uint8_t port = bit / 8, mask = 1u << (bit % 8);
-  if (!readReg(address, 0x0a, &bank, 1) || (bank & 0xa0) ||
-      !readReg(address, 0x14 + port, &latch, 1) || !readReg(address, port, &dir, 1))
+  if (!rawReadReg(address, 0x0a, &bank, 1) || (bank & 0xa0) ||
+      !rawReadReg(address, 0x14 + port, &latch, 1) || !rawReadReg(address, port, &dir, 1))
     return false;
   latch = level ? (latch | mask) : (latch & ~mask);
-  if (!writeReg(address, 0x14 + port, &latch, 1))
+  if (!rawWriteReg(address, 0x14 + port, &latch, 1))
     return false;
   dir &= ~mask;
-  if (!writeReg(address, port, &dir, 1)) return false;
+  if (!rawWriteReg(address, port, &dir, 1)) return false;
   uint8_t actualLatch, actualDir;
-  return readReg(address, 0x14 + port, &actualLatch, 1) &&
-         readReg(address, port, &actualDir, 1) &&
+  return rawReadReg(address, 0x14 + port, &actualLatch, 1) &&
+         rawReadReg(address, port, &actualDir, 1) &&
          (actualLatch & mask) == (latch & mask) && !(actualDir & mask);
+}
+bool mcpRestorePortBits(uint8_t address,uint8_t port,uint8_t mask,uint8_t oldLatch,uint8_t oldDir) {
+  if(port>1) return false;
+  updateTplWatchdog(); // No TPL callback between snapshot and masked writes/readback.
+  uint8_t bank,latch,dir,checkLatch,checkDir;
+  if(!rawReadReg(address,0x0a,&bank,1)||(bank&0xa0)||!rawReadReg(address,0x14+port,&latch,1)||!rawReadReg(address,port,&dir,1))return false;
+  latch=mcpMaskedByte(latch,mask,oldLatch);dir=mcpMaskedByte(dir,mask,oldDir);
+  return rawWriteReg(address,0x14+port,&latch,1)&&rawWriteReg(address,port,&dir,1)&&rawReadReg(address,0x14+port,&checkLatch,1)&&rawReadReg(address,port,&checkDir,1)&&(checkLatch&mask)==(oldLatch&mask)&&(checkDir&mask)==(oldDir&mask);
 }
 size_t inputCount() { return 7; }
 const char *inputName(size_t i) {
@@ -262,6 +281,8 @@ void hardwareState(JsonObject d) {
   d["identityDetail"] = identityDetail;
   d["identityValid"] = identityValid;
   d["identityGeneration"] = identityGeneration;
+  d["identityReadable"] = identityReadable; d["identityRegionHex"] = identityRawHex;
+  auto slots = d["identitySlots"].to<JsonArray>(); for(auto &slot:identitySlots) slots.add(slot);
   rtcState(d["rtc"].to<JsonObject>());
   calibrationState(d["calibration"].to<JsonObject>());
   d["oledReady"] = oledReady;
@@ -429,7 +450,7 @@ bool testEthernet(String &detail) {
   detail = "Controller=" + String(controller) + ", link=" + String(phy) +
            "; SPI/controller check; no packet exchange";
   digitalWrite(ETH_CS, HIGH);
-  return hw != EthernetNoHardware && link != LinkOFF;
+  return hw != EthernetNoHardware && link == LinkON;
 }
 bool qcReadReg(uint8_t a, uint8_t r, uint8_t *data, size_t n) { return readReg(a, r, data, n); }
 bool qcWriteReg(uint8_t a, uint8_t r, const uint8_t *data, size_t n) {
@@ -456,7 +477,7 @@ void rtcState(JsonObject d) {
   bool ok = sec >= 0 && sec < 60 && minute >= 0 && minute < 60 && hour >= 0 && hour < 24 &&
             day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 0;
   d["valid"] = ok;
-  qcRecord("RTC", ok ? "DATA VALID" : "FAIL",
+  qcRecord("RTC", ok ? "PASS" : "FAIL",
            ok ? "DS3231 BCD clock and temperature read; OSF status in RTC card"
               : "Invalid BCD clock");
   d["oscillatorStopped"] = (b[15] & 128) != 0;
@@ -471,3 +492,5 @@ void rtcState(JsonObject d) {
                 : (b[15] & 128) ? "OSF set: time may be invalid; check battery/time"
                                 : "DS3231 clock/temperature read; timezone is not stored by RTC";
 }
+
+bool identityBusReadable() { return identityReadable; }

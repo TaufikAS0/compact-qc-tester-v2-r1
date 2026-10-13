@@ -74,6 +74,18 @@ void beginQcExport(WebServer &server) {
       add(name + ".detail", test["detail"].as<String>());
       add(name + ".applicable", test["applicable"].as<bool>() ? "true" : "false");
     }
+    int pointIndex=0;
+    for(JsonObject point:h["currentQc"]["points"].as<JsonArray>()) {
+      String prefix="AnalogPoint"+String(++pointIndex)+".";
+      for(const char *key:{"captured","status","targetMA","measuredMA","errorMA","raw","noise","toleranceMA","calibrationId","uptimeMs"})add(prefix+key,point[key].isNull()?"":point[key].as<String>());
+    }
+    int tagIndex=0;
+    for(JsonObject tag:q["modbus"]["tags"].as<JsonArray>()) {
+      String prefix="ModbusTag"+String(++tagIndex)+".";
+      for(const char *key:{"name","baud","parity","slave","function","address","count","type","order","timeout","valid","status","value","requestId","uptimeMs"})add(prefix+key,tag[key].isNull()?"":tag[key].as<String>());
+      String raw;serializeJson(tag["raw"],raw);add(prefix+"raw",raw);
+    }
+    for(const char *key:{"staSSID","staIP","staConnected","lastIP","mqttCode"})add(String("Network.")+key,q["network"][key].isNull()?"":q["network"][key].as<String>());
     server.sendHeader("Content-Disposition", "attachment; filename=Compact_QC_" +
                                                  String(qcVariantName()) + "_" + unitSerial() +
                                                  ".csv");

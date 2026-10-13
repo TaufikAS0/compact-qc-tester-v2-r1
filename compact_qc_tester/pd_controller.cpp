@@ -7,6 +7,7 @@ uint32_t targetMV = 0, requestedAt = 0, lastPoll = 0, source[7] = {}, rdo = 0;
 uint8_t sourceCount = 0, fsm = 0, sinkCount = 0;
 uint32_t sink[3] = {};
 bool resetQueued = false;
+uint8_t capRetries = 0; uint32_t capRequestedAt = 0;
 bool pending = false, registersValid = false, attached = false;
 String status = "BELUM REQUEST", pdDetail = "Runtime PDO; tidak menulis NVM IC";
 uint32_t decode(const uint8_t *b) {
@@ -31,11 +32,10 @@ bool requestPd(uint16_t mv, uint16_t ma, String &out) {
     return false;
   }
   uint8_t id, port, count, old[12];
-  if (!qcReadReg(0x28, 0x2f, &id, 1) || (id != 0x25 && id != 0x21) ||
-      !qcReadReg(0x28, 0x0e, &port, 1) || !(port & 1)) {
-    out = "STUSB4500 ID/attachment unavailable";
-    return false;
-  }
+  if (!qcReadReg(0x28, 0x2f, &id, 1)) { out="STUSB4500 no response at0x28. M0: check IC population/power/I2C. Unpopulated M1: selectM1."; return false; }
+  if (id != 0x25 && id != 0x21) { out="Unexpected PD device ID0x"+String(id,HEX)+"; STUSB4500 profile rejected"; return false; }
+  if (!qcReadReg(0x28, 0x0e, &port, 1)) { out="STUSB4500 attachment register read failed"; return false; }
+  if (!(port & 1)) { out="STUSB4500 detected but USB-C source not attached; connect PD-capable adapter/cable"; return false; }
   if (!qcReadReg(0x28, 0x85, old, 12) || !qcReadReg(0x28, 0x70, &count, 1)) {
     out = "PDO snapshot failed";
     return false;
@@ -69,10 +69,11 @@ bool requestPd(uint16_t mv, uint16_t ma, String &out) {
   }
   // Clear old alerts before reset; capture only the new source capabilities.
   uint8_t clear[10];
-  qcReadReg(0x28, 0x0d, clear, 10);
+  if (!qcReadReg(0x28, 0x0d, clear, 10)) { out="PD interrupt/status initialization failed; request not sent"; return false; }
   sourceCount = 0;
   rdo = 0;
   targetMV = mv;
+  capRetries=0; capRequestedAt=0;
   resetQueued = true; // Transmit from the main loop, after HTTP response has completed.
   pending = true;
   requestedAt = millis();
@@ -111,6 +112,7 @@ void updatePd() {
       pdDetail = "I2C lost during negotiation";
       qcRecord("STUSB4500", status, pdDetail);
     }
+    if(!pending) { status="NOT DETECTED"; pdDetail="No I2C response at0x28; M0 population/power/bus required, M1 excludesPD"; }
     return;
   }
   if (!attached) {
@@ -119,7 +121,7 @@ void updatePd() {
     if (!pending && targetMV) {
       status = "DETACHED";
       pdDetail = "USB-C detached; previous contract no longer active";
-      qcRecord("STUSB4500", "UNVERIFIED", pdDetail);
+      qcRecord("STUSB4500", "FAIL", pdDetail);
     }
   }
   // PRT_STATUS read clears incoming-message event. RX type 1 with data = Source_Capabilities.
@@ -132,33 +134,40 @@ void updatePd() {
         source[i] = decode(data + 4 * i);
     }
   }
-  qcReadReg(0x28, 0x29, &fsm, 1);
-  if (qcReadReg(0x28, 0x91, r, 4))
-    rdo = decode(r);
-  if (qcReadReg(0x28, 0x70, &n, 1))
+  bool criticalValid=qcReadReg(0x28,0x29,&fsm,1)&&qcReadReg(0x28,0x91,r,4);
+  if(criticalValid)rdo=decode(r);
+  bool countReadOk=qcReadReg(0x28,0x70,&n,1);
+  if (countReadOk)
     sinkCount = n & 3;
-  if (qcReadReg(0x28, 0x85, b, 12))
+  bool sinkReadOk=qcReadReg(0x28,0x85,b,12);
+  if (sinkReadOk)
     for (int i = 0; i < 3; ++i)
       sink[i] = decode(b + 4 * i);
-  if (!pending && targetMV && attached &&
+  if (!pending && countReadOk && sinkReadOk && targetMV && attached &&
       (sinkCount != (targetMV == 5000 ? 1 : 2) || ((sink[1] >> 10) & 1023) * 50 != targetMV)) {
-    status = "PROFILE CHANGED";
+    status = "FAIL";
     pdDetail = "Sink profile changed/reset: NVM defaults may have reloaded; request again";
-    qcRecord("STUSB4500", "UNVERIFIED", pdDetail);
+    qcRecord("STUSB4500", "FAIL", pdDetail);
   }
   uint8_t pos = (rdo >> 28) & 7;
   bool fixed = pos && pos <= sourceCount && (source[pos - 1] >> 30) == 0;
   uint32_t negotiated = sourceContractMV(rdo, source, sourceCount);
-  if (pending && attached && fsm == 0x18 && fixed && negotiated == targetMV &&
+  if(pending && criticalValid && attached && fsm==0x18 && !sourceCount && now-requestedAt>=500 && capRetries<2 && (!capRequestedAt||now-capRequestedAt>=1000)) {
+    uint8_t header[]={7,0},send=0x26;
+    ++capRetries;capRequestedAt=now;
+    qcWriteReg(0x28,0x51,header,2)&&qcWriteReg(0x28,0x1a,&send,1);
+  }
+  if (pending && criticalValid && attached && fsm == 0x18 && fixed && negotiated == targetMV &&
       !(rdo & (1u << 26))) {
     pending = false;
-    status = "CONTRACT MATCH";
+    status = "PASS";
     pdDetail = "SOURCE PDO/RDO/PE ready cocok target; belum mengukur tegangan fisik";
-    qcRecord("STUSB4500", "CONTRACT MATCH", pdDetail);
+    qcRecord("STUSB4500", "PASS", pdDetail);
   } else if (pending && now - requestedAt > 5000) {
     pending = false;
-    status = fixed ? "MISMATCH" : "UNVERIFIED";
-    pdDetail = !attached ? "USB-C terlepas"
+    status = "FAIL";
+    pdDetail = !criticalValid ? "PD FSM/RDO read failed; target contract not verified"
+               : !attached ? "USB-C terlepas"
                : fixed
                    ? "Kontrak SOURCE berbeda target; cek PDO/arus adaptor"
                    : "Source capabilities tidak tertangkap; kontrak target belum terverifikasi. "
@@ -183,6 +192,7 @@ void pdState(JsonObject d) {
   d["detail"] = pdDetail;
   d["requestedMV"] = targetMV;
   d["fsm"] = fsm;
+  d["sourceCapabilityRetries"] = capRetries;
   d["rdo"] = rdo;
   d["sinkCount"] = sinkCount;
   uint8_t pos = (rdo >> 28) & 7;

@@ -1,4 +1,4 @@
-CURRENT | V1.4 | 2026-10-13 | Codex |1.4.0 AHT10 +5-point analog QC build PASS;7 software tasks DONE | Next: Modbus/menu/network/radio and diagnostics
+CURRENT | V1.6 | 2026-10-13 | Codex |1.5.0 final gates PASS;14 software DONE,QC16 diagnosed/bench followup | Next: source push then team upload/physical acceptance
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,25 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V1.6 | 2026-10-13 | Codex
+
+- Did: completed1.5.0 integration, strict real-template DOM binding regression, same-SSID credential reapply, MQTT auth guard and bounded AHT failure count; detailed CSV point/tag evidence and operator guide.14 software IDs DONE;QC16 diagnosed/bench followup;ADSclosed.
+- Final build: 2026-10-13T09:34:41Z /2026-10-13 16:34:41 UTC+7, 1260416 bytes SHA25644eb6bb7071b960c75fb3fd8fbc6a9be6dabcd67f82b31bcb4aac4c27469a29c; metadata/legacy partitions PASS. Latest logs build/build-v1_5-complete.log/.err. Node/Python10/portal2 tests PASS; C++ protocol/mask/5-point assertions compiled. No source edits after final build began.
+- Browser: actual preview1.5.0,2 tag forms and RS232 mode scenario, separate menus; missing Apply element fixed and strict lookup catches this class of error. Screenshot ignored build/dashboard-serial-v1_5.png. No physical PASS fabricated.
+- Git: feature branch only; source/doc checkpoint will be pushed after final diff/status verification. No upload/merge. Installed actual board remains1.2.0 at192.168.1.55;PD28 unavailable,EEPROM identity missing.
+- Next: team install and operator guide physical tests; investigate QC16 raw EEPROM slots/PD population using real evidence. Software source implementation complete, not hardware certification.
+
+
+### V1.5 | 2026-10-13 | Codex
+
+- Did: two-tag Modbus master, serial/SPI/network menus, RS232 scenario, worker WiFi/ETH/MQTT, explicit E70 Apply config/readback, EEPROM raw-slot diagnostics, PD missing-IC diagnostics/Get_Source_Cap retries, larger badges and detailed CSV evidence. Atomic MCP LED/radio RMW avoids interleaved TPL service/clobber.
+- Source: local1.5.0; published baseline1.4.0 b36f3d6. No upload/merge. New PubSubClient2.8 installed via Arduino library registry. Operator guide04_Dokumen/QC_OPERATOR_GUIDE.md.
+- Tests: Node extended UI PASS (two tags, route visibility, network ownership, explicit apply and private-field exclusion); Python10 PASS. Production Modbus CRC/request-match/length corruption and MCP mask assertions added. First1.5 compile caught radio write stage misplaced in line parser; moved it to update state machine.
+- Build: latest PID38844/helper2928; build/build-v1_5-verified.log/.err, fresh generated identity. Do not claim binary acceptance until Build passed/manifest metadata+partitions.
+- Evidence: device192.168.1.55 still1.2.0; EEPROM readable but no valid identity; I2C no28. New code distinguishes absence/attachment/protocol errors without writes to physical device. QC16 remains physical/bench followup if PD absent.
+- Next: build gate, preview new menus/fields and screenshot, update checklist with exact final evidence, commit/pushfeature. If interrupted, preserve source and report true state.
+
 
 ### V1.4 | 2026-10-13 | Codex
 
