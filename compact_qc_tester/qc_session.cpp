@@ -3,6 +3,7 @@
 #include "ota_manager.h"
 #include "qc_hardware.h"
 #include "current_calibration.h"
+#include "current_qc.h"
 #include "qc_math.h"
 #include "qc_report_math.h"
 #include "qc_export.h"
@@ -71,7 +72,7 @@ bool decimal(const char *arg, float low, float high, float &v) {
 }
 String outputName(int n) { return n < 11 ? "LED:" + String(n) : "Relay:" + String(n - 11); }
 void reset() {
-  resetSerialQc(); resetRadioQc();
+  resetSerialQc(); resetRadioQc(); resetCurrentQc();
   char id[9];
   snprintf(id, sizeof(id), "%08lX", static_cast<unsigned long>(esp_random()));
   sessionId = id;
@@ -451,7 +452,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     String detail;
     JsonDocument calibration;
     calibrationState(calibration.to<JsonObject>());
-    if (calibration["pending"].as<int>() >= 0) {
+    if (currentQcBusy() || calibration["pending"].as<int>() >= 0) {
       error("Wait for ADC capture before PD negotiation");
       return;
     }

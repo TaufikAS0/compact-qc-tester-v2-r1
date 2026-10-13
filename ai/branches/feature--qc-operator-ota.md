@@ -1,4 +1,4 @@
-CURRENT | V1.3 | 2026-10-13 resumed | Codex | User resumed; 1.3.0 output/I2C compile + binary gates PASS; source publication | Next: gated push then AHT10 and remaining checklist
+CURRENT | V1.4 | 2026-10-13 | Codex |1.4.0 AHT10 +5-point analog QC build PASS;7 software tasks DONE | Next: Modbus/menu/network/radio and diagnostics
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,14 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V1.4 | 2026-10-13 | Codex
+
+- Did: AHT10 async busy/status recovery;5-point analog capture/tolerance/user QC, calibration fingerprint invalidation.1.3.0 ->1.4.0.
+- Tests: Node UI PASS; production aggregation assertions and final firmware/metadata/partition gates PASS08:42:43Z. Task-owned compiler suspension recovered. No upload.
+- Evidence: actual192.168.1.55 remains1.2.0; EEPROM read lacks valid identity; PD28 absent from I2C ACK scan. No writes/voltage request.
+- Next: apply Modbus drafts currently ignored in build/modbus_* and network draft build/network_qc.*; these are not part of published firmware yet. Finish remaining checklist.
+
 
 ### V1.3 | 2026-10-13 resumed | Codex
 

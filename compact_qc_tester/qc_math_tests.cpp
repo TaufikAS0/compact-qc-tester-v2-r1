@@ -107,3 +107,9 @@ constexpr bool independentOutputsTest() {
   return bank.expired(0, 0x20u, 48u) && !bank.expired(0, 0x20u, 49u);
 }
 static_assert(independentOutputsTest(), "Independent output timers, OFF and millis wrap");
+
+#include "five_point_math.h"
+constexpr int qcFourPass[5]={1,1,1,1,0}, qcFivePass[5]={1,1,1,1,1}, qcOneFail[5]={1,1,-1,1,0};
+static_assert(fivePointVerdict(qcFourPass)==0, "Four points cannot PASS five-point QC");
+static_assert(fivePointVerdict(qcFivePass)==1, "Five confirmed points PASS");
+static_assert(fivePointVerdict(qcOneFail)==-1, "One failed point fails aggregate");

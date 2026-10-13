@@ -1,4 +1,4 @@
-# Compact QC Tester v1.3.0
+# Compact QC Tester v1.4.0
 
 Pending revisions: [task checklist and resume checkpoint](ai/tasks/2026-10-13-qc-revision-backlog.md), [branch worklog](ai/branches/feature--qc-operator-ota.md). User resumed after the13:52 checkpoint; output baseline now compiles and the remaining batch is active. Firmware1.2.0 ->1.3.0: independent outputs, corrected active-LOW LEDs, latched visual QC, I2C scan confirmation and clearer local result badges. Remaining requests are tracked separately; physical acceptance is pending.
 
@@ -61,3 +61,7 @@ QC1 code format: `QC1-M0|M1-TMC<MAC>-PASS|FAIL|INCOMPLETE-<session8hex>-<CRC32he
 The first ten columns match Longhi's order: `serialNumber,productName,productType,productionDate,qcStatus,qcDate,qcPic,status,deliveredAt,deliveredTo`. Append QC code/schema/session, firmware/build UTC, EEPROM labels/validity, calibration/ADC/current, applicable/pass/fail/pending/N-A counts and each test's `.status`, `.detail`, `.applicable`. productType=M0/M1. Inventory status/delivery values remain blank because this firmware has no warehouse data. INCOMPLETE is preserved, unlike Longhi's boolean PASS/FAIL fallback. Missing PD on M1 is N-A, not FAIL. Data-only/deferred results still prevent overall PASS; CRC is never a substitute for completing tests.
 
 Reference inspected read-only: Longhi [`fix/modbus` export](https://github.com/TaufikAS0/esp32-s3-longhi-board-test/blob/26f9a1fb7fd449d076c9b41ed0f0bf091163d0fb/02_Firmware/esp32s3_hwtest/web_server.cpp) at26f9a1f and feature/longhi-modular-upgrade3a45448. Remote develop9aa0fc1 currently lacks this exporter. No pre-existing QC code format was found, so QC1 is defined here. Longhi worktree/source were not changed.
+
+## Update1.4.0
+
+AHT10 uses asynchronous reset/init/status and busy polling, with exact errors and bounded recovery. Five-point analog QC is separate from four-point calibration: default4/8/12/16/20mA, capture16 readings, user confirmation plus tolerance for all5 =>PASS. Calibration fingerprint changes invalidate old QC evidence. Tests are software; team still uploads/physically verifies.

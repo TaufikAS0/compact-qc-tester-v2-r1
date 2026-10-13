@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0 — 2026-10-13
+
+- Replace one-shot AHT10 read with asynchronous power settling/reset/E1/status/measurement state machine; busy retry up to500ms, bounded recovery, exact failure diagnostics and fresh-data validity. Valid six-byte protocol reading yields PASS for communication/data availability, not calibrated sensor accuracy. No AHT20 CRC/init.
+- Add separate five-point4–20mA QC (default4/8/12/16/20mA): capture16 fresh stable ADC samples, active calibration fingerprint, target/tolerance/error, user Sesuai/Tidak sesuai. All5 within tolerance and confirmed =>PASS; any rejected point FAIL. Changing calibration invalidates captured QC. Separate four-point calibration remains intact.
+- New /api/current/qc/capture, /confirm, /reset; hardware.currentQc and AHT diagnostics included in JSON/report; CSV aggregate detail carries point evidence. No new NVS layout or device upload.
+
 ## 1.3.0 — 2026-10-13
 
 - Independent LED/DO states and per-channel60s timeout; ON no longer stops other outputs. Startup OFF, heartbeat3500ms/Stop/OTA safeguards retained. Latest user correction: LED MCP active LOW; DO remains active LOW. Masked MCP latch/direction readback added.

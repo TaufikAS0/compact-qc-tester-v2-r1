@@ -8,3 +8,5 @@ bool saveCurrentCalibration(float maxResidual, String &detail);
 void resetCurrentPoints();
 bool calibratedCurrent(float raw, float &ma);
 void calibrationState(JsonObject out);
+
+uint32_t currentCalibrationId();

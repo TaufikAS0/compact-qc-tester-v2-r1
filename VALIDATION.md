@@ -1,3 +1,12 @@
+# Current validation - v1.4.0 / 2026-10-13
+
+- Final compile/metadata/legacy partition gates PASS: 2026-10-13T08:42:43Z /2026-10-13 15:42:43 UTC+7, app1208832 bytes, SHA25696c8831d489a9db0e4d042842b4129ec38c3fd05769521afe0b6beedbcbb8681. Sketch1208678 bytes57%, RAM55292 bytes16%. No source edits after final compile began. A first compile exposed ArduinoJson detail namespace collision; renamed private variables before a fresh final build. Windows suspended task compiler recovered; no protection settings changed.
+- Node dashboard regression PASS, including five rows, capture/confirm endpoints, captured-data gating, busy locking and rendering; C++ five-point aggregation assertions compiled (4/5 cannot PASS,5/5 PASS, anyFAIL fails). Existing output/serial/calibration/PD/export assertions retained.
+- Actual device read at192.168.1.55 is1.2.0/build2026-10-12T21:08:39Z, not this source. Read-only EEPROM API: no valid QC identity. I2C scan ACK20/21/38/3C/48/57/68; no28 PD. No EEPROM write/PDO request/upload performed. AHT physical acceptance pending; source now explains status/busy/read errors.
+- Scope1.3.0 ->1.4.0 adds RAM/API capture evidence; active calibration qc-adc/cal-v1, PCB identity, pins, WiFi HuaweiJIN/AP12345678 and selective driver migration retained.8 mandatory vault rules read as listed below. Remaining Modbus/menu/network/radio/EEPROM-PD work tracked in backlog.
+
+## Previous validation - v1.3.0
+
 # Current validation - v1.3.0 / 2026-10-13
 
 Firmware source1.2.0 ->1.3.0. Independent outputs/LED active LOW/latched visual QC/I2C user confirmation and local module badges implemented. No device upload or hardware acceptance. Batch remains partial.

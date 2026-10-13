@@ -1,4 +1,6 @@
 #include "qc_hardware.h"
+#include "aht10_service.h"
+#include "current_qc.h"
 #include "config.h"
 #include "qc_session.h"
 #include "current_calibration.h"
@@ -227,36 +229,8 @@ void updateQcHardware() {
     }
   }
   updateCurrentCalibration();
-  if (ahtVerified && !ahtPending && now - lastAht >= 2000) {
-    lastAht = now;
-    ahtValid = false;
-    uint8_t command[] = {0x33, 0};
-    if (writeReg(0x38, 0xac, command, 2)) {
-      ahtPending = true;
-      ahtStarted = now;
-    } else
-      qcRecord("AHT10", "FAIL", "Measurement trigger failed");
-  }
-  if (ahtPending && now - ahtStarted >= 90) {
-    ahtPending = false;
-    updateTplWatchdog();
-    ahtValid = false;
-    if (Wire.requestFrom((uint8_t)0x38, (uint8_t)6) == 6) {
-      uint8_t b[6];
-      for (auto &x : b)
-        x = Wire.read();
-      if (!(b[0] & 0x80) && (b[0] & 8)) {
-        humidity = ((uint32_t)b[1] << 12 | b[2] << 4 | b[3] >> 4) * 100.0 / 1048576;
-        temperature = (((uint32_t)b[3] & 15) << 16 | b[4] << 8 | b[5]) * 200.0 / 1048576 - 50;
-        ahtValid = isfinite(temperature) && temperature >= -40 && temperature <= 85 &&
-                   humidity >= 0 && humidity <= 100;
-        qcRecord("AHT10", ahtValid ? "DATA VALID" : "FAIL",
-                 ahtValid ? "Temperature/humidity sample received" : "Measurement out of range");
-      }
-    }
-    if (!ahtValid)
-      qcRecord("AHT10", "FAIL", "Measurement read/status/range invalid");
-  }
+  updateCurrentQc();
+  updateAht10();
   if (oledReady && now - lastOled >= 700) {
     lastOled = now;
     oled.clearDisplay();
@@ -291,12 +265,8 @@ void hardwareState(JsonObject d) {
   rtcState(d["rtc"].to<JsonObject>());
   calibrationState(d["calibration"].to<JsonObject>());
   d["oledReady"] = oledReady;
-  d["ahtVerified"] = ahtVerified;
-  d["ahtValid"] = ahtValid;
-  if (ahtValid) {
-    d["temperatureC"] = temperature;
-    d["humidityRH"] = humidity;
-  }
+  aht10State(d);
+  currentQcState(d["currentQc"].to<JsonObject>());
   float ma;
   int16_t raw;
   uint32_t age;
@@ -399,14 +369,9 @@ bool saveIdentity(const String &top, const String &bottom, String &detail) {
   detail = identityDetail;
   return true;
 }
-bool configureAht10() {
-  ahtValid = ahtPending = false;
-  uint8_t data[] = {8, 0};
-  ahtVerified = writeReg(0x38, 0xe1, data, 2);
-  lastAht = millis();
-  return ahtVerified;
-}
+bool configureAht10() { return startAht10(); }
 bool configureCurrent(bool verified, float shunt, float gain, float offset) {
+  if (currentQcBusy()) return false;
   adcReady = adcValid = adcVerified = false;
   if (!verified || !isfinite(shunt) || !isfinite(gain) || !isfinite(offset) || shunt < 1 ||
       shunt > 1000 || gain <= 0 || gain > 100 || fabs(offset) > 6 ||

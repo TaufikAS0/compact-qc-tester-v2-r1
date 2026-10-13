@@ -7,6 +7,7 @@
 #include "qc_hardware.h"
 #include "qc_session.h"
 #include "output_state.h"
+#include "current_qc.h"
 #include "serial_qc.h"
 #include "radio_qc.h"
 #include "tpl_watchdog.h"
@@ -309,6 +310,7 @@ void beginApp() {
   beginTplWatchdog();
   beginQcSession(server, authorized, stopOutputs);
   beginQcHardware();
+  beginCurrentQc(server, authorized);
   beginSerialQc(server, authorized, stopOutputs);
   beginRadioQc(server, authorized, stopOutputs);
   uint64_t mac = ESP.getEfuseMac();

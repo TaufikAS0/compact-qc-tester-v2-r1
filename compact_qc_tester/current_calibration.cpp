@@ -2,6 +2,7 @@
 #include "qc_hardware.h"
 #include "qc_session.h"
 #include "qc_math.h"
+#include "current_qc.h"
 #include <Preferences.h>
 namespace {
 struct Point {
@@ -72,7 +73,7 @@ void resetCurrentPoints() {
 bool captureCurrentPoint(int index, float ma, String &out) {
   int16_t raw;
   uint32_t at;
-  if (index < 0 || index > 3 || !isfinite(ma) || ma < 4 || ma > 20 || pending >= 0 ||
+  if (currentQcBusy() || index < 0 || index > 3 || !isfinite(ma) || ma < 4 || ma > 20 || pending >= 0 ||
       !rawCurrentSample(raw, at)) {
     out = "Capture ditolak: index/reference, ADC tidak segar, atau capture sedang berjalan";
     return false;
@@ -116,7 +117,7 @@ void updateCurrentCalibration() {
   }
 }
 bool saveCurrentCalibration(float maximum, String &out) {
-  if (pending >= 0 || !isfinite(maximum) || maximum < 0.01 || maximum > 1) {
+  if (currentQcBusy() || pending >= 0 || !isfinite(maximum) || maximum < 0.01 || maximum > 1) {
     out = "Capture aktif atau batas residual tidak valid";
     return false;
   }
@@ -183,3 +184,5 @@ void calibrationState(JsonObject d) {
     d["maxResidualMA"] = f.maxError;
   }
 }
+
+uint32_t currentCalibrationId() { return savedValid ? saved.checksum : 0; }

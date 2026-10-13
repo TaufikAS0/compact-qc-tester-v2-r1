@@ -1,4 +1,4 @@
-# Team handoff — v1.3.0
+# Team handoff — v1.4.0
 
 Pending user revisions recorded2026-10-13: [backlog/checkpoint](../ai/tasks/2026-10-13-qc-revision-backlog.md), [CURRENT branch worklog](../ai/branches/feature--qc-operator-ota.md). User resumed after the deadline;1.3.0 output/I2C baseline has passed compile and binary gates. See VALIDATION for identity; remaining checklist stays active. Version1.2.0 ->1.3.0 changes independent outputs, active-LOW LED polarity, latched visual QC and scan/user I2C confirmation. Read the checklist rather than assuming historical procedures already reflect new requests.
 
@@ -61,3 +61,7 @@ Reference inspected read-only: Longhi [`fix/modbus` export](https://github.com/T
 ## Output workflow superseding historical procedure — 2026-10-13
 
 Every output starts OFF and has independent state/timer. ON on one does not turn another OFF. Command renews valid activity; loss of heartbeat3500ms still stops all. Per-output60s expiration stops only that output. MCP write/readback failure locks and stops all. LED MCP and DO are active LOW per latest user confirmation. Visual QC accepts one Sesuai/Tidak sesuai observation after an ON attempt; current command must match observation. Final verdict stays while controls remain usable; new session resets it. No claim that both physical states were certified. I2C PASS/FAIL confirms the scanned list only; empty scan cannot PASS. No pin mapping/NVS/Wi-Fi/OTA credential changes.
+
+## Update1.4.0
+
+AHT10 status/busy/error recovery implemented; verify with installed firmware. Analog QC now has5 independent captures/confirmations, defaults4/8/12/16/20mA,16 fresh samples per capture. PASS requires all5 within tolerance and user agreement; calibration save invalidates evidence if fingerprint differs. Build08:42:43Z validated; no device upload. Actual board192.168.1.55 still1.2.0, EEPROM identity absent and PD28 absent from scan.
