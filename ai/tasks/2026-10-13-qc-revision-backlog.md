@@ -2,14 +2,14 @@
 
 ## Status saat handoff
 
-- **Tahap: pencatatan saja. Implementasi BELUM DIMULAI.**
-- Pengguna meminta menampung tugas, lalu mencatat dan push sebelum mulai. **Tunggu instruksi eksplisit `kerjakan` sebelum mengubah program, build atau menguji hardware.** Izin mencatat/push dokumen bukan izin memulai implementasi.
+- **Tahap: implementasi terbatas; wajib berhenti13:52 UTC+7 pada2026-10-13.**
+- Pengguna meminta menampung tugas, lalu mencatat dan push sebelum mulai. **Instruksi kerjakan telah diterima untuk sesi ini, sampai13:52 UTC+7; sesudahnya tunggu izin melanjutkan.** Izin mencatat/push dokumen bukan izin memulai implementasi.
 - Baseline source: firmware **1.2.0**, commit `218f2081f0e11f7753586a5c6f6c46b46e157855`, branch `feature/qc-operator-ota`.
-- Build baseline tercatat di VALIDATION.md: `2026-10-12T17:00:08Z` / 13 Oktober 2026 00:00:08 UTC+7. Tidak ada build baru untuk backlog ini.
+- Build baseline tercatat di VALIDATION.md: `2026-10-12T17:00:08Z` / 13 Oktober 2026 00:00:08 UTC+7. Build baru1.3.0 dimulai2026-10-13T06:44:01Z /13:44:01 UTC+7; lihat VALIDATION untuk hasil akhirnya.
 - Source baseline bukan bukti versi yang kini terpasang pada ESP. Pengguna melaporkan temuan pengujian; versi perangkat dan log error belum diperiksa pada tahap pencatatan.
 - Upload perangkat tetap oleh tim pengguna. Tidak ada USB/OTA upload oleh Codex pada tahap ini.
-- Progres: **0 dari 15 tugas aktif selesai**; satu laporan ADS1115 ditutup oleh pengguna sebagai masalah hardware yang sudah diperbaiki.
-- Posisi terakhir: semua permintaan dirangkum; langkah berikutnya menunggu `kerjakan`, lalu audit source/device evidence untuk QC-01 sampai QC-16.
+- Progres: **5 tugas telah diimplementasikan tetapi belum diterima sampai compile gate lulus;2 parsial,8 TODO**; satu laporan ADS1115 ditutup oleh pengguna sebagai masalah hardware yang sudah diperbaiki.
+- Posisi terakhir: kontrol output/I2C dan badge telah diubah; physical acceptance tetap pending. Lanjutkan QC-07 setelah izin sesi berikutnya.
 
 ## Checklist dengan ID tetap
 
@@ -17,14 +17,14 @@ Status `TODO` = belum diimplementasikan atau diverifikasi. Jangan mengubah statu
 
 | ID | Status | Tugas | Kriteria selesai |
 | --- | --- | --- | --- |
-| QC-01 | TODO | Hasil QC jelas pada setiap menu, termasuk OLED dan semua modul komunikasi | Badge/teks PASS atau FAIL besar, warna dan alasan hasil terlihat di container modul, konsisten dengan Ringkasan QC dan report; jangan hanya menampilkan raw JSON. Belum diuji/berjalan/tidak berlaku dibedakan dari hasil final. |
-| QC-02 | TODO | Perbaiki ON/OFF LED yang dilaporkan terbalik | Perintah ON menyalakan LED, OFF mematikan LED; verifikasi mapping/polaritas aktual. Pengguna menyatakan output module sudah benar: jangan membalik DO. |
-| QC-03 | TODO | DO1 dan DO2 independen | ON/OFF DO1 tidak mengubah DO2, dan sebaliknya; keduanya dapat ON bersamaan. Kontrol/konfirmasi/QC per modul tetap terpisah. Stop semua, reset sesi dan OTA tetap eksplisit mematikan semua. |
-| QC-04 | TODO | Highlight ON/OFF mengikuti status, default OFF | Biru berpindah ke OFF ketika OFF diterima, kembali ke ON ketika ON diterima; startup semua output OFF. Status UI berasal dari state firmware/perintah yang berhasil, bukan warna ON permanen atau optimisme setelah request gagal. |
-| QC-05 | TODO | Perbaiki kegagalan komunikasi kontrol output | Cari penyebab request output sering gagal; tampilkan error sebenarnya dan state terakhir tanpa mengklaim berhasil. Verifikasi cepat berganti ON/OFF, polling, heartbeat/session, reconnect dan akses tiap baris. Penyebab saat ini belum terbukti. |
-| QC-06 | TODO | Sederhanakan konfirmasi fisik output dan latch hasil | Hanya pilihan **Sesuai** / **Tidak sesuai**. Setelah hasil QC PASS/FAIL final, tidak perlu meminta konfirmasi lagi; pengguna tetap bisa ON/OFF tanpa menghapus hasil. Reset hanya melalui mekanisme tes/sesi ulang yang jelas. |
+| QC-01 | PARTIAL | Hasil QC jelas pada setiap menu, termasuk OLED dan semua modul komunikasi | Badge/teks PASS atau FAIL besar, warna dan alasan hasil terlihat di container modul, konsisten dengan Ringkasan QC dan report; jangan hanya menampilkan raw JSON. Belum diuji/berjalan/tidak berlaku dibedakan dari hasil final. |
+| QC-02 | IMPLEMENTED — NOT VALIDATED | Perbaiki ON/OFF LED yang dilaporkan terbalik | Perintah ON menyalakan LED, OFF mematikan LED; verifikasi mapping/polaritas aktual. Pengguna menyatakan output module sudah benar: jangan membalik DO. |
+| QC-03 | IMPLEMENTED — NOT VALIDATED | DO1 dan DO2 independen | ON/OFF DO1 tidak mengubah DO2, dan sebaliknya; keduanya dapat ON bersamaan. Kontrol/konfirmasi/QC per modul tetap terpisah. Stop semua, reset sesi dan OTA tetap eksplisit mematikan semua. |
+| QC-04 | IMPLEMENTED — NOT VALIDATED | Highlight ON/OFF mengikuti status, default OFF | Biru berpindah ke OFF ketika OFF diterima, kembali ke ON ketika ON diterima; startup semua output OFF. Status UI berasal dari state firmware/perintah yang berhasil, bukan warna ON permanen atau optimisme setelah request gagal. |
+| QC-05 | PARTIAL | Perbaiki kegagalan komunikasi kontrol output | Cari penyebab request output sering gagal; tampilkan error sebenarnya dan state terakhir tanpa mengklaim berhasil. Verifikasi cepat berganti ON/OFF, polling, heartbeat/session, reconnect dan akses tiap baris. Penyebab saat ini belum terbukti. |
+| QC-06 | IMPLEMENTED — NOT VALIDATED | Sederhanakan konfirmasi fisik output dan latch hasil | Hanya pilihan **Sesuai** / **Tidak sesuai**. Setelah hasil QC PASS/FAIL final, tidak perlu meminta konfirmasi lagi; pengguna tetap bisa ON/OFF tanpa menghapus hasil. Reset hanya melalui mekanisme tes/sesi ulang yang jelas. |
 | QC-07 | TODO | AHT10 terdeteksi tetapi gagal membaca data | Diagnosis init/status busy/timing/read length/I2C; tampilkan temperature dan humidity valid atau alasan gagal yang jelas. ACK alamat saja tidak menghasilkan data/PASS. Tetap AHT10 sesuai konfirmasi pengguna. |
-| QC-08 | TODO | Tambah konfirmasi QC I2C oleh pengguna | Setelah scan, daftar alamat tetap ada; sediakan tombol PASS/FAIL user dan hasil jelas dalam menu/report. Label hasil sebagai konfirmasi pengguna atas scan, bukan bukti identitas IC atau seluruh protokol. |
+| QC-08 | IMPLEMENTED — NOT VALIDATED | Tambah konfirmasi QC I2C oleh pengguna | Setelah scan, daftar alamat tetap ada; sediakan tombol PASS/FAIL user dan hasil jelas dalam menu/report. Label hasil sebagai konfirmasi pengguna atas scan, bukan bukti identitas IC atau seluruh protokol. |
 | QC-09 | CLOSED — USER | ADS1115 tidak terdeteksi | **Dibatalkan sebagai perbaikan firmware:** pengguna memastikan masalah hardware dan sudah OK. Jangan membuka kembali tanpa bukti baru. |
 | QC-10 | TODO | QC akurasi 4–20 mA dengan lima titik | Container baru, lima target uji, nilai hasil pembacaan/capture dan konfirmasi Sesuai/Tidak sesuai per titik. Kelima titik sesuai -> PASS; titik tidak sesuai -> FAIL; titik belum selesai tidak PASS. Kalibrasi empat titik yang sudah berhasil tetap dipertahankan dan terpisah dari QC. |
 | QC-11 | TODO | Modbus RS485 master dengan dua tag independen | Dua config terpisah, Request masing-masing, transaksi ke slave/register tertentu, data hasil tampil, konfirmasi Sesuai/Tidak sesuai menjadi QC. Config mengikuti rincian di bawah. Request sungguhan diperlukan; menyimpan config bukan PASS. |
@@ -39,7 +39,7 @@ Status `TODO` = belum diimplementasikan atau diverifikasi. Jangan mengubah statu
 ### Output dan konfirmasi
 
 - Fakta source baseline: README v1.2.0 mendokumentasikan hanya satu output ON sekaligus. Ini bertentangan dengan permintaan baru DO1/DO2 independen; revisi perlu mengubah model state, bukan sekadar tombol frontend.
-- Fakta keputusan sebelumnya: DO1/DO2 aktif LOW; LED MCP aktif HIGH. Laporan baru mengatakan ON/OFF LED terbalik. **Polaritas LED aktual sekarang belum dipastikan**; periksa pemetaan/perintah dan pengamatan sebelum mengganti konstanta.
+- Keputusan terbaru pengguna2026-10-13: DO1/DO2 tetap aktif LOW; **LED MCP aktif LOW**, menggantikan jawaban HIGH sebelumnya. Source telah diperbaiki; bench acceptance belum dilakukan.
 - Jangan menonaktifkan heartbeat, timeout, I2C fault lock atau stop OTA untuk menyembunyikan error komunikasi. Terapkan pengamanan pada state setiap output.
 - Hasil QC final tidak boleh hilang karena perintah ON/OFF lanjutan. Tentukan reset tes secara eksplisit dan tampilkan kapan hasil lama berlaku.
 - OLED perlu membedakan init berhasil dari hasil observasi user; tulisan `OLED init PASS` bukan pengganti hasil QC visual.
@@ -53,7 +53,7 @@ Status `TODO` = belum diimplementasikan atau diverifikasi. Jangan mengubah statu
 
 ### RS485 dua tag
 
-- Pengguna kini meminta transaksi Modbus, menggantikan penundaan Modbus sebelumnya; implementasi **tetap belum boleh dimulai** sebelum `kerjakan`.
+- Pengguna kini meminta transaksi Modbus, menggantikan penundaan Modbus sebelumnya; implementasi telah diizinkan hanya sampai deadline sesi; belum dikerjakan pada batch output ini.
 - Config link: mode, baud, parity dan slave ID; contoh baseline 9600/N/slave1, bukan universal.
 - Dua tag dikonfigurasi independen: nama tag (contoh UI max10 karakter), function **Read Coils (01), Read Discrete Inputs (02), Read Holding Registers (03), Read Input Registers (04)**, datatype (contoh Unsigned; opsi lain ditentukan dengan representasi yang didukung), alamat dan length (contoh max2).
 - Sebutkan alamat register sebagai offset protokol atau notasi vendor, agar tidak ambigu 0 vs 40001. Bedakan bit coils/discrete dari register 16-bit. Endianness/word order untuk nilai multi-register belum diketahui.
@@ -111,3 +111,11 @@ Urutan ini usulan untuk kelanjutan, bukan bukti pekerjaan sudah dimulai. Keputus
 - Aturan dibaca: Firmware_AI_Vault_Home, Rules_Nama_dan_Folder_Workspace, Rules_Firmware_Standar, Rules_GitHub_Gitflow, Rules_Kredensial_WiFi, WiFi_HuaweiJIN, Rules_Versioning dan Rules_Change_Notifications. File lengkap berada di vault workspace, daftar path di README.
 - Tahap dokumentasi tidak mengubah profil HuaweiJIN/AP12345678 atau NVS. Mekanisme lama tetap selective migration driver STA; NVS lain dipertahankan.
 - Langkah berikutnya: **menunggu pengguna mengatakan `kerjakan`**.
+
+## Checkpoint implementasi sesi13:36–13:52 UTC+7
+
+QC-02/03/04/06/08: source selesai; tes UI lulus, compile dihentikan sebelum deadline; gate belum lulus. QC-01 badge lokal OLED/AHT/RTC/EEPROM/PD/ETH/SD/serial/radio ditambah, belum semua menu. QC-05 penyebab source terkonfirmasi: ON memanggil stop semua, heartbeat lama menolak perintah baru, poll tumpang tindih; diperbaiki tetapi kegagalan fisik/endurance belum terbukti selesai. QC-07/10/11/12/13/14/15/16 belum diimplementasikan dalam sesi ini. ADS tetap CLOSED.
+
+Files source: app.cpp, config.h, firmware_version.h, qc_hardware.cpp, qc_math_tests.cpp, qc_session.cpp/.h, web_ui.h, output_state.h; test web-ui.test.cjs. No upload. Next: diagnosis AHT10 actual busy/init/read evidence, lalu QC lima titik dan master Modbus dua tag. Jangan menganggap data mock sebagai PASS hardware.
+
+Final checkpoint: STOPPED before13:52 UTC+7 per user. Final1.3.0 build interrupted during library compilation; no new valid manifest/binary. Only documentation checkpoint committed/pushed;10 firmware/test files remain local (9 modified plus new output_state.h). Remote source remains1.2.0/218f208. Resume requires new user authorization and completing Build-Firmware.ps1 before source publication.

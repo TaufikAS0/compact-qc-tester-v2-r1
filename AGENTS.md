@@ -1,6 +1,6 @@
 # Compact QC firmware
 
-Resume entry: read CURRENT and first two updates in ai/branches/feature--qc-operator-ota.md, then ai/tasks/2026-10-13-qc-revision-backlog.md before new QC work. New backlog is documentation-only until user explicitly says kerjakan. It records intended revisions, not completed changes. Update task IDs/checkpoint/worklog after each meaningful step and before stopping; record local vs pushed state and next action. Backlog supersedes prior serial deferral/read-only radio scope only when implementation is authorized; protect unrelated NVS and preserve hardware evidence boundaries.
+Resume entry: read CURRENT and first two updates in ai/branches/feature--qc-operator-ota.md, then ai/tasks/2026-10-13-qc-revision-backlog.md before new QC work. User authorized implementation on 2026-10-13 until 13:52 UTC+7. After that deadline stop and await fresh authorization; read the checkpoint for completed versus pending work. Update task IDs/checkpoint/worklog after each meaningful step and before stopping; record local vs pushed state and next action. Backlog supersedes prior serial deferral/read-only radio scope only when implementation is authorized; protect unrelated NVS and preserve hardware evidence boundaries.
 
 Read README.md, VALIDATION.md and 04_Dokumen/TEAM_HANDOFF.md before editing/build/upload.
 Use feature branches from develop; never push directly to main or merge without review.
@@ -15,7 +15,7 @@ Calibration namespace qc-adc/cal-v1 is independent of production namespaces and 
 User reopened serial QC on 2026-10-12: RS232/RS485 laptop binary QC now authorized. RS485 automatic TX/RX with no DE/RE confirmed. Modbus transactions remain deferred. Read 04_Dokumen/COMMUNICATION_QC.md. UART1 GPIO4/5, UART2 E70 GPIO16/17.
 Preserve legacy partitions.csv. Owner decision 2026-10-12 permits validated portal merged USB / full erase for deliberate LAB reset: merged fast write resets NVS, full erase also deletes storage. Component USB and app-only OTA preserve unrelated NVS/storage. Never Arduino default 0x10000/boot_app0 offsets.
 Private OTA secrets, binaries and machine backups must never be committed. Owner decision 2026-10-12 permits public lab_ota_defaults.h in source/release assets; PublicLabRelease refuses private overrides. Shared HuaweiJIN lab profile is authorized; AP recovery 12345678. Customer credentials require explicit profile.
-User corrected outputs 2026-10-12: DO1/DO2 active LOW, LED MCP active HIGH; profile flags enabled after confirmation. Verify runtime BANK/SEQOP and bench fixture. Preserve MCP unrelated bits, particularly TPL MCP1B7.
+Latest user correction 2026-10-13: DO1/DO2 active LOW, LED MCP active LOW; profile flags enabled after confirmation. Verify runtime BANK/SEQOP and bench fixture. Preserve MCP unrelated bits, particularly TPL MCP1B7.
 EEPROM identity region 0x3F80-0x3FFF is reserved for QC; never overwrite foreign bytes. STUSB PDO runtime only, no NVM write.
 Run firmware compile and Node UI tests; hardware acceptance must be reported separately. Do not simulate a physical PASS.
 

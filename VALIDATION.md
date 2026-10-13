@@ -1,4 +1,14 @@
-# Current validation - v1.2.0 / 2026-10-13
+# Current validation - v1.3.0 work in progress / 2026-10-13
+
+Firmware source1.2.0 ->1.3.0. Independent outputs/LED active LOW/latched visual QC/I2C user confirmation and local module badges implemented. No device upload or hardware acceptance. Batch remains partial.
+
+- Software tests PASS: Node dashboard regression (accepted state highlight, failed command, final result latch, I2C confirmation gates, shared poll); Python10 tests; portal packaging2/2; git diff check. New production C++ assertions test independent output timers/default OFF/wraparound, pending final ESP compile.
+- Final build attempt generated identity2026-10-13T06:44:01Z /13:44:01 UTC+7, through Build-Firmware.ps1 core3.3.10 FlashSize16M. Build stopped before13:52 deadline while compiling libraries; no completed compile or manifest gate. No confirmed compiler error before stop. This timestamp is build start, not device clock or upload. No claim of new valid binary until gates finish. First attempt was cancelled to apply latest user correction LED LOW.
+- Browser localhost8769 verified current1.3.0 preview, per-row default OFF/Sesuai/Tidak sesuai and local communication badges. All hardware controls remain locked in preview; no invented PASS. Screenshot build/dashboard-output-v1_3.png stays local/ignored.
+- API RAM adds outputs.finalized and qc.i2c; no pin remap or new NVS keys. Eight mandatory vault files read: Firmware_AI_Vault_Home.md, Rules_Nama_dan_Folder_Workspace.md, Rules_Firmware_Standar.md, Rules_GitHub_Gitflow.md, Rules_Kredensial_WiFi.md, WiFi_HuaweiJIN.md, full Rules_Versioning.md and full Rules_Change_Notifications.md. STA HuaweiJIN; AP12345678. Existing selective STA driver migration unchanged; unrelated NVS preserved. OTA override/binaries not published.
+- Remaining bench: active-LOW physical LED/DO behavior, independent outputs, heartbeat/timeout/OTA, masked MCP fault recovery and communication/endurance. Remaining software batch: AHT10 diagnosis, analog5-point QC, Modbus2 tags, RS232 scenario, menus/network/MQTT/radio configuration, EEPROM/PD diagnosis.
+
+# Historical validation - v1.2.0 / 2026-10-13
 
 Firmware1.1.0 ->1.2.0. New E70 read-only communication/configuration QC and separate laptop RS232/RS485 binary QC. User confirmed automatic RS485 direction without DE/RE. Modbus transactions remain deferred. No hardware upload by Codex; team installs firmware before bench testing.
 

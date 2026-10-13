@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0 — 2026-10-13
+
+- Independent LED/DO states and per-channel60s timeout; ON no longer stops other outputs. Startup OFF, heartbeat3500ms/Stop/OTA safeguards retained. Latest user correction: LED MCP active LOW; DO remains active LOW. Masked MCP latch/direction readback added.
+- Valid output commands renew activity; UI deduplicates overlapping polls/heartbeats, displays rejected commands and highlights accepted ON/OFF state. Physical intermittent communication diagnosis remains pending.
+- One Sesuai/Tidak sesuai observation finalizes output QC; later controls preserve PASS/FAIL until session reset. Add I2C scan/user confirmation evidence and local result badges for OLED, sensor, storage, PD, Ethernet and serial/radio cards.
+- Version1.2.0 ->1.3.0; new RAM fields outputs.finalized and qc.i2c, no new NVS keys, no pin remap, no device upload. Larger batch remains unfinished; see task checklist.
+
 ## 1.2.0 — 2026-10-12
 
 - Reopen RS232 and RS485 QC per user, automatic RS485 direction confirmed. Separate local laptop web/backend defaults9600/8N1/100packets; CRC/pattern/sequence/ACK and matching device result required. Echo/timeout/corruption/restart cannot PASS. Cancellation INCOMPLETE. JSON/CSV automatic local reports; tokens excluded.

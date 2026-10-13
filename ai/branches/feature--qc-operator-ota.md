@@ -1,4 +1,4 @@
-CURRENT | V1.1 | 2026-10-13 13:31 UTC+7 | Codex | Backlog revisi QC dicatat; 0/15 aktif selesai, ADS issue closed oleh user | Next: tunggu instruksi kerjakan
+CURRENT | V1.2 | 2026-10-13 before13:52 UTC+7 | Codex | STOPPED per deadline; source1.3.0 local, tests PASS, compile interrupted | Next: user authorization then complete compile/review/push
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -11,6 +11,16 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 
 ## Latest Updates
 
+### V1.2 | 2026-10-13 13:49 UTC+7 | Codex
+
+- Did: authorized time-bounded implementation until13:52; source1.2.0 ->1.3.0. Latest user confirms LED MCP active LOW, DO remains LOW. Independent13 output states/timers, defaultOFF, accepted-state highlight, shared polling, single visual confirmation/latch, I2C user confirmation and module badges.
+- Tasks: QC-02/03/04/06/08 source implemented, compile pending; QC-01/05 PARTIAL; QC-07/10/11/12/13/14/15/16 TODO; ADS CLOSED. No physical acceptance/upload.
+- Tests: Node UI PASS; Python10 PASS; portal2 PASS; browser preview current1.3.0/defaultOFF/local badges; source constexpr assertions pending compile. Build PID32532 began06:44:01Z; logs build/build-v1_3-final.log/.err. Do not treat an unfinished build as binary acceptance.
+- Files: app/config/version/hardware/session/UI/math/output_state.h; tests/web-ui.test.cjs; backlog/README/AGENTS/handoff/changelog/validation.
+- Git: feature/qc-operator-ota; last pushed docs04d9725/source218f208. Current firmware edits local/uncommitted until gate completes. Keep explicit pending checkpoint if deadline interrupts compile.
+- Next: preserve exact status at13:52 and stop. Next authorized session finish compile/review, then diagnose AHT10, analog5 points and Modbus2 tags. No main/develop merge.
+
+
 ### V1.1 | 2026-10-13 13:31 UTC+7 | Codex
 
 - Did: merekam16 ID permintaan;15 TODO dan ADS1115 CLOSED karena user menyelesaikan hardware. Memisahkan fakta, laporan, unknowns, kriteria selesai dan aturan checkpoint.
@@ -18,3 +28,5 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Baseline: lokal/remote `218f2081f0e11f7753586a5c6f6c46b46e157855`, firmware1.2.0; status awal Git clean. Publikasi dokumen mengikuti feature branch saja.
 - Verification: perubahan dokumentasi saja; cek diff/tautan/checklist dan status remote setelah push. Tidak ada build atau physical QC baru.
 - Next: **tunggu `kerjakan`**; implementasi belum dimulai. Setelah diizinkan, audit preview vs live device, lalu mulai ID output/status sambil memperbarui checklist/CURRENT.
+
+Final V1.2 checkpoint: task-owned build parent32532 and descendants stopped before13:52 while compiling libraries. No new gated binary. Documentation-only checkpoint pushed on feature branch; local firmware/tests remain uncommitted. Remote source is still1.2.0/218f208. Working tree expected9 modified firmware/test files + untracked output_state.h; docs committed. Next exact action: Build-Firmware.ps1 fresh metadata, inspect source/review, publish only after gate passes, then QC-07.
