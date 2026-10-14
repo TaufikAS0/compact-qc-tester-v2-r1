@@ -1,4 +1,4 @@
-CURRENT | V2.3 | 2026-10-14 | Codex | Installed1.6.1 exact build/MD5 verified; AHT/profiles/UI PASS; EEPROM Write fails/M1 ignored | Next: feature publication checkpoint; WC hardware followup via issue1
+CURRENT | V2.4 | 2026-10-14 | Codex | Published source1.6.1 b39d447; device/build/MD5 verified; AHT/profiles/UI PASS; EEPROM ignored M1 | Next: optional hardware WC evidence in issue1; no source/upload work pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,14 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.4 | 2026-10-14 | Codex
+
+- Source/docs/tests1.6.1 published as b39d4471bdd25fd4141dae0540d8a5ac33067223 on feature/qc-operator-ota. Local HEAD/origin/ls-remote matched; working tree clean before this publication-only checkpoint. No main/develop merge.
+- Installed1.6.1/build2026-10-14T11:45:51Z and MD5ba772733fa865400ed57a91eff4390a5 verified; final gates and runtime/browser evidence remain V2.3/VALIDATION. No firmware changes or additional upload for this docs checkpoint.
+- Final active deviceM1, outputActivefalse/faultfalse; M2 revision6 saved with both DO tests OFF. AHT live data restored; EEPROM transport Read succeeds but Write failed Wire4, so M1 exclusion applies. Physical WC question remains issue1/comment6167590821; EEPROM may be enabled after successful Write/Read. Other physical load/accuracy/watchdog acceptance is not claimed.
+- This docs-only checkpoint is committed/pushed next on the same feature branch; its exact SHA is Git branch HEAD. No local source/build work remains. General serial-web project untouched; user-owned device tab left on live AHT.
+
 
 ### V2.3 | 2026-10-14 | Codex
 
