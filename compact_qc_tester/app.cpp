@@ -21,12 +21,14 @@
 #include <WebServer.h>
 #include <WiFi.h>
 #include <Wire.h>
+#include <driver/gpio.h>
 
 WebServer server(80);
 String ssid, token;
 uint32_t lastHeartbeat = 0;
 OutputState outputState;
 bool mcpReady = false, fault = false;
+bool relayReady[2] = {};
 uint16_t savedLatch = 0, savedDirection = 0;
 const uint8_t addresses[] = {0x68, 0x57, 0x38, 0x20, 0x21, 0x3c, 0x77, 0x28, 0x48};
 const char *deviceNames[] = {"RTC",  "EEPROM",    "AHT",          "MCP1", "MCP2",
@@ -99,8 +101,8 @@ void stopOutputs() {
   cancelSerialQc("Cancelled by stop/new session/OTA");
   cancelRadioQc("Cancelled by stop/OTA");
   if (OUTPUT_PROFILE_VERIFIED) {
-    for (int p : RELAY_PINS)
-      digitalWrite(p, RELAY_ACTIVE_HIGH ? LOW : HIGH);
+    for (int i = 0; i < 2; ++i)
+      if (relayReady[i]) digitalWrite(RELAY_PINS[i], relayLevel(i, false));
     if (mcpReady) {
       const uint16_t off = LED_ACTIVE_HIGH ? 0 : LED_MASK;
       if (!writeLedBits(off))
@@ -113,9 +115,15 @@ void stopOutputs() {
 void initOutputs() {
   if (!OUTPUT_PROFILE_VERIFIED)
     return;
-  for (int p : RELAY_PINS) {
-    digitalWrite(p, RELAY_ACTIVE_HIGH ? LOW : HIGH);
-    pinMode(p, OUTPUT);
+  for (int i = 0; i < 2; ++i) {
+    relayReady[i] = initializeRelay(i,
+      [](int pin, int level) { return gpio_set_level((gpio_num_t)pin, level) == ESP_OK; },
+      [](int pin) { pinMode(pin, OUTPUT); },
+      [](int pin, int level) {
+        digitalWrite(pin, level);
+        return gpio_get_level((gpio_num_t)pin) == level;
+      });
+    if (!relayReady[i]) fault = true;
   }
   if (!MCP23017_PROFILE_VERIFIED)
     return;
@@ -179,6 +187,18 @@ void stateHandler() {
     l.add(n);
   hardwareState(d["hardware"].to<JsonObject>());
   qcState(d["qc"].to<JsonObject>());
+  for (int i = 0; i < 2; ++i) {
+    auto p = d["qc"]["outputs"][11 + i].as<JsonObject>();
+    p["pin"] = RELAY_PINS[i];
+    p["activeHigh"] = RELAY_ACTIVE_HIGH[i];
+    p["gpioReady"] = relayReady[i];
+    p["expectedLevel"] = relayLevel(i, outputState.on[11 + i]);
+    if (relayReady[i]) {
+      int level = gpio_get_level((gpio_num_t)RELAY_PINS[i]);
+      p["gpioLevel"] = level;
+      p["gpioMatchesCommand"] = level == relayLevel(i, outputState.on[11 + i]);
+    }
+  }
   reply(d);
 }
 void scanHandler() {
@@ -288,8 +308,16 @@ void outputHandler() {
   // still turns active outputs OFF; OFF must never require a preceding heartbeat.
   lastHeartbeat = millis();
   const bool on = state == "on";
-  if (kind == "relay")
-    digitalWrite(RELAY_PINS[index], on == RELAY_ACTIVE_HIGH ? HIGH : LOW);
+  if (kind == "relay") {
+    if (!relayReady[index]) { failure("DO GPIO initialization failed"); return; }
+    digitalWrite(RELAY_PINS[index], relayLevel(index, on));
+    if (gpio_get_level((gpio_num_t)RELAY_PINS[index]) != relayLevel(index, on)) {
+      fault = true;
+      stopOutputs();
+      failure("DO GPIO level mismatch; check pin/driver/wiring. Outputs stopped");
+      return;
+    }
+  }
   else if (!mcpBit(MCP1_ADDR, LED_BITS[index], on == LED_ACTIVE_HIGH)) {
     fault = true;
     stopOutputs();
@@ -365,7 +393,7 @@ void updateApp() {
     stopOutputs();
   for (int n = 0; n < OutputState::COUNT; ++n) {
     if (!outputState.expired(n, millis(), OUTPUT_PULSE_MS)) continue;
-    if (n >= 11) digitalWrite(RELAY_PINS[n - 11], RELAY_ACTIVE_HIGH ? LOW : HIGH);
+    if (n >= 11) digitalWrite(RELAY_PINS[n - 11], relayLevel(n - 11, false));
     else if (!mcpBit(MCP1_ADDR, LED_BITS[n], !LED_ACTIVE_HIGH)) {
       fault = true; stopOutputs(); break;
     }

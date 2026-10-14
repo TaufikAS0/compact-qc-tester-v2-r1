@@ -1,3 +1,7 @@
+## Reopened output report — 2026-10-14
+
+QC-02/QC-04/QC-05 reopened for DO1 always physically OFF (user confirmed) and DO2 inverted on installed1.5.0. v1.5.1 fixes proven startup sequencing bug and corrects BOTH DO1/DO2 toHIGH; user identifies the failed relay as hardware. Final1.5.1 build/tests PASS; see latest branch worklog. Physical acceptance pending team install. Earlier DONE SOFTWARE does not certify physical output behavior.
+
 # Backlog revisi Compact QC â€” 13 Oktober 2026
 
 ## Status saat handoff

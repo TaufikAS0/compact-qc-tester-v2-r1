@@ -1,3 +1,9 @@
+# Output fix1.5.1 — current instructions
+
+DO1 GPIO32 and DO2 GPIO33 are active HIGH (OFF LOW), per latest explicit user confirmation that both were inverted. LED MCP stays active LOW. This supersedes historical blanket DO active-LOW instructions below.
+
+After team upload: verify build/version, reboot defaultOFF, independently ON/OFF each DO, bothON, Stop, heartbeat loss and per-channel timeout. Dashboard now shows expected polarity and measured GPIO pad level. If GPIO32 follows LOW/OFF and HIGH/ON but DO1 load stays unchanged, inspect the driver/module/wiring; do not report physical PASS based on GPIO alone. If GPIO mismatches, firmware rejects the command and stops outputs. User identified the failed relay as hardware; verify the repaired fixture physically. No firmware upload performed by this change.
+
 # Team handoff â€” v1.5.0
 
 Read [current operator guide](QC_OPERATOR_GUIDE.md), [validation](../VALIDATION.md), [backlog/checkpoint](../ai/tasks/2026-10-13-qc-revision-backlog.md), [CURRENT worklog](../ai/branches/feature--qc-operator-ota.md). Source1.2.0 ->1.5.0 revisions: independent active-LOW outputs, latched confirmation, I2C list/user verdict, AHT10 recovery, five-point analog QC, two-tag Modbus, serial/SPI/network menu separation, worker WiFi/ETH/MQTT, explicit E70 AT Apply/readback and EEPROM/PD diagnostics. Team uploads; no Codex flash. Later update sections supersede historical procedures below.

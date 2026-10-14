@@ -13,14 +13,13 @@ constexpr int SD_CS = 12, ETH_CS = 15;
 constexpr int INPUT_PINS[] = {13, 14, 25, 26, 2, 39, 34, 35, 36};
 constexpr char const *INPUT_NAMES[] = {
     "DI1", "DI2", "DI3", "DI4", "DMM mode", "Webserver mode", "LoRa ACK", "LoRa AUX", "LoRa LINK"};
-constexpr int RELAY_PINS[] = {32, 33};
+#include "relay_profile.h"
 
 // Enable ONLY after checking schematic, chip identity, polarity and bench wiring.
 // With false, firmware never configures relays or LED outputs.
 // The independent TPL watchdog may configure MCP1 B7 only.
 constexpr bool OUTPUT_PROFILE_VERIFIED =
-    true; // Latest user correction: LED and DO1/DO2 LOW, 2026-10-13.
-constexpr bool RELAY_ACTIVE_HIGH = false;
+    true; // LED LOW; per-channel DO profile in relay_profile.h.
 constexpr bool LED_ACTIVE_HIGH = false;
 constexpr unsigned OUTPUT_PULSE_MS =
     60000; // Maximum ON time; explicit OFF or lost heartbeat stops earlier.

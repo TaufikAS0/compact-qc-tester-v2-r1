@@ -133,3 +133,24 @@ static_assert(QcModbus::validate(mbValidResponse,7,2,4,1)==QcModbus::Response::S
 static_assert(QcModbus::validate(mbValidResponse,7,1,3,1)==QcModbus::Response::Function, "Wrong function rejected");
 static_assert(QcModbus::validate(mbValidResponse,7,1,4,2)==QcModbus::Response::Length, "Wrong register count rejected");
 static_assert(QcModbus::validate(mbValidResponse,4,1,4,1)==QcModbus::Response::Short, "Partial response cannot PASS");
+
+#include "relay_profile.h"
+constexpr bool relayInitializationTest() {
+  // Model core3: Arduino write is ignored until GPIO ownership is configured.
+  for (int index = 0; index < 2; ++index) {
+    int latch = -1, enabledLevel = -1, phase = 0;
+    bool configured = false;
+    if (!initializeRelay(index,
+        [&](int pin, int level) { if (pin != RELAY_PINS[index] || phase++ != 0) return false; latch = level; return true; },
+        [&](int pin) { enabledLevel = latch; configured = pin == RELAY_PINS[index] && phase++ == 1; },
+        [&](int pin, int level) { if (!configured || phase++ != 2) return false; latch = level; return pin == RELAY_PINS[index]; })) return false;
+    if (phase != 3 || enabledLevel != relayLevel(index, false) || latch != enabledLevel) return false;
+  }
+  int callbacks = 0;
+  bool accepted = initializeRelay(0, [](int, int) { return false; },
+      [&](int) { ++callbacks; }, [&](int, int) { ++callbacks; return true; });
+  return !accepted && callbacks == 0;
+}
+static_assert(relayInitializationTest(), "OFF preloaded before enable and reasserted after core3 GPIO registration");
+static_assert(relayLevel(0,false)==0 && relayLevel(0,true)==1, "DO1 correction active HIGH");
+static_assert(relayLevel(1,false)==0 && relayLevel(1,true)==1, "DO2 correction active HIGH");

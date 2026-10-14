@@ -1,3 +1,5 @@
+> Current source: v1.5.1 output startup/polarity diagnostic fix. DO1 GPIO32 and DO2 GPIO33 active HIGH per latest user confirmation. GPIO readback is not physical load confirmation. See current TEAM_HANDOFF and VALIDATION; hardware test pending.
+
 # Compact QC Tester v1.5.0
 
 Current workflow: [operator guide](04_Dokumen/QC_OPERATOR_GUIDE.md), [task checklist/checkpoint](ai/tasks/2026-10-13-qc-revision-backlog.md), [branch worklog](ai/branches/feature--qc-operator-ota.md). User resumed after the time limit; source1.2.0 ->1.5.0 implements output/I2C/sensor/analog/serial/network/UI revisions. Team uploads; compile/UI verification is separate from physical acceptance.

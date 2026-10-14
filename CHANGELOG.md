@@ -1,3 +1,10 @@
+## 1.5.1 — 2026-10-14
+
+- Fix DO startup: preload GPIO latch with ESP-IDF before pinMode and explicitly reassert OFF after Arduino GPIO registration. Core3.3.10 ignores digitalWrite before pinMode.
+- Per-channel DO polarity: DO1 GPIO32 and DO2 GPIO33 active HIGH per latest user confirmation that both were physically inverted on1.5.0; failed relay reported as hardware issue. LED polarity unchanged.
+- Startup, command, Stop/OTA/heartbeat and per-channel timeout use the same relayLevel mapping. Add GPIO readback/mismatch command rejection and dashboard diagnostics; GPIO pad evidence is not output-load acceptance.
+- Firmware1.5.0 ->1.5.1. No NVS/partition changes or device upload. Relay failure identified by user as hardware; both-channel polarity correction requires installed-firmware acceptance; regression build/tests recorded in VALIDATION.md.
+
 # Changelog
 
 ## 1.5.0 â€” 2026-10-13

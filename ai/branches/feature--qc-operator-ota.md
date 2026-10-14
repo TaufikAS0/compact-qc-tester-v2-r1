@@ -1,4 +1,4 @@
-CURRENT | V1.7 | 2026-10-14 | Codex | Firmware1.5.0 published fa0624e; local/remote verified clean | Next: team upload and physical acceptance
+CURRENT | V1.8 | 2026-10-14 | Codex | v1.5.1 both DO activeHIGH; build/tests PASS | Next: team install and physical acceptance
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,15 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V1.8 | 2026-10-14 | Codex
+
+- Live GET192.168.1.55: installed1.5.0 build2026-10-14T05:16:49Z, relayEnabledtrue, faultfalse; localhost8769 unavailable. No GPIO commands or flash issued.
+- Confirmed core3.3.10 digitalWrite-before-pinMode ignored; fixed preload/reassert sequence. Both DO polarities changed toHIGH per latest user confirmation; relay failure is hardware per user. Added per-channel GPIO state/mismatch diagnostics.
+- User follow-up confirms DO1 always physically OFF; DO2 OFF command physically ON and ON command OFF. Superseded by subsequent user correction: failed relay is hardware and BOTH DO1/DO2 invert ON/OFF.
+- NodeUI PASS; Final compile via Build-Firmware.ps1 PASS10:35:15Z /17:35:15 UTC+7; app1261792 bytes SHA25623dfaaed92410e2404dc9cb61bd43ec6458376f02ae267bc7ac89331358a325a, metadata/legacy partitions PASS; logs build/build-v1_5_1-final.log. Python10 PASS, production init/mapping asserts compiled. Previous candidate09:07:34Z superseded. Source ready to push. User identified failed relay as hardware; bench compare GPIO and physical output after team install.
+- Read eight mandatory workspace rules and versioning/architecture skills. Pinmap32/33/NVS retained; labSTA HuaweiJIN/AP12345678 and existing selective WiFi migration unchanged. No device upload.
+
 
 ### V1.7 | 2026-10-14 | Codex
 

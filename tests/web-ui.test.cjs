@@ -18,6 +18,7 @@ const body=()=>new URLSearchParams(calls.findLast(c=>c.options?.method==='POST')
  await new Promise(r=>setImmediate(r));
  let releaseState;stateDelay=new Promise(r=>releaseState=r);const requestsBefore=calls.filter(c=>c.url==='/api/state').length;const pollA=vm.runInContext('poll()',context),pollB=vm.runInContext('poll()',context);assert.equal(calls.filter(c=>c.url==='/api/state').length,requestsBefore+1,'overlapping polls share one HTTP request');releaseState();await Promise.all([pollA,pollB]);stateDelay=null;
  assert.equal(element('di').children.length,4);assert.equal(element('switches').children.length,3);
+ state.qc.outputs[11]={commandedOn:false,pin:32,activeHigh:true,gpioLevel:0,gpioMatchesCommand:true};state.qc.outputs[12]={commandedOn:false,pin:33,activeHigh:true,gpioLevel:0,gpioMatchesCommand:true};await vm.runInContext('poll()',context);assert.match(element('output1').children[0].children[1].children[0].textContent,/Aktif HIGH.*GPIO LOW/);assert.match(element('output2').children[0].children[1].children[0].textContent,/Aktif HIGH.*GPIO LOW/);
  assert.equal(element('ledRows').children.length,11);assert.equal(element('output1').children.length,1);assert.equal(element('output2').children.length,1);
  assert.equal(element('ledRows').children[0].children[2].children[0].disabled,true,'locked ON');
  assert.equal(element('ledRows').children[0].children[3].children[0].disabled,true,'unattempted confirmation');

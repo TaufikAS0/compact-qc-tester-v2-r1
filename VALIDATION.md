@@ -1,3 +1,15 @@
+# Current output validation — v1.5.1 / 2026-10-14
+
+- Installed device read at192.168.1.55: v1.5.0, build2026-10-14T05:16:49Z, relayEnabled true and outputFault false. No output commands or upload issued by Codex this task. User confirms failed relay was hardware and BOTH DO1/DO2 physically invert ON/OFF.
+- Core3.3.10 source esp32-hal-gpio.c confirms digitalWrite is ignored before GPIO pinMode registration. v1.5.1 preloads OFF via gpio_set_level, configures Arduino OUTPUT, then explicitly reasserts/verifies GPIO level. Both DO active HIGH: OFF LOW, ON HIGH. Every command/Stop/OTA/timeout uses the same mapping. LED MCP remains LOW.
+- API qc.outputs[11..12] adds pin, activeHigh, gpioReady, expectedLevel, gpioLevel and gpioMatchesCommand. Dashboard shows pad diagnostics; GPIO match is not load acceptance. Command mismatch locks/stops outputs instead of returning success.
+- Node UI PASS including both HIGH profiles/OFF padLOW diagnostics and existing command/error/independence regressions. Python10 PASS. Production constexpr tests model core3 pre-configuration write behavior, sequence preload/configure/reassert, failed-preload abort, both channel mappings and independent timers.
+- Previous candidate build09:07:34Z passed but DO1 stillLOW; superseded and not for installation. Final bothHIGH compile PASS: **2026-10-14T10:35:15Z / 2026-10-14 17:35:15 UTC+7**, app1261792 bytes SHA25623dfaaed92410e2404dc9cb61bd43ec6458376f02ae267bc7ac89331358a325a; sketch1261641 bytes60%, RAM56376 bytes17%. Binary identity/manifest and legacy partitions gates PASS; log build/build-v1_5_1-final.log. This is build start, not upload/device time. No source edits after final build began.
+- Mandatory vault files reread: Firmware_AI_Vault_Home, Rules_Nama_dan_Folder_Workspace, Rules_Firmware_Standar, Rules_GitHub_Gitflow, Rules_Kredensial_WiFi, WiFi_HuaweiJIN, Rules_Versioning and Rules_Change_Notifications. Versioning/Arduino architecture skills applied. STA HuaweiJIN, recoveryAP12345678 and existing selective driver NVS migration retained; unrelated NVS, pinmap and partitions unchanged. No upload; team installs.
+- Bench after installation: reboot both physicallyOFF, ON/OFF each and bothON, per-channel expiry, heartbeatStop and Stop/OTA; compare GPIO and physical outputs using repaired relay. Software build is not physical certification.
+
+## Historical validation
+
 # Current validation - v1.5.0 / 2026-10-13
 
 Source1.2.0 ->1.3.0 ->1.4.0 ->1.5.0 feature checkpoints. Team uploads; no Codex USB/OTA upload or main/develop merge. Physical acceptance remains pending.
