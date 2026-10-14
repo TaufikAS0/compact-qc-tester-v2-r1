@@ -1,4 +1,4 @@
-CURRENT | V2.6 | 2026-10-14 | Codex | Installed1.7.0/build13:42:34Z exact MD5; tests/browser PASS; PD0x28 absent; source ready feature push | Next: publish only; physical PD population/power/bus/caps/voltage unverified
+CURRENT | V2.7 | 2026-10-14 | Codex | Published1.7.0 e10f329; installed/build13:42:34Z verified; tests/browser PASS; M1 PD OFF | Next: hardware PD0x28 population/power/bus evidence before physical capabilities/voltage acceptance; no source/upload pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,12 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.7 | 2026-10-14 | Codex
+
+- Source/docs/tests1.7.0 published e10f329621e74cdcb2e13f34e7d446c057146e8c; local/origin/ls-remote matched. main unchanged35733ba; no develop branch/automatic merge. This publication-only checkpoint is committed/pushed next; its exact SHA is branch HEAD, with no firmware edit or additional build/OTA.
+- Installed1.7.0/build2026-10-14T13:42:34Z exact runtime/fileMD5 confirmed. See V2.6/VALIDATION for build hash and actual browser/API/OTA evidence. Presets/slider/review/cancel implemented; no accepted voltage command. Final M1 PD OFF, outputs OFF; saved profiles/calibration and AHT data retained.
+- Physical followup: read-only M0 no I2C response0x28 before/after OTA, cause unknown. Fixed-only/no PPS is ST documentation fact; actual adapter capability/voltage is unverified. Do not treat slider draft or protocol contract as measured VBUS. User-owned tab left on installed PD page; unrelated serial-web untouched. No source/upload work pending.
 
 ### V2.6 | 2026-10-14 | Codex
 
