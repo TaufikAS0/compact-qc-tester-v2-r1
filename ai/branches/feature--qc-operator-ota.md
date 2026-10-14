@@ -1,4 +1,4 @@
-CURRENT | V2.11 | 2026-10-14 | Codex | Installed1.8.0/build14:54:18Z exact MD5; tests/runtimeAPI PASS; profiles/calibration retained; source ready feature push | Next: publish/parity; browser visual-policy limitation explicit; physical PD/WC unverified
+CURRENT | V2.12 | 2026-10-14 | Codex | Published e4515d4; installed1.8.0/build14:54:18Z exact MD5; tests/API/browser-save PASS; M1/outputs OFF | Next: optional browser reload-persistence/mobile check after URL-policy stop; physical PD/WC unverified; no source/OTA pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,13 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.12 | 2026-10-14 | Codex
+
+- Source/docs/tests1.8.0 pushed e4515d46979a5bb1ada2311c2da9fe54e3b94d0c; local/origin/ls-remote matched, main unchanged35733ba. Authorized OTA/build/runtime evidence V2.11; no extra firmware edit/build/upload. This final publication/browser-only checkpoint is committed/pushed next; exact SHA is branch HEAD. No merge/general serial-web changes.
+- Native Chrome recovery succeeded for reload using visible Reload after activation/fresh screenshot. Actual installed Operator UI now visible: active M1/revision/session banner, next-step/filter controls, Technician-only navigation hidden and RTC localized unverified. Report page shows simplified form and archive.
+- Actual browser PIC CODEX UI CHECK, date2026-10-14: Tinjau shows exact INCOMPLETE/33 pending/session/profile; explicit Confirm returns TERSIMPAN and archive1/50 with serial/M1rev1/operator/date/QCcode and JSON/CSV buttons. No physical PASS invented; no ON/EEPROMWrite/PDrequest/radioApply. Backend snapshot/CSV consistency and adverse storage cases separately PASS in V2.11 tests.
+- Browser Control+R attempted only to check archive persistence across reload; Computer Use then stopped because it could not determine current URL with confidence for policy. No further UI input or alternate UI workaround. Archive-save and desktop layout are observed PASS; browser reload persistence/mobile widths not physically verified. This limitation does not undo completed exact-gated OTA or published source. Final M1/outputOFF before browser stop; calibration/profiles retained.
 
 ### V2.11 | 2026-10-14 | Codex
 
