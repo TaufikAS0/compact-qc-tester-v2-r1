@@ -4,7 +4,7 @@
 
 - **Implementasi source1.5.0 selesai/diverifikasi software; physical acceptance belum dilakukan.** User melanjutkan setelah checkpoint13:52, tanpa deadline baru.
 -14 dari15 tugas aktif DONE SOFTWARE. QC-16 DIAGNOSED/BENCH FOLLOWUP; ADS QC-09 CLOSED USER. Jangan menyamakan software DONE dengan hardware PASS.
-- Branch feature/qc-operator-ota. Source checkpoints1.3.0 (468e781),1.4.0 (b36f3d6); final1.5.0 akan dipush pada branch yang sama. Tidak merge main/develop.
+- Branch feature/qc-operator-ota. Source checkpoints1.3.0 (468e781),1.4.0 (b36f3d6); final1.5.0 sudah dipush sebagai fa0624ea3d979f2a87ff3db118a46c4ad6ca0387 dan SHA remote diverifikasi pada2026-10-14. Tidak merge main/develop.
 - Final build **2026-10-13T09:34:41Z /2026-10-13 16:34:41 UTC+7**, app1260416 bytes, metadata/partition gates PASS; rincian lengkap VALIDATION.md.
 - Actual device192.168.1.55 masih1.2.0/build2026-10-12T21:08:39Z. No upload; tim pengguna menginstal firmware lalu menjalankan QC_OPERATOR_GUIDE.md.
 - QC-16 fakta: EEPROM57 merespons tetapi belum ada identitas QC valid; slot kosong/foreign/corrupt belum diketahui pada firmware lama. PD28 tidak merespons scan pada M0; periksa populasi/power/bus atau pilihM1 jika memang unpopulated. Source menambahkan diagnosis/read raw/protocol retry; tidak mengarang keberhasilan tegangan.

@@ -1,4 +1,4 @@
-CURRENT | V1.6 | 2026-10-13 | Codex |1.5.0 final gates PASS;14 software DONE,QC16 diagnosed/bench followup | Next: source push then team upload/physical acceptance
+CURRENT | V1.7 | 2026-10-14 | Codex | Firmware1.5.0 published fa0624e; local/remote verified clean | Next: team upload and physical acceptance
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,13 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V1.7 | 2026-10-14 | Codex
+
+- Published: source1.5.0 commit fa0624ea3d979f2a87ff3db118a46c4ad6ca0387 on feature/qc-operator-ota. HEAD and remote branch matched; working tree clean at verification.
+- Build/tests: final1.5.0 gates from V1.6 remain valid; no further firmware edits or device upload. This checkpoint only updates publication tracking.
+- Next: team upload and physical QC using 04_Dokumen/QC_OPERATOR_GUIDE.md. QC16 still requires bench followup; previous PD0x28 absence and missing EEPROM identity are historical device evidence, not a fresh device reading today.
+
 
 ### V1.6 | 2026-10-13 | Codex
 
