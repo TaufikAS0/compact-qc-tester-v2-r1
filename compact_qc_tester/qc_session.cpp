@@ -460,6 +460,42 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     d["detail"] = detail;
     send(d);
   });
+  server.on("/api/qc/report", HTTP_POST, [] {
+    if (!guard()) return;
+    String pic=web->arg("operator"), date=web->arg("qcDate"), production=web->arg("productionDate");
+    pic.trim();
+    if (pic.isEmpty() || pic.length()>64 || date.isEmpty() || !qcIsoDate(date.c_str()) || !qcIsoDate(production.c_str())) {
+      error("Operator wajib(max64), tanggal QC YYYY-MM-DD; production date opsional",400); return;
+    }
+    if(web->arg("sessionId")!=sessionId || web->arg("revision")!=String(activeQcProfileRevision())) {
+      error("Sesi/profil berubah; tinjau laporan ulang"); return;
+    }
+    JsonDocument calibration;
+    calibrationState(calibration.to<JsonObject>());
+    if(pdNegotiating() || currentQcBusy() || calibration["pending"].as<int>()>=0 || serialQcActive() || radioQcActive() || modbusQcActive() || networkQcBusy()) {
+      error("Tunggu tes/capture selesai sebelum menyimpan laporan"); return;
+    }
+    stopSafe();
+    operatorName=pic;
+    JsonDocument snapshot;
+    snapshot["board"]="TMC TOP V2_R1 / BOTTOM V3_R0";
+    snapshot["version"]=FW_VERSION; snapshot["buildUTC"]=FW_BUILD_UTC; snapshot["buildIdentity"]=FW_BUILD_ID;
+    hardwareState(snapshot["hardware"].to<JsonObject>());
+    qcState(snapshot["qc"].to<JsonObject>());
+    if(web->arg("qcCode").isEmpty() || web->arg("qcCode") != snapshot["qc"]["qcCode"].as<String>()) {
+      error("Hasil QC berubah; tinjau snapshot ulang"); return;
+    }
+    snapshot["outputStopEvidence"]="OFF command sent before snapshot; physical load feedback not verified";
+    snapshot["reportSchema"]="QC-REPORT-1";
+    snapshot["qcDate"]=date; snapshot["productionDate"]=production; snapshot["capturedUptimeMs"]=millis();
+    snapshot["snapshotOnly"]=true;
+    JsonDocument response;
+    response["ok"]=true;
+    response["snapshot"].set(snapshot.as<JsonObject>());
+    response["csv"]=qcSnapshotCsv(snapshot,date,pic,production);
+    response["detail"]="Snapshot QC diambil; simpan arsip laptop. Sesi tetap tersedia, hasil berikutnya tidak mengubah snapshot.";
+    send(response);
+  });
   server.on("/api/pd", HTTP_POST, [] {
     if (!guard())
       return;

@@ -1,3 +1,5 @@
+Operator workflow1.8.0: read04_Dokumen/OPERATOR_WEB_REVISION.md WEB01..07. Operator/Technician is presentation only; profiles/calibration/pins unchanged. /api/qc/report requires PIC/date/session/revision/QCcode, guards worker/capture/stale result, returns snapshot+CSV from same evidence after OFF command. Browser archive50/no eviction/errors/exact downloads, not deviceNVS. RTC OSF =>UNVERIFIED; no RTC writes. Preserve reviews, Stop/epoch/disconnect cancellation, profile mask/revision exports. Never fake productionPASS/physical voltage or Write acceptance during UI tests.
+
 PD revision1.7.0: read04_Dokumen/PD_CONTROLS.md. Fixed PDO only/no PPS; presets/slider draft-only, explicit review then confirm=1. Do not send physical voltage commands solely to validate UI; preserve M1 PD OFF. Node tests cover Stop during pre-confirm refresh/context expiry. See CURRENT for actual build/upload status.
 
 # Compact QC firmware

@@ -1,3 +1,7 @@
+# Current operator workflow - source1.8.0
+
+Operator view shows active profile, next test and pending/fail/all filters. Switch to Technician for profile configuration, calibration and OTA; this is a presentation mode, not authentication. Session/profile changes require review before apply. Reports require operator/date and are saved as immutable snapshots in laptop browser storage, with exact JSON/CSV downloads; downloaded files are durable handoff. Browser archive may be cleared with browser data. RTC OSF is UNVERIFIED, never PASS. [Revision/procedure](04_Dokumen/OPERATOR_WEB_REVISION.md). Device/build/push truth is latest CURRENT/VALIDATION; older installed records below historical.
+
 # Current PD controls - source1.7.0
 
 See [PD controls](04_Dokumen/PD_CONTROLS.md): Fixed PDO presets and slider with explicit confirmation, no PPS support. Device/build/publication truth is the latest CURRENT/VALIDATION; older installed records below are historical.

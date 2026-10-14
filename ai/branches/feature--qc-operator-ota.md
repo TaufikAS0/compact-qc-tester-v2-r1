@@ -1,4 +1,4 @@
-CURRENT | V2.7 | 2026-10-14 | Codex | Published1.7.0 e10f329; installed/build13:42:34Z verified; tests/browser PASS; M1 PD OFF | Next: hardware PD0x28 population/power/bus evidence before physical capabilities/voltage acceptance; no source/upload pending
+CURRENT | V2.11 | 2026-10-14 | Codex | Installed1.8.0/build14:54:18Z exact MD5; tests/runtimeAPI PASS; profiles/calibration retained; source ready feature push | Next: publish/parity; browser visual-policy limitation explicit; physical PD/WC unverified
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,35 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.11 | 2026-10-14 | Codex
+
+- Final1.8.0 Build-Firmware.ps1 PASS2026-10-14T14:54:18Z, app1315136 SHAf1b81864417bcbbb78854bca766bbd25f337b7f7ae1a6bb5d34095b387819125; identity/legacy gates PASS. No firmware edits after build start. Node expanded operator/archive/Stop/PD PASS, Python10/portal2 PASS.
+- Authorized app-only OTA192.168.1.31HTTP200; same serial/version/build and MD53e7505c7ee48874729c5e77d408219c9 match. Profiles M0/M1/M2rev6 and calibration retained; no erase. LIVE RTCOSF becomesUNVERIFIED/timeValidfalse; report400PIC/date,409session/revision/QCcode guards PASS; snapshotJSON/CSV fields/code/everytest/first10 columns exact. Saved ignored snapshot retained after new session.
+- FinalM1 PD/EEPROM OFF/outputsOFF/faultfalse; AHT fresh-valid. InstalledHTTPHTML has new controls/script. Prior native browser URL-policy stop means visual/layout/browser-storage acceptance not yet claimed; Node tests cover archive semantics, software-only boundary explicit. No physical ON/Write/PD/radioApply.
+- Local source/docs/tests ready feature-only commit/push; origin stille320474. Evidence ignored build/runtime-final-v1_8_0.json and operator-report-runtime-v1_8_0.json/.csv. Next publish/verify parity; optionally native browser read/reload if policy allows. No automatic merge or general serial-web work.
+
+
+### V2.10 | 2026-10-14 | Codex
+
+- User explicitly resumes all work through OTA. Local changes V2.8/V2.9 preserved; baseline origin remains e320474, fetch done. Re-ran Node operator/archive/Stop/PD regressions PASS, Python10/portal2 PASS. Build-Firmware.ps1 starts2026-10-14T14:54:18Z; no firmware edits after start.
+- Readiness probe192.168.1.31 shows installed1.7.0/build13:42:34Z classic ESP32-D0WD-V3, TPLready/OTA supported, outputsOFF/faultfalse, Digest page200. Probe only, no upload yet. OTA helper gated to manifest1.8.0 and exact SHA/identity/classic chip/size/no private override; will verify same serial/build/MD5/profile/calibration.
+- Need actual final compile/gates and authorized app-only OTA, runtime reportAPI/RTC/profile checks and feature publication. Prior browser URL-policy stop is a visual-validation limitation; do not bypass it. No hardwareON/EEPROMWrite/PDrequest/radioApply; general serial-web untouched.
+
+
+### V2.9 | 2026-10-14 | Codex
+
+- Computer-use skill/runtime changed from earlier browser API to node_repl sky. Read current SKILL/guidance/confirmations/API; selected exact Compact QC Chrome window1379244 from returned inventory. Read-only state confirms device1.7.0 on192.168.1.31/#i2c, current M0 sessionE2F217F3. No physical controls changed.
+- First attempted Ctrl+T for local preview was refused: Computer Use could not determine current browser URL with confidence to enforce policy and stopped this turn. No further UI input or alternative UI workaround. Browser preview/visual/archive validation remains undone. A preview server was started on loopback8769; stop/reuse it on resume, do not spawn duplicates.
+- Local1.8.0 implementation and Node/Python10/portal2 tests PASS (V2.8); firmware not compiled, not OTA-uploaded and new source not committed/pushed. Remote remains baselinee320474; do not claim1.8.0 installed. No main/develop merge. Preserve all local modifications and current app/device evidence. Next complete preview/layout, C++ build and runtime API validation, then exact-gated app-only OTA and feature publication. This is a partial checkpoint, not task completion.
+
+### V2.8 | 2026-10-14 | Codex
+
+- User authorizes all six web recommendations after pushing baseline; git push up-to-date e320474, no merge. Read AGENTS/CURRENT/latest2/backlog/README/VALIDATION/handoff and issue1 Versioning/ChangeNotifications fully before changes. Scope04_Dokumen/OPERATOR_WEB_REVISION.md WEB01..07.
+- Local1.8.0 operator/technician view, explicit active-vs-draft profile and staged session/profile/report confirmations; guided pending/fail/all summary, grouped profiles/clone/diff, retained inputs/results and optional raw diagnostics.44px controls/stickyStop. Existing PDconfirm/Stop/work-owner guards retained.
+- RTC OSF nowUNVERIFIED, communication/timeValid separate; no RTC writes. New/api/qc/report server captures hardware/QC afterOFF, requiresPIC/date/session/revision/QCcode, rejects activeworkers/stale evidence; shared CSV formatter uses same snapshot. Laptop browser archive(max50/no eviction), exact JSON/CSV/bundle downloads, quota/corruption errors, dedup and no tokens. DeviceNVS/EEPROM/pins/WiFi/partition unchanged.
+- Node expanded regressions PASS including archiveimmutability/CSV/context/Stop/quota/corrupt/full; Python10/portal2 PASS. Build/upload stillpending, actualdevice1.7.0. Native browser control plugin changed in this session; next initialize available skill/runtime, preview and verify then frozen final build. No ON/EEPROMWrite/PDnegotiation/radioApply.
+
 
 ### V2.7 | 2026-10-14 | Codex
 

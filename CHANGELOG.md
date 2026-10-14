@@ -1,3 +1,7 @@
+##1.8.0 -2026-10-14
+
+Operator/Technician view, explicit active versus draft profile with session/save review, guided applicable-test progress/filter/navigation, grouped profiles/clone/diff, optional technical details and retained DOM. New/api/qc/report captures authoritative QC/hardware snapshot plus matching CSV after OFF, requiresPIC/date/session/revision/QCcode, rejects stale/active capture. Laptop browser archive50 records/no silent eviction, JSON/CSV/bundle downloads and visible quota/corruption errors; immutable snapshots remain FAIL/INCOMPLETE. RTC OSF nowUNVERIFIED, communication/time validity separate. NVS/EEPROM/pins/polarity/WiFi/legacy partition retained. See04_Dokumen/OPERATOR_WEB_REVISION.md and VALIDATION for actual deployment.
+
 ##1.7.0 -2026-10-14
 
 PD presets5/9/12/15/20V, draft slider and explicit review/confirm; source-capability snapshot explanations including fixed PDO/PPS limitations. /api/pd requires confirm=1 before hardware action. Stop/context changes invalidate staged requests. Existing profiles/calibration/pins/WiFi/partition retained. See04_Dokumen/PD_CONTROLS.md and VALIDATION for physical/build/upload evidence.

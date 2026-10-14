@@ -472,6 +472,8 @@ void rtcState(JsonObject d) {
   uint8_t b[19];
   if (!readReg(0x68, 0, b, 19)) {
     d["valid"] = false;
+    d["communicationValid"] = false;
+    d["timeValid"] = false;
     d["detail"] = "DS3231 read failed";
     qcRecord("RTC", "FAIL", "DS3231 read failed");
     return;
@@ -488,10 +490,13 @@ void rtcState(JsonObject d) {
   int day = dec(b[4] & 63), month = dec(b[5] & 31), year = dec(b[6]);
   bool ok = sec >= 0 && sec < 60 && minute >= 0 && minute < 60 && hour >= 0 && hour < 24 &&
             day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 0;
+  const bool osf=(b[15]&128)!=0;
   d["valid"] = ok;
-  qcRecord("RTC", ok ? "PASS" : "FAIL",
-           ok ? "DS3231 BCD clock and temperature read; OSF status in RTC card"
-              : "Invalid BCD clock");
+  d["communicationValid"] = true;
+  d["timeValid"] = ok && !osf;
+  qcRecord("RTC", !ok ? "FAIL" : osf ? "UNVERIFIED" : "PASS",
+           !ok ? "Invalid BCD clock" : osf ? "RTC read OK; OSF set, waktu belum valid. Periksa baterai dan set waktu melalui prosedur bench; bukan PASS."
+              : "DS3231 BCD clock read, OSF clear; accuracy/battery retention require bench reference");
   d["oscillatorStopped"] = (b[15] & 128) != 0;
   d["temperatureC"] = (int8_t)b[17] + (b[18] >> 6) * .25;
   if (ok) {

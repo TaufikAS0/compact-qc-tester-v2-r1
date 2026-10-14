@@ -1,3 +1,11 @@
+# WEB01..07 SOFTWARE/OTA DONE1.8.0
+
+Final build14:54:18Z gates PASS, exact runtime MD5/serial and profile/calibration persistence verified. Report API/CSV/RTC runtime PASS, Node/Python10/portal2 PASS. Browser visual/layout/archive persistence is not claimed after policy interruption; current limitations/publication in CURRENT. Physical PD/WC/load acceptance remains separate.
+
+# WEB-01..07 revision1.8.0 local -2026-10-14
+
+Implemented operator workflow/confirmation/grouped profiles/report snapshots+browser archive and RTC OSF semantics. Node/Python10/portal2 PASS; preview/build/OTA pending. Device prior1.7.0. Scope04_Dokumen/OPERATOR_WEB_REVISION.md; next action/current publication in CURRENT. Older installed checkpoints below historical.
+
 ## PD-REV-06 DONE SOFTWARE / installed1.7.0
 
 Final build13:42:34Z gates PASS, authorized OTA and exact runtime verified, saved profiles/calibration retained. Presets/slider/review/cancel/browser/software tests PASS. PD0x28 absent on M0; actual capabilities/voltage unverified, no accepted voltage command. Final M1 PD OFF. Feature-only publication recorded in CURRENT. Earlier in-progress entries are historical.
