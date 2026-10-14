@@ -1,3 +1,16 @@
+# Final PD controls - installed1.7.0 /2026-10-14
+
+- Source/device1.6.1 ->1.7.0. Final Build-Firmware.ps1 PASS: UTC2026-10-14T13:42:34Z, app1287984 bytes, SHA256205b4a636a1db5b5b10f03dfdc5969c458b0b2380a0ddfe9c0d708bb06f6fe44; core3.3.10/classic ESP32/16MB/2MB OTA slot and legacy partition gates PASS. No firmware edits after final build started. First13:39:48Z compile failed (uncaptured server variable); fixed to module web pointer, superseded by final13:42:34Z build. Never uploaded failed candidate.
+- App-only OTA192.168.1.31 returned200; same serialTMC88F1559CA478, version/build and runtime/fileMD5557d9c223ada1b62577b00c7c94a424e verified. Calibration gain/offset and all saved profiles exactly preserved. No NVS/storage/partition erase; approved existing lab STA/AP unchanged. Rules_Versioning/Rules_Change_Notifications reread from GitHub issue1 snapshot; current repo entry/checkpoints/docs read.
+- Node expanded UI tests PASS; Python10/portal2 PASS. Browser preview and actual installed browser verify presets/draft/slider/review/cancel; live20V review cancelled, slider19.95V draft only. /api/pd missing confirm rejected400 before any PD request. Stop during fresh-state confirmation, double click, rejection, draft/session/cap change, mismatch/current/unknown/M1 gates covered by Node. No accepted voltage negotiation performed by Codex.
+- Read-only M0 snapshot before and after OTA: PD NOT DETECTED/no I2C response0x28, valid=false/attached=false/pending=false/requestedMV0/sourcePDOs empty. This is distinct from source voltage mismatch; population/power/bus cause unknown. Source capability and actual VBUS remainUNVERIFIED. STUSB4500 lacks PPS;16/17/18V require matching fixed source PDO. See04_Dokumen/PD_CONTROLS.md for primary sources and protocol alternatives.
+- Final deviceM1, PD/EEPROM/Radio configuration/RS232 OFF, outputs OFF. M2 revision6 retained with both DO tests OFF. AHT remains valid real six-byte/Wire0 data (~34.24C/49.30%RH at test); no accuracy/load/WC acceptance claimed. EEPROM not rewritten; old Wire4 limitation retained. Runtime/build evidence ignored underbuild/, screenshotpd-review-live-v1_7_0.jpg shows staged confirmation, not negotiated voltage. Preview screenshot also labelledPREVIEW.
+- Source/docs/tests ready for feature/qc-operator-ota commit/push, no main/develop merge or general serial-web changes. Final publication status is recorded in CURRENT/Git history.
+
+# PD revision1.7.0 in progress
+
+Source changes and software checks complete; final build/OTA pending. See04_Dokumen/PD_CONTROLS.md and CURRENT. M1 PD staysOFF; Codex sends no voltage command. Existing installed1.6.1 evidence below is historical.
+
 # Final validation - v1.6.1 / 2026-10-14
 
 - Final Build-Firmware.ps1 PASS: Arduino-ESP32 core3.3.10,16MB/2MB OTA app, buildUTC **2026-10-14T11:45:51Z /18:45:51 UTC+7**, app **1282720 bytes**, SHA256 **dc4f8de4d78331931b85c840038a95089559c0a38542262f5eb74666c12c7958**. Sketch1282569 bytes61%, RAM56712 bytes17%. Version/time identity and legacy partitions gates PASS. No firmware source edits after final build started.

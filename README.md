@@ -1,3 +1,7 @@
+# Current PD controls - source1.7.0
+
+See [PD controls](04_Dokumen/PD_CONTROLS.md): Fixed PDO presets and slider with explicit confirmation, no PPS support. Device/build/publication truth is the latest CURRENT/VALIDATION; older installed records below are historical.
+
 # Installed and verified v1.6.1
 
 OTA to192.168.1.31 verified version/buildUTC2026-10-14T11:45:51Z and app MD5; calibration and saved profiles preserved. AHT now produces live data. Konfigurasi QC lets you edit/add M profiles and toggle tests; M2 example saved with both DO OFF. Profile/CSV/browser transition checks passed. EEPROM Read works but Write still fails(Wire4); M1 keeps it OFF alongside Radio configuration/RS232/PD. Current installation evidence and limits are in VALIDATION.md; ignored is never PASS. Feature branch only, no automatic merge.

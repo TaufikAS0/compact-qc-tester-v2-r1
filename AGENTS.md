@@ -1,3 +1,5 @@
+PD revision1.7.0: read04_Dokumen/PD_CONTROLS.md. Fixed PDO only/no PPS; presets/slider draft-only, explicit review then confirm=1. Do not send physical voltage commands solely to validate UI; preserve M1 PD OFF. Node tests cover Stop during pre-confirm refresh/context expiry. See CURRENT for actual build/upload status.
+
 # Compact QC firmware
 
 Current revision1.6.1 includes persistent editable QC profiles (qc_profiles.* / qc_profile_math.h). Read04_Dokumen/QC_PROFILE_REVISION.md and CURRENT for source/build/upload status.36 stable switches, max16 profiles M0..M999; namespace qc-profiles/profiles-v1 only. M1 defaults Radio configuration/RS232/PD/unresolved EEPROM OFF; keep Radio communication and RS485 ON. If EEPROM Write/Read is physically verified, enable its M1 switch explicitly. Exclusions are IGNORED BY PROFILE, never PASS; all-OFF is INCOMPLETE. Enforce endpoints/results/inputs/PD/background acquisition plus JSON/CSV/QC-code profile snapshot. Active profile changes stop outputs and reset session; calibration/EEPROM retained. The historical DeviceVariant helpers are not the runtime policy; qc_profiles is authoritative.

@@ -1,3 +1,7 @@
+##1.7.0 -2026-10-14
+
+PD presets5/9/12/15/20V, draft slider and explicit review/confirm; source-capability snapshot explanations including fixed PDO/PPS limitations. /api/pd requires confirm=1 before hardware action. Stop/context changes invalidate staged requests. Existing profiles/calibration/pins/WiFi/partition retained. See04_Dokumen/PD_CONTROLS.md and VALIDATION for physical/build/upload evidence.
+
 ## 1.6.1 - 2026-10-14
 
 - Browser testing of installed1.6.0 caught a sticky-disabled regression: M1 exclusion/unselected state disabled EEPROM/AHT/scan/SD buttons, but moving to an enabled profile never re-enabled them. Recompute direct-control gates on every render; preserve sensor/worker/OTA prerequisites. Add actual-DOM transition regressions.

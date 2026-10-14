@@ -1,3 +1,11 @@
+## PD-REV-06 DONE SOFTWARE / installed1.7.0
+
+Final build13:42:34Z gates PASS, authorized OTA and exact runtime verified, saved profiles/calibration retained. Presets/slider/review/cancel/browser/software tests PASS. PD0x28 absent on M0; actual capabilities/voltage unverified, no accepted voltage command. Final M1 PD OFF. Feature-only publication recorded in CURRENT. Earlier in-progress entries are historical.
+
+## PD-REV-06 -2026-10-14
+
+Source1.7.0 presets/slider/explicit confirmation DONE SOFTWARE; tests PASS, browser preview PASS. Final build started2026-10-14T13:39:48Z, no firmware edits after start; build/OTA pending. Physical PD voltages remainUNVERIFIED. See CURRENT and04_Dokumen/PD_CONTROLS.md.
+
 ## Final continuation - v1.6.1 / 2026-10-14
 
 Revisions REV-01..05 are tracked in04_Dokumen/QC_PROFILE_REVISION.md. Software implemented/build/tests PASS; authorized OTA192.168.1.31 installed1.6.1/build11:45:51Z, exact MD5/serial match, calibration/profile persistence verified. AHT now live valid. EEPROM Read fixed but Write remains rejected Wire4; M1 ignores EEPROM per user fallback. M1 also excludes Radio configuration/RS232/PD. Editable M2 example saved with both DO OFF; browser toggles/session/CSV verified. UI click queue/Stop/stable DOM and profile-transition fix included. No general serial-web work or automatic main/develop merge. See CURRENT for final publication state; physical output/accuracy/EEPROM-WC followup remains explicit.

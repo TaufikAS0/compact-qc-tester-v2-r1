@@ -1,3 +1,7 @@
+# PD controls1.7.0
+
+Pilih preset5/9/12/15/20V atau slider/nilai mV; ini hanya draft. Klik Tinjau request, periksa tegangan/arus dan kecocokan snapshot adaptor, lalu Konfirmasi & request atau Batal.16/17/18V hanya bekerja jika adaptor menyediakan Fixed PDO yang sama. STUSB4500 tidak mendukung PPS. Ukur VBUS terpisah. M1 PD defaultOFF; aktifkan secara eksplisit pada Konfigurasi QC jika modul memang akan diuji. API /api/pd memerlukan token,mv,ma,confirm=1; tanpa confirm ditolak400 sebelum stop/I2C. Confirm adalah intent field, bukan autentikasi. [Detail](PD_CONTROLS.md).
+
 # Current operator additions - v1.6.0
 
 Open Konfigurasi QC, choose M0/M1 then Muat konfigurasi, or enter M2/M3 and Buat draft profil baru. Check ON for mandatory tests, uncheck OFF to exclude. Simpan persists configuration; editing an active profile starts a new session. Use the Device dropdown and Mulai/ganti device to run the chosen profile. Maximum16 profiles, IDs M0..M999. No tests ON means INCOMPLETE. Excluded tests show IGNORED BY PROFILE in reports, not PASS.

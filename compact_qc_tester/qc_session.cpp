@@ -467,6 +467,10 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       error("PD test OFF in selected QC profile");
       return;
     }
+    if (web->arg("confirm") != "1") {
+      error("Explicit PD voltage confirmation required", 400);
+      return;
+    }
     stopSafe();
     long mv, ma;
     if (!number("mv", 5000, 20000, mv) || !number("ma", 10, 5000, ma)) {

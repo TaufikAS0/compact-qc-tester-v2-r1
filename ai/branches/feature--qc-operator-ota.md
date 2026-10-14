@@ -1,4 +1,4 @@
-CURRENT | V2.4 | 2026-10-14 | Codex | Published source1.6.1 b39d447; device/build/MD5 verified; AHT/profiles/UI PASS; EEPROM ignored M1 | Next: optional hardware WC evidence in issue1; no source/upload work pending
+CURRENT | V2.6 | 2026-10-14 | Codex | Installed1.7.0/build13:42:34Z exact MD5; tests/browser PASS; PD0x28 absent; source ready feature push | Next: publish only; physical PD population/power/bus/caps/voltage unverified
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,21 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.6 | 2026-10-14 | Codex
+
+- Final1.7.0 build2026-10-14T13:42:34Z PASS, app1287984 SHA205b4a636a1db5b5b10f03dfdc5969c458b0b2380a0ddfe9c0d708bb06f6fe44; binary/legacy gates PASS. First13:39:48Z compile failed uncaptured server; corrected toweb pointer. No firmware edit after final build start. Node/Python10/portal2 and preview PASS.
+- Authorized app-only OTA192.168.1.31 HTTP200; same serial/version/build and MD5557d9c223ada1b62577b00c7c94a424e match. Profiles/calibration retained exactly. Live browser presets20V review, Cancel and slider19.95V draft PASS; missing confirm API400 before PD transaction. No accepted PD voltage negotiation. M1 restored, PD/EEPROM excluded/outputs OFF; AHT fresh valid. No NVS/storage/partition erase.
+- Live read-only M0 PD before/after NOT DETECTED/no0x28 response; cause unknown, source caps/VBUS unverified. Separate from STUSB4500 fixed-only/no PPS evidence.16/17/18 require exact fixed source PDO. Primary research/procedure in04_Dokumen/PD_CONTROLS.md.
+- Source/docs/test local ready to commit/push on feature only; remote baseline8593a7c, no merge. Evidence ignored build/runtime-final-v1_7_0.json,pd-review-live-v1_7_0.jpg. Next publish/check parity then physical followup only with new hardware evidence.
+
+
+### V2.5 | 2026-10-14 | Codex
+
+- Source1.7.0 local: fixed-PDO5/9/12/15/20 presets,50mV draft slider, source snapshot warnings, explicit review/confirm. /api/pd requires confirm=1; state/context/draft/Stop guard prevents stale confirmed send. ST primary sources confirm no PPS;16/17/18 require exact fixed source PDO. No alternate protocol invented.
+- Node expanded PD/Stop/confirmation tests PASS; Python10 and portal2 PASS. M1 still PD OFF, no actual voltage command. Pin/NVS/calibration/WiFi/legacy partition retained. Device prior1.6.1; no new build/upload yet.
+- Rules_Versioning/Change_Notifications reread via issue1; repo AGENTS/CURRENT latest2/backlog/README/VALIDATION/handoff read. Remote8593a7c clean baseline preserved. Next preview then frozen final build, gates and authorized app-only OTA; physical PD remains unknown. No merge.
+
 
 ### V2.4 | 2026-10-14 | Codex
 
