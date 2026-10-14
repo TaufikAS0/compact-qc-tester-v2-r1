@@ -1,3 +1,36 @@
+# Final validation - v1.6.1 / 2026-10-14
+
+- Final Build-Firmware.ps1 PASS: Arduino-ESP32 core3.3.10,16MB/2MB OTA app, buildUTC **2026-10-14T11:45:51Z /18:45:51 UTC+7**, app **1282720 bytes**, SHA256 **dc4f8de4d78331931b85c840038a95089559c0a38542262f5eb74666c12c7958**. Sketch1282569 bytes61%, RAM56712 bytes17%. Version/time identity and legacy partitions gates PASS. No firmware source edits after final build started.
+- Node actual-DOM UI PASS, including M1->M0 and unselected->selected re-enable,36-switch editor/new profiles, ignored gates, unchanged output DOM, sequential rapid clicks and priority Stop. Python10 PASS; portal2 PASS. Profile/AHT/previous production constexpr checks compiled. No additional dependency install/version drift.
+- App-only OTA1.6.0 ->1.6.1 on authorized192.168.1.31 returned200/success. GET confirmed same board serial, version1.6.1/buildUTC11:45:51Z and runtime/file MD5 **ba772733fa865400ed57a91eff4390a5**. Initial installed baseline was1.5.0; no partition/NVS/storage erase. Private override absent, approved LAB default unchanged.
+- Calibration coefficients retained across both OTA reboots. Saved M0/M1/M2 profiles (including M2 revision4) exactly matched before/after second reboot, storage reports loaded from NVS. Browser then saved M2 DO1 ON/revision5 and OFF/revision6; active edit changed session. M2 left both DO tests OFF, M1 selected finally. No actual output ON commands sent by Codex in these tests.
+- Live browser: M1 EEPROM Read/Write disabled; switching M0 enabled both without reload. One Read click returned transport-success/EMPTY FF. M2 DO1 control enabled independently while DO2 remained disabled; two OFF clicks and Stop accepted, output controls retained between polls. CSV live M2/rev6 kept Longhi first10 columns and both DO exclusions. Software/request behavior verified; physical relay load and subjective endurance remain untested.
+- AHT remains LIVE valid on1.6.1, six-byte frames/Wire0, about34.9C/34-35%RH at final capture; earlier1.6.0 sample36.1C/29.8%RH. Values are real samples at different times, not accuracy certification. Screenshot build/runtime-aht-card-v1_6_1.jpg and full dashboard/runtime-final-v1_6_1.json are ignored evidence.
+- EEPROM transport Read succeeds, reserved128byte slots remainEMPTY FF. Two Write attempts on1.6.0 (API and browser) failed at0x3F80/Wire4, queued16/16. No write acceptance; M1 keeps EEPROM OFF per user condition. WC HIGH/write-protection is a reasonable hypothesis from ST DS6639 section2.4, not a measured diagnosis. Primary-laptop schematic/WC question remains in GitHub issue1/comment6167590821. No foreign bytes erased or unknown WC pin driven.
+- Firmware version source1.5.1 ->1.6.0 ->1.6.1; device1.5.0 ->1.6.0 ->1.6.1. STA HuaweiJIN/recoveryAP12345678, existing selective WiFi migration, qc-adc and PCB identity layout retained; only new qc-profiles/profiles-v1 storage added. Rules_Versioning/Rules_Change_Notifications/Home read via issue1; related rules read from private vault aa0bb9e. Feature branch only, no main/develop merge; publication SHA follows in CURRENT/Git history.
+
+# Current validation - v1.6.1 candidate / 2026-10-14
+
+- Source1.5.1 ->1.6.0 ->1.6.1.1.6.1 fixes browser-discovered sticky-disabled controls on profile transitions and clarifies EEPROM/WC diagnostics. Expanded Node UI PASS; Python10 PASS; portal2 PASS. Build via Build-Firmware.ps1 started **2026-10-14T11:45:51Z /18:45:51 UTC+7**; final gate/1.6.1 OTA still pending at this checkpoint. No firmware edits after that build began.
+
+## Verified1.6.0 build and device checkpoint
+
+- Final1.6.0 compile PASS: core3.3.10/FlashSize16M/2MB slot; buildUTC2026-10-14T11:32:27Z, app1282320 bytes/SHA256474dfee45fc28123ba50eb7d3c2c730446fcc1a131a927bdbc96cea5f057687a. Sketch1282169 bytes61%, RAM56712 bytes17%. Metadata/legacy partition SHA256bc35a6a93f6204d86e25f28df16a6fb3e38a9052d8ca55a375c4e37c414c5c72 PASS. Earlier11:21:29Z candidate superseded.
+- Authorized app-only OTA to192.168.1.31 returned200/success; reboot GET verified same serialTMC88F1559CA478, version1.6.0/build11:32:27Z and runtime/fileMD5fecea0e487f31a528b48982d9e3ab1ef. Calibration active gain/offset retained. No flash/partition/NVS/storage erase; no private override. Ignored evidence build/pre-ota-state.json,post-ota-state.json,runtime-qc-validation.json.
+- AHT LIVE PASS for fresh data: status24(0x18), Wire0, six bytes, IDLE and valid=true;36.08875C/29.84209%RH at capture. Browser showed data too. Protocol/data availability confirmed; sensor accuracy/absolute calibration not measured.
+- M1 LIVE exclusions: Radio configuration/RS232/PD/EEPROM IGNORED BY PROFILE, applicable=false; direct PD/identity/RS232/Apply requests rejected409 before hardware action. Radio communication/RS485 applicable=true. M2 create/save/readback, both DO OFF, direct ON rejection, safe OFF, re-enable DO1 independent of DO2, active-edit fresh session, all-OFF applicableCount0/INCOMPLETE, stale revision rejection all PASS. M2 left with both DO tests OFF. No physical ON/load acceptance inferred.
+- EEPROM LIVE Read200/ok=true, identityValid=false; both slotsEMPTY FF. Write/API then Write/browser first16-byte chunk at0x3F80 rejected Wire4, queued16/16. Fresh Read after first failure confirmed128 FF unchanged. No Write/readback PASS. WC HIGH is plausible per ST section2.4 but WC not measured; asking schematic/pin evidence in GitHub issue1. User-authorized M1 exclusion remains.
+- Responsiveness baseline GET5 latency samples210.8/63.9/61.3/56.7/75.1ms, median63.9ms. Browser one-click actions were accepted; new UI showed immediate processing and actual EEPROM error. Node tests verify retained output node on identical poll, ordered queued actions and priority Stop dropping queued work. No general network/noise/endurance claim.
+- Browser caught1.6.0 M1->M0 sticky-disabled controls;1.6.1 regression covers fix. Final on-device button-transition checks required after upcoming OTA.
+
+## Resume verification - 2026-10-14 17:49 UTC+7
+
+- Audited exact GitHub checkpoint add83d971df4e2de5eb994beeae4a735058e1145 on feature/qc-operator-ota; clean local checkout fast-forwarded from e7c72e5. No main/develop merge.
+- Re-ran Node UI regression: PASS; Python unittest discovery:10 PASS; Node portal packaging:2 PASS. Changes in this continuation are documentation only; firmware stays1.5.1.
+- No new compile, binary packaging, device contact, upload or physical verification. v1.5.1 build details below are checkpoint evidence, not a new local result.
+- Existing local app is1120144 bytes/SHA256231291610a98957b526c86115ccc9534da0ec1e35febba30538ba2e87ddb55c5; manifest and generated metadata are absent. It differs from the recorded v1.5.1 app and is unsuitable for this installation.
+- Mandatory versioning/change-notification vault files were not found at the repo-referenced path or targeted local searches. Locate/read them before a fresh build. Team installation and physical acceptance remain pending; current device version/IP and repaired relay have not been revalidated.
+
 # Current output validation — v1.5.1 / 2026-10-14
 
 - Installed device read at192.168.1.55: v1.5.0, build2026-10-14T05:16:49Z, relayEnabled true and outputFault false. No output commands or upload issued by Codex this task. User confirms failed relay was hardware and BOTH DO1/DO2 physically invert ON/OFF.

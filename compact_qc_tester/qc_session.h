@@ -16,4 +16,5 @@ void qcOutputsStopped();
 void qcNoteI2cScan(unsigned devices);
 bool qcProfileSelected();
 bool qcPdEnabled();
+bool qcTestEnabled(const String &name);
 const char *qcVariantName();

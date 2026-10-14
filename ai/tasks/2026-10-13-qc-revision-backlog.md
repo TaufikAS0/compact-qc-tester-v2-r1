@@ -1,3 +1,17 @@
+## Final continuation - v1.6.1 / 2026-10-14
+
+Revisions REV-01..05 are tracked in04_Dokumen/QC_PROFILE_REVISION.md. Software implemented/build/tests PASS; authorized OTA192.168.1.31 installed1.6.1/build11:45:51Z, exact MD5/serial match, calibration/profile persistence verified. AHT now live valid. EEPROM Read fixed but Write remains rejected Wire4; M1 ignores EEPROM per user fallback. M1 also excludes Radio configuration/RS232/PD. Editable M2 example saved with both DO OFF; browser toggles/session/CSV verified. UI click queue/Stop/stable DOM and profile-transition fix included. No general serial-web work or automatic main/develop merge. See CURRENT for final publication state; physical output/accuracy/EEPROM-WC followup remains explicit.
+
+## Resume audit - 2026-10-14 17:49 UTC+7
+
+- Open project: Compact QC only. Clean local feature/qc-operator-ota was 12 commits behind; fetched and fast-forwarded to the exact remote checkpoint add83d971df4e2de5eb994beeae4a735058e1145. Remote main remains35733ba; no remote develop exists. No main/develop merge.
+- Source truth: firmware_version.h1.5.1; relay_profile.h GPIO32/33 active HIGH (ON=HIGH/OFF=LOW), LED MCP active LOW. User reports failed relay as hardware; no fresh physical evidence collected.
+- QC-02/04/05: v1.5.1 SOFTWARE PASS per checkpoint and current regression run; BENCH PENDING. Earlier table/status and device readings below are historical. The obsolete instruction not to invert DO is superseded by the user's both-HIGH correction. QC-16 remains BENCH FOLLOWUP; do not reopen QC-09 without new evidence.
+- This continuation corrects contradictory operator/install polarity, version and serial-deferral text. Firmware source/version stays1.5.1. Node UI PASS, Python10 PASS, portal2 PASS. No new firmware compile, device contact or upload.
+- Local build/compact_qc_tester.ino.bin is an older1120144-byte app, SHA256231291610a98957b526c86115ccc9534da0ec1e35febba30538ba2e87ddb55c5, with no firmware-manifest.json or build_metadata.h. It is not the gated v1.5.1 app and must not be relabelled or installed as such.
+- Vault paths referenced by AGENTS are absent here; targeted searches under D:/Home Work, C:/Users/taufi/Documents and C:/Users/taufi/.codex found no Rules_Versioning.md or Rules_Change_Notifications.md. Resolve/read these before a fresh build. The checkpoint's v1.5.1 build evidence is retained as historical evidence, not reproduced locally.
+- Next: locate the mandatory vault rules; if a fresh binary is needed, use Build-Firmware.ps1 and retain exact manifest/hash. Team verifies installed version/buildUTC, repaired relay, GPIO vs physical DO behavior and Stop/timeout; EEPROM/PD followup requires fresh errors/observations. Publication state is recorded in CURRENT/worklog and Git history.
+
 ## Reopened output report — 2026-10-14
 
 QC-02/QC-04/QC-05 reopened for DO1 always physically OFF (user confirmed) and DO2 inverted on installed1.5.0. v1.5.1 fixes proven startup sequencing bug and corrects BOTH DO1/DO2 toHIGH; user identifies the failed relay as hardware. Final1.5.1 build/tests PASS; see latest branch worklog. Physical acceptance pending team install. Earlier DONE SOFTWARE does not certify physical output behavior.

@@ -1,21 +1,47 @@
+# Final installed handoff - v1.6.1
+
+Installed and verified via authorized app-only OTA at192.168.1.31: buildUTC2026-10-14T11:45:51Z, app1282720 bytes/SHA256dc4f8de4d78331931b85c840038a95089559c0a38542262f5eb74666c12c7958, runtime/fileMD5ba772733fa865400ed57a91eff4390a5. Classic ESP32/16MB legacy layout retained; no NVS/storage erase. Calibration and saved profiles survived OTA reboot.
+
+AHT now produces actual data.1.6.1 browser verifies M1->M0 buttons re-enable and one-click EEPROM Read works. M2 example is saved(revision6) with DO1/DO2 tests OFF; both were independently toggled and saved in browser. Add further profiles in Konfigurasi QC, max16 IDsM0..M999. Final active profile M1 excludes Radio configuration, RS232, PD and EEPROM, retaining radio communication/RS485. All hardware outputs left OFF.
+
+EEPROM Write remains unsuccessful(Wire4 at0x3F80); region still blank. WC actual level/wiring remains unknown, asked through GitHub issue1. Keep EEPROM excluded on M1 until successful physical Write+Read evidence; do not fabricate PASS or drive an unknown WC net. Physical relay loads, reference sensor accuracy, power-cut storage/OTA recovery and TPL waveform still require bench evidence. Full QC overall remainsINCOMPLETE. Current final instructions supersede pending/historical entries below.
+
+# Current patch handoff - v1.6.1
+
+1.6.1 recomputes direct button gates so selecting M0 after M1 enables EEPROM/AHT/scan/SD controls again; added regression covers both profile and selection transitions. Later source/build state supersedes1.6.0 below. Build starts2026-10-14T11:45:51Z, final gate/upload still pending at this checkpoint.
+
+On installed1.6.0 (OTA already verified), AHT produces fresh six-byte data, status0x18, Wire0, approximately36.1C/29.8%RH. Accuracy against a reference remains untested. EEPROM Read returns bothEMPTY FF; Write failed twice (API and one browser click) at0x3F80, Wire4,18-byte transfer including address/16 queued data bytes. Fresh Read after the first failure confirms no QC bytes changed. WC level/pin wiring unknown; asked laptop-main AI through issue1. ST datasheet section2.4 makes WC HIGH/data NACK a plausible explanation, not a measured fact. Keep EEPROM OFF on M1; do not drive an unknown WC pin or erase foreign bytes. No EEPROM Write/readback PASS claimed.
+
+Profiles M1 direct-exclusion rejection and M2 DO-off/re-enable/all-OFF INCOMPLETE/stale-edit guards passed on device. M2 saved as the user's example, both DO tests OFF. Verify profile persistence across the upcoming1.6.1 OTA reboot; calibration already survived the first OTA. User tab tested directly; source1.6.1 upload still pending here.
+
+# Current handoff - v1.6.0
+
+- OTA target authorized by user:192.168.1.31. Latest read-only baseline: classic ESP32-D0WD-V3, source1.5.0/build2026-10-14T05:16:49Z, TPL ready, no active output/fault. Match serial and exact manifest before and after app-only OTA; no merged/partition/NVS erase.
+- Use Konfigurasi QC for saved M0/M1/M2/M3 profiles.36 switches, up to16 profiles M0..M999. Test OFF becomes IGNORED BY PROFILE in reports/OLED/counters, never PASS. M1 default: Radio configuration, RS232, PD and unresolved EEPROM OFF; Radio communication/RS485 ON. If EEPROM Write/Read succeeds physically, enable it in M1 and test it. Active profile edit/change creates a new session; calibration/identity stay.
+- New storage is qc-profiles/profiles-v1 only. Schema/CRC/readback, stale-edit rejection and explicit errors; corrupt storage blocks selection rather than silently narrowing QC. DO32/33 active HIGH and LED MCP LOW retained; TPL safety/partition/WiFi/OTA unchanged.
+- Current device evidence: AHT E1 initialization NACK; EEPROM transport readable with two EMPTY FF slots. Missing QC identity is not Read/bus failure. Test Write only in approved region0x3F80-0x3FFF, read back and verify labels/CRC; WC still unknown. No foreign bytes erased.
+- New UI gives immediate progress and queues rapid clicks; Stop clears queue and sends immediately. Repeated status polling retains unchanged output controls. Bench check negative requests/Stop/heartbeat and physical loads separately.
+- Rules read from GitHub assistance issue1: complete Rules_Versioning, Rules_Change_Notifications and Home snapshots; related firmware/folder/Gitflow/credential/color/planning/connectivity/baseline rules read from private vault aa0bb9e. Current HuaweiJIN profile was retained under explicit existing LAB authorization; no customer profile introduced.
+- Runtime upload outcome and final build hash will be recorded in VALIDATION/CURRENT. Until then1.6.0 is local source, not an installed claim.
+
 # Output fix1.5.1 � current instructions
 
 DO1 GPIO32 and DO2 GPIO33 are active HIGH (OFF LOW), per latest explicit user confirmation that both were inverted. LED MCP stays active LOW. This supersedes historical blanket DO active-LOW instructions below.
 
 After team upload: verify build/version, reboot defaultOFF, independently ON/OFF each DO, bothON, Stop, heartbeat loss and per-channel timeout. Dashboard now shows expected polarity and measured GPIO pad level. If GPIO32 follows LOW/OFF and HIGH/ON but DO1 load stays unchanged, inspect the driver/module/wiring; do not report physical PASS based on GPIO alone. If GPIO mismatches, firmware rejects the command and stops outputs. User identified the failed relay as hardware; verify the repaired fixture physically. No firmware upload performed by this change.
 
-# Team handoff — v1.5.0
+# Team handoff — v1.5.1
 
 Read [current operator guide](QC_OPERATOR_GUIDE.md), [validation](../VALIDATION.md), [backlog/checkpoint](../ai/tasks/2026-10-13-qc-revision-backlog.md), [CURRENT worklog](../ai/branches/feature--qc-operator-ota.md). Source1.2.0 ->1.5.0 revisions: independent active-LOW outputs, latched confirmation, I2C list/user verdict, AHT10 recovery, five-point analog QC, two-tag Modbus, serial/SPI/network menu separation, worker WiFi/ETH/MQTT, explicit E70 AT Apply/readback and EEPROM/PD diagnostics. Team uploads; no Codex flash. Later update sections supersede historical procedures below.
 
-No pin remap or ESP NVS layout change. Both LED MCP and DO activeLOW. STA boot profileHuaweiJIN/AP recovery12345678; old STA driver config migrates selectively, unrelated NVS stays. Test-specific network/tag config is RAM. E70 Apply may persist radio settings and require restart; read validation remains read-only. Preserve TPL B7 through atomic masked RMW/restoration. No automatic EEPROM foreign-data erase or STUSB NVM writes. Exact final build/metadata/hash in VALIDATION.
+No pin remap or ESP NVS layout change. LED MCP is active LOW; DO1 GPIO32 and DO2 GPIO33 are active HIGH (ON=HIGH, OFF=LOW). STA boot profileHuaweiJIN/AP recovery12345678; old STA driver config migrates selectively, unrelated NVS stays. Test-specific network/tag config is RAM. E70 Apply may persist radio settings and require restart; read validation remains read-only. Preserve TPL B7 through atomic masked RMW/restoration. No automatic EEPROM foreign-data erase or STUSB NVM writes. Exact final build/metadata/hash in VALIDATION.
 
-Actual read-only bench diagnosis:192.168.1.55 source1.2.0/build2026-10-12T21:08:39Z; EEPROM57 ACK/no valid identity, PD28 absent. New software cannot negotiate with an absent/unpowered IC; verify M0 population or select M1 if intentionally unpopulated. Physical acceptance remains pending after team installation.
+Historical v1.2.0 read-only bench diagnosis at192.168.1.55: EEPROM57 ACK/no valid identity, PD28 absent. New software cannot negotiate with an absent/unpowered IC; verify M0 population or select M1 if intentionally unpopulated. The later checkpoint observed v1.5.0/build2026-10-14T05:16:49Z; old EEPROM/PD findings were not revalidated on that version. Current IP, installed version and relay repair status require a fresh check. Physical acceptance remains pending after team installation.
 
 ## Build and install
 
-1. Verify actual port, classic ESP32 chip, MAC/16MB and current partition table. Last historical port was COM13 CH340; do not assume current port. Back up NVS/partition table. No Codex upload of v1.5.0 is performed.
-2. Check `config.h`: LED MCP1 active LOW, DO GPIO32/33 active LOW, as corrected by user. Both output/MCP verification flags are true; BANK0/SEQOP0 is checked at runtime. Use a suitable isolated bench fixture and verify actual OFF before attaching loads.
+1. Verify actual port, classic ESP32 chip, MAC/16MB and current partition table. Last historical port was COM13 CH340; do not assume current port. Back up NVS/partition table. No Codex upload of v1.5.1 is performed.
+2. Check `relay_profile.h`: DO GPIO32/33 active HIGH, ON=HIGH/OFF=LOW. LED MCP1 remains active LOW in `config.h`. Both output/MCP verification flags are true; BANK0/SEQOP0 is checked at runtime. Use a suitable isolated bench fixture and verify actual OFF before attaching loads.
 3. Install pinned dependencies from README, Python3 and Node. Run `./Build-Firmware.ps1`; this generates UTC identity before compile and validates it in binary. Without a private override, use the intentional public LAB default admin / CompactLab050! from lab_ota_defaults.h (owner decision 2026-10-12). Private override builds stay private; -PublicLabRelease refuses them and packages only committed source.
 4. Keep app and `build/firmware-manifest.json` together internally. Confirm manifest version/buildUTC/SHA-256 matches the exact `.ino.bin` to install. Build timestamp is build start, not device clock/upload time.
 5. For initial USB installation use verified legacy offsets below; never Arduino default offsets; validated portal merged is allowed for deliberate LAB reset. For an installed OTA-capable firmware, `/update` uses application `.ino.bin` only.
@@ -34,7 +60,7 @@ USB component offsets: bootloader **0x1000**, partitions **0x8000**, application
 
 ## Bench procedure
 
-- On boot verify serial `TMC` +12 uppercase STA MAC hex digits, source v1.1.0 and matching buildUTC on serial, `/api/state`, dashboard and rotating OLED screen. Wi-Fi STA HuaweiJIN; recovery AP`COMPACT-QC-xxxx`, password12345678 at192.168.4.1. Existing driver STA profile is updated only if different; unrelated NVS preserved.
+- On boot verify serial `TMC` +12 uppercase STA MAC hex digits, source v1.5.1 and matching buildUTC on serial, `/api/state`, dashboard and rotating OLED screen. Wi-Fi STA HuaweiJIN; recovery AP`COMPACT-QC-xxxx`, password12345678 at192.168.4.1. Existing driver STA profile is updated only if different; unrelated NVS preserved.
 - New Session resets RAM results/input counters and capture points, not active calibration or EEPROM. Operator name optional. Browser reload preserves firmware counters/results; device reboot resets RAM. Download report before reset/reboot. No input operator confirmation exists.
 - DI1–4 and each DMM/Normal/Webserver: provide `HIGH LOW HIGH LOW HIGH`, holding each state≥50ms. Verify counter0→1→2 and latched automatic PASS; stuck HIGH/LOW/bounce must not pass. Normal is GPIO2 LOW AND GPIO39 LOW; DMM/WS HIGH contacts confirmed. GPIO39 needs external bias.
 - OLED: inspect actual text and choose Teks terlihat or Blank. Verify every module status rotates, including OLED's own result and build UTC. Visual PASS rejected if initialization failed.
@@ -54,7 +80,7 @@ Confirmed by user: pinmap, MCP23017-E/ML, STUSB4500QTR, M24128/C7559, AHT10, ADS
 
 ## Device variant and QC export
 
-Choose **M0 or M1 before QC**. Reboot requires choosing again; variant/session/results are RAM only, not EEPROM hardware identity. Changing variant or starting a new session stops outputs and resets results/input counters/capture points, retains active calibration and EEPROM. Requests wait for any active PD negotiation to finish before reset. M0 includes PD; M1 marks STUSB4500 **NOT APPLICABLE**, excludes it from applicable/pending/fail counts, disables its request endpoint/controls and all PD register polling/writes. Generic all-address I2C ACK scan remains available. RS485/RS232 remain deferred for both variants by the prior user decision; no fabricated PASS.
+Choose **M0 or M1 before QC**. Reboot requires choosing again; variant/session/results are RAM only, not EEPROM hardware identity. Changing variant or starting a new session stops outputs and resets results/input counters/capture points, retains active calibration and EEPROM. Requests wait for any active PD negotiation to finish before reset. M0 includes PD; M1 marks STUSB4500 **NOT APPLICABLE**, excludes it from applicable/pending/fail counts, disables its request endpoint/controls and all PD register polling/writes. Generic all-address I2C ACK scan remains available. RS485/RS232 tests are implemented for both variants; the earlier deferral was superseded. Physical acceptance requires the external fixture and actual test evidence.
 
 QC1 code format: `QC1-M0|M1-TMC<MAC>-PASS|FAIL|INCOMPLETE-<session8hex>-<CRC32hex>`. CRC32 covers version/build UTC, selected variant, serial, session and length-prefixed ordered test names/status/details/overall. It changes when evidence changes; it is a snapshot identifier, **not a signature, certification or guaranteed unique production serial**. Production serial remains TMC + STA MAC. Live ADC/RTC readings and export date/PIC are outside this evidence checksum. Code shown by API/dashboard and included with full JSON/CSV; code may represent FAIL/INCOMPLETE.
 
@@ -64,9 +90,9 @@ The first ten columns match Longhi's order: `serialNumber,productName,productTyp
 
 Reference inspected read-only: Longhi [`fix/modbus` export](https://github.com/TaufikAS0/esp32-s3-longhi-board-test/blob/26f9a1fb7fd449d076c9b41ed0f0bf091163d0fb/02_Firmware/esp32s3_hwtest/web_server.cpp) at26f9a1f and feature/longhi-modular-upgrade3a45448. Remote develop9aa0fc1 currently lacks this exporter. No pre-existing QC code format was found, so QC1 is defined here. Longhi worktree/source were not changed.
 
-## Output workflow superseding historical procedure — 2026-10-13
+## Historical output workflow — 2026-10-13
 
-Every output starts OFF and has independent state/timer. ON on one does not turn another OFF. Command renews valid activity; loss of heartbeat3500ms still stops all. Per-output60s expiration stops only that output. MCP write/readback failure locks and stops all. LED MCP and DO are active LOW per latest user confirmation. Visual QC accepts one Sesuai/Tidak sesuai observation after an ON attempt; current command must match observation. Final verdict stays while controls remain usable; new session resets it. No claim that both physical states were certified. I2C PASS/FAIL confirms the scanned list only; empty scan cannot PASS. No pin mapping/NVS/Wi-Fi/OTA credential changes.
+Every output starts OFF and has independent state/timer. ON on one does not turn another OFF. Command renews valid activity; loss of heartbeat3500ms still stops all. Per-output60s expiration stops only that output. MCP write/readback failure locks and stops all. Historical v1.3.0 polarity was LED MCP and DO active LOW; v1.5.1 supersedes DO to active HIGH. LED MCP remains active LOW. Visual QC accepts one Sesuai/Tidak sesuai observation after an ON attempt; current command must match observation. Final verdict stays while controls remain usable; new session resets it. No claim that both physical states were certified. I2C PASS/FAIL confirms the scanned list only; empty scan cannot PASS. No pin mapping/NVS/Wi-Fi/OTA credential changes.
 
 ## Update1.4.0
 

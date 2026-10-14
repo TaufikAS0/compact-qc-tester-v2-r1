@@ -1,4 +1,14 @@
-# Compact QC operator guide — source1.5.0
+# Current operator additions - v1.6.0
+
+Open Konfigurasi QC, choose M0/M1 then Muat konfigurasi, or enter M2/M3 and Buat draft profil baru. Check ON for mandatory tests, uncheck OFF to exclude. Simpan persists configuration; editing an active profile starts a new session. Use the Device dropdown and Mulai/ganti device to run the chosen profile. Maximum16 profiles, IDs M0..M999. No tests ON means INCOMPLETE. Excluded tests show IGNORED BY PROFILE in reports, not PASS.
+
+M1 defaults Radio Configuration/RS232/PD/EEPROM OFF; radio communication and RS485 remain ON. EEPROM is readable but initially blank on the observed board; test Write/Read on M0. If confirmed working, enable EEPROM in M1 and repeat the test. Digital Output DO1/DO2 switches can be OFF on M2 and later enabled again. Firmware blocks ON/test requests while excluded; global Stop and explicit OFF remain available.
+
+AHT card now shows actual stage/Wire/frame error. A fresh valid six-byte sample is required; NACK/timeout is still failure and must not be confirmed as PASS. EEPROM Read succeeds for empty memory but reports no stored identity; Write is limited to the reserved QC slots and refuses foreign data. Compare exact version/buildUTC after OTA before judging fixes.
+
+Clicks show processing immediately and are serialized; a maximum8 pending commands is explicit. Stop cancels queued commands. Physical output observation remains your responsibility; firmware GPIO readback is not relay-load feedback. Current additions supersede older fixed M0/M1 scope below.
+
+# Compact QC operator guide — source1.5.1
 
 Software compilation is separate from physical acceptance. Team uploads using the legacy partition procedure in TEAM_HANDOFF; do not infer installed version from GitHub.
 
@@ -8,7 +18,9 @@ Select M0 (all populated) or M1 (PD unpopulated/excluded). New session resets re
 
 ## Inputs / OLED / outputs
 
-DI1–4 plus DMM/Normal/Webserver: two debounced complete HIGH–LOW–HIGH cycles automatically PASS. OLED: display text, then user visible/blank verdict. LED and DO are active LOW per latest user correction. Each output starts OFF and has independent timer; two DO can stay ON together. Blue follows firmware command. One Sesuai/Tidak sesuai observation finalizes each output result; ON/OFF remain usable without resetting it. New session repeats QC. Test heartbeat-loss3.5s,60s per-output expiration, Stop and OTA OFF physically. MCP RMW/restoration defers watchdog service inside the bounded transaction, preserving unrelated bits/TPL B7.
+DI1–4 plus DMM/Normal/Webserver: two debounced complete HIGH–LOW–HIGH cycles automatically PASS. OLED: display text, then user visible/blank verdict. DO1 GPIO32 and DO2 GPIO33 are active HIGH (ON=HIGH, OFF=LOW); LED MCP is active LOW (ON=LOW, OFF=HIGH). Each output starts OFF and has independent timer; two DO can stay ON together. Blue follows firmware command. One Sesuai/Tidak sesuai observation finalizes each output result; ON/OFF remain usable without resetting it. New session repeats QC. Test heartbeat-loss3.5s,60s per-output expiration, Stop and OTA OFF physically. MCP RMW/restoration defers watchdog service inside the bounded transaction, preserving unrelated bits/TPL B7.
+
+Before output acceptance, verify installed v1.5.1 and buildUTC against the exact application manifest, then reboot and observe both DO physically OFF. Compare GPIO diagnostics with the repaired relay/load: LOW for OFF and HIGH for ON on each channel. GPIO match alone cannot certify the relay. Record the installed version/buildUTC, per-channel GPIO and physical observations, and Stop/timeout results. Relay damage was reported by the user as a hardware issue; repair status and v1.5.1 physical behavior remain unverified here.
 
 ## Analog
 

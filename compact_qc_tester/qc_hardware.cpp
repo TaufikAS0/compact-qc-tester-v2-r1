@@ -16,6 +16,7 @@
 
 namespace {
 String identityRawHex, identitySlots[2];
+String eepromError;
 bool identityReadable = false;
 Adafruit_SSD1306 oled(OLED_WIDTH, OLED_HEIGHT, &Wire, -1);
 bool oledReady = false, adcVerified = false, adcReady = false, adcValid = false, ahtValid = false;
@@ -49,14 +50,18 @@ bool writeReg(uint8_t address,uint8_t reg,const uint8_t *data,size_t len) {
   updateTplWatchdog(); return rawWriteReg(address,reg,data,len);
 }
 bool eepromRead(uint16_t at, uint8_t *data, size_t len) {
+  eepromError="";
+  if(size_t(at)+len>EEPROM_BYTES) { eepromError="EEPROM read address outside16KB"; return false; }
   while (len) {
     size_t n = min(len, (size_t)32);
     updateTplWatchdog();
     Wire.beginTransmission(EEPROM_ADDR);
     Wire.write(at >> 8);
     Wire.write(at & 255);
-    if (Wire.endTransmission(false) != 0 || Wire.requestFrom(EEPROM_ADDR, (uint8_t)n) != n)
-      return false;
+    uint8_t wireError=Wire.endTransmission(false);
+    if(wireError) { eepromError="EEPROM0x57 address phase failed at0x"+String(at,HEX)+"; Wire error="+String(wireError); return false; }
+    size_t got=Wire.requestFrom(EEPROM_ADDR,(uint8_t)n);
+    if(got!=n) { while(Wire.available()) Wire.read(); eepromError="EEPROM short read at0x"+String(at,HEX)+": "+String(got)+"/"+String(n)+" bytes"; return false; }
     for (size_t i = 0; i < n; i++)
       data[i] = Wire.read();
     data += n;
@@ -103,7 +108,7 @@ void loadIdentity() {
   identityGeneration = 0;
   Identity slots[2];
   if (!eepromRead(IDENTITY_BASE, (uint8_t *)slots, 128)) {
-    identityDetail = "EEPROM read failed";
+    identityDetail = eepromError;
     return;
   }
   identityReadable = true;
@@ -238,7 +243,7 @@ void updateQcHardware() {
   if (pdNegotiating())
     return; // Prioritize short-lived Source_Capabilities over OLED/ADC work.
   uint32_t now = millis();
-  if (adcReady && now - lastAdc >= 150) {
+  if (adcReady && qcTestEnabled("ADS / 4-20mA") && now - lastAdc >= 150) {
     lastAdc = now;
     uint8_t data[2];
     adcValid = readReg(0x48, 0, data, 2);
@@ -247,8 +252,7 @@ void updateQcHardware() {
       sampledAt = now;
     }
   }
-  updateCurrentCalibration();
-  updateCurrentQc();
+  if(qcTestEnabled("ADS / 4-20mA")) { updateCurrentCalibration(); updateCurrentQc(); }
   updateAht10();
   if (oledReady && now - lastOled >= 700) {
     lastOled = now;
@@ -283,7 +287,8 @@ void hardwareState(JsonObject d) {
   d["identityGeneration"] = identityGeneration;
   d["identityReadable"] = identityReadable; d["identityRegionHex"] = identityRawHex;
   auto slots = d["identitySlots"].to<JsonArray>(); for(auto &slot:identitySlots) slots.add(slot);
-  rtcState(d["rtc"].to<JsonObject>());
+  if(qcTestEnabled("RTC")) rtcState(d["rtc"].to<JsonObject>());
+  else { auto rtc=d["rtc"].to<JsonObject>(); rtc["valid"]=false; rtc["detail"]="RTC test OFF in selected profile"; }
   calibrationState(d["calibration"].to<JsonObject>());
   d["oledReady"] = oledReady;
   aht10State(d);
@@ -330,7 +335,7 @@ bool saveIdentity(const String &top, const String &bottom, String &detail) {
   }
   Identity old[2];
   if (!eepromRead(IDENTITY_BASE, (uint8_t *)old, 128)) {
-    detail = "EEPROM read failed";
+    detail = eepromError;
     return false;
   }
   // Do not overwrite unrelated production bytes. A torn QC write is recognizable by magic.
@@ -363,9 +368,10 @@ bool saveIdentity(const String &top, const String &bottom, String &detail) {
     Wire.beginTransmission(EEPROM_ADDR);
     Wire.write((at + pos) >> 8);
     Wire.write((at + pos) & 255);
-    Wire.write(data + pos, 16);
-    if (Wire.endTransmission() != 0) {
-      detail = "EEPROM write failed (check WC)";
+    size_t queued=Wire.write(data+pos,16);
+    uint8_t wireError=Wire.endTransmission();
+    if (queued!=16 || wireError) {
+      detail = "EEPROM write transfer failed at0x"+String(at+pos,HEX)+"; Wire error="+String(wireError)+"; queued="+String(queued)+"/16; check WC/write-protect, model and power (WC level not measured)";
       return false;
     }
     uint32_t start = millis();
@@ -377,13 +383,19 @@ bool saveIdentity(const String &top, const String &bottom, String &detail) {
       yield();
     } while (!ready && millis() - start < 10);
     if (!ready) {
-      detail = "EEPROM write timeout";
+      detail = "EEPROM write ACK timeout10ms at0x"+String(at+pos,HEX)+"; check power/bus";
       return false;
     }
   }
   Identity check;
-  if (!eepromRead(at, (uint8_t *)&check, 64) || memcmp(&record, &check, 64) != 0 || !valid(check)) {
-    detail = "EEPROM readback/CRC mismatch";
+  if (!eepromRead(at, (uint8_t *)&check, 64)) {
+    detail = eepromError;
+    loadIdentity();
+    return false;
+  }
+  if(memcmp(&record,&check,64)!=0 || !valid(check)) {
+    detail="EEPROM write acknowledged but readback/CRC mismatched; check WC/write-protect and power";
+    loadIdentity();
     return false;
   }
   loadIdentity();

@@ -1,4 +1,4 @@
-CURRENT | V1.8 | 2026-10-14 | Codex | v1.5.1 both DO activeHIGH; build/tests PASS | Next: team install and physical acceptance
+CURRENT | V2.3 | 2026-10-14 | Codex | Installed1.6.1 exact build/MD5 verified; AHT/profiles/UI PASS; EEPROM Write fails/M1 ignored | Next: feature publication checkpoint; WC hardware followup via issue1
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,52 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.3 | 2026-10-14 | Codex
+
+- Final1.6.1 Build-Firmware.ps1 PASS11:45:51Z,1282720 bytes SHAdc4f8de4d78331931b85c840038a95089559c0a38542262f5eb74666c12c7958; metadata/legacy gates and Node/Python10/portal2 PASS. No firmware edits after final build start. Source1.5.1->1.6.0->1.6.1.
+- Authorized app-only OTA192.168.1.31 returned200; same serialTMC88F1559CA478, version/build and runtime/fileMD5ba772733fa865400ed57a91eff4390a5 verified. Device baseline1.5.0->1.6.0->1.6.1. Calibration and saved profiles exactly survived reboot; no NVS/storage/partition erase.
+- Actual browser verifies M1->M0 EEPROM buttons re-enable without reload and Read succeeds; M2 DO1 on-test/rev5 then off-test/rev6 independently of DO2; current editor saves/readback/session reset. Two OFF clicks and priority Stop accepted; no actual output ON sent. CSV M2/rev6/ignored DO + first10 Longhi columns PASS. Final M1 active, outputs OFF.
+- AHT remains fresh-valid six-byte/Wire0; screenshot ignored build/runtime-aht-card-v1_6_1.jpg. EEPROM Read200 blank FF; Write rejected Wire4 at0x3F80 on API/browser, no false PASS. M1 EEPROM remains OFF, WC question issue1/comment6167590821 unanswered at latest check; physical WC/reference accuracy/load acceptance unknown.
+- Source/docs/test changes ready for feature-only commit/push; no merge. All old local docs preserved. Publication SHA will be recorded after push verification. Next only hardware followup for WC/EEPROM, then explicitly enable EEPROM if Write/Read succeeds; custom profile and AHT requests completed within documented evidence boundaries.
+
+
+### V2.2 | 2026-10-14 | Codex
+
+- Final1.6.0 build11:32:27Z PASS,1282320 bytes SHA474dfee45fc28123ba50eb7d3c2c730446fcc1a131a927bdbc96cea5f057687a; metadata/legacy gates PASS. Authorized OTA192.168.1.31 returned200, same serial/version/build and MD5 matched; calibration retained. User browser reloaded and showed1.6.0/AHT data.
+- AHT now valid six-byte samples, status0x18/Wire0, about36.1C/29.8%RH. M1 exclusions/API reject and M2 persisted configuration/DO-off/re-enable/all-off-INCOMPLETE/stale edits passed on device. M2 left both DO OFF. No physical output/accuracy certification.
+- EEPROM Read works, blank128 FF. Write first16-byte chunk at0x3F80 fails Wire4; repeated browser single click also fails, no fake PASS. WC/model/power unresolved; requested primary AI schematic/WC evidence via issuecomment6167590821. M1 EEPROM remains OFF per user condition.
+- Actual browser found sticky-disabled controls after M1->M0/unselected->selected. Source1.6.1 fixes per-render direct gates, tests transitions; clarifies WC diagnostic. Node/Python10/portal2 PASS. Build start11:45:51Z; no later firmware edits.1.6.1 final compile/OTA pending.
+- Git: all docs/source/tests local/uncommitted, remote still add83d9; no merge. Next finish1.6.1 gate, authorized OTA, verify profiles/calibration across reboot and actual browser controls, then document exact final runtime/build and publish feature only. Keep M1 EEPROM excluded unless physical Write succeeds.
+
+
+### V2.1 | 2026-10-14 18:30 UTC+7 | Codex
+
+- Issue1 answered: rules obtained/read; read private-vault related rules from aa0bb9e. Live192.168.1.31 classic ESP32/1.5.0/build05:16:49Z, AHT E1 NACK, EEPROM readable EMPTY FF, calibration active, TPL ready. User authorizes direct browser test and OTA. WiFi/credentials/pins/partition retained.
+- Local1.6.0: qc_profiles/math/tests,36 switches/16 saved M profiles, M1 Radio config/RS232/PD/EEPROM exclusions, independent DO switches; NVS qc-profiles/profiles-v1 only. Mask/revision exported/hashed; API/result/input/background enforcement. Active edits reset session, preserve calibration/EEPROM.
+- AHT diagnostics field corrected; calibrated probe/no unconditional reset,350ms recovery settling and one6-byte frame/bounded timeouts. EEPROM empty Read succeeds with identityValid=false; exact transfer/readback diagnostics, foreign protection unchanged.
+- User adds heavy/multiple-click report: live single clicks accepted; GET latency5 samples median63.9ms. UI replaced stable output controls every poll and discarded busy clicks. Retained DOM, immediate progress, bounded sequential queue and priority Stop/cancellation implemented; no claim of general electrical acceptance.
+- Node UI expanded regressions PASS; Python10 PASS; portal2 PASS; constexpr profile/AHT assertions require final compile. Candidate11:21:29Z is still running while later source edits occurred: not for OTA. Next fresh Build-Firmware.ps1 after edits freeze, then metadata/partition gates and authorized app-only OTA. No upload/push/merge yet; all changes local.
+
+
+### V2.0 | 2026-10-14 | Codex
+
+- User requested AHT/EEPROM repair, M1 exclusion of Radio configuration/RS232/PD/EEPROM if unresolved, and editable M0/M1/M2/M3 test profiles. Resume pause revoked for this scoped revision.
+- Source diagnosis: aht10State writes hardware.detail while dashboard reads hardware.ahtDetail; missing error display is proven, sensor failure cause unknown. EEPROM failure requires fresh transaction/slot evidence.
+- Wrote04_Dokumen/QC_PROFILE_REVISION.md with REV-01..04, persistence/enforcement/session-reset/export criteria and explicit ignored-vs-PASS boundary. Firmware unchanged1.5.1; no new test/build/upload. Existing six local doc changes retained.
+- Created authorized GitHub assistance issue https://github.com/TaufikAS0/compact-qc-tester-v2-r1/issues/1 for primary-laptop AI: mandatory vault rules plus sanitized read-only AHT/EEPROM evidence. No comments at last check. Firmware/build/push requires those rules per AGENTS.
+- Git remote unchanged add83d9; docs local/uncommitted, no push/merge. Next read issue response then implement REV-01..04, preserving DO HIGH/LED LOW/NVS/foreign EEPROM.
+
+
+### V1.9 | 2026-10-14 17:49 UTC+7 | Codex
+
+- Audited clean local feature branch e7c72e5, fetched remote and fast-forwarded12 commits to exact checkpoint add83d971df4e2de5eb994beeae4a735058e1145. Remote feature matches; main35733ba, no develop. General serial-web project untouched.
+- Read AGENTS/README/VALIDATION/TEAM_HANDOFF, CURRENT + V1.8/V1.7 and backlog. Source already1.5.1 with both DO active HIGH/LED MCP LOW. Corrected stale current operator/install docs that still said DO LOW, old boot version and serial deferred; preserved historical evidence. No firmware edits/version bump.
+- Regressions: Node UI PASS, Python10 PASS, portal2 PASS. No fresh compile/device contact/upload. Old local app1120144 bytes SHA256231291610a98957b526c86115ccc9534da0ec1e35febba30538ba2e87ddb55c5 has no manifest/metadata; not the validated1.5.1 binary.
+- Vault entry/versioning/change-notification paths missing; targeted search found no required rule files. Resolve/read before fresh build. Existing build1.5.1 at10:35:15Z is GitHub checkpoint evidence only.
+- Publication: stopped on explicit user request before commit/push. HEAD and remote remain add83d971df4e2de5eb994beeae4a735058e1145; six documentation files are local/uncommitted. No new build/upload/merge. Resume together with upcoming revisions; if assistance is needed, user authorizes asking through GitHub for the AI on the primary laptop to answer.
+- Next: resolve vault and obtain freshly gated1.5.1 app if needed; team install/verify version/buildUTC, repaired relay, both DO GPIO and physical ON/OFF, Stop/heartbeat/timeout. QC16 EEPROM/PD needs fresh bench observations; no automatic merge/upload.
+
 
 ### V1.8 | 2026-10-14 | Codex
 

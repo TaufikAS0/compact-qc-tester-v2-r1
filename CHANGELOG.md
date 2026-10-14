@@ -1,3 +1,18 @@
+## 1.6.1 - 2026-10-14
+
+- Browser testing of installed1.6.0 caught a sticky-disabled regression: M1 exclusion/unselected state disabled EEPROM/AHT/scan/SD buttons, but moving to an enabled profile never re-enabled them. Recompute direct-control gates on every render; preserve sensor/worker/OTA prerequisites. Add actual-DOM transition regressions.
+- Clarify EEPROM transfer error with WC/write-protect/model/power checks; actual WC level remains unknown. Write failure is not reported as PASS or hidden in M0. User-authorized M1 EEPROM exclusion retained.
+- Source1.6.0 ->1.6.1; build started2026-10-14T11:45:51Z. Final binary/runtime verification follows in VALIDATION/worklog. No new storage schema/pin/WiFi/partition change from1.6.0.
+
+## 1.6.0 - 2026-10-14
+
+- Add persistent editable QC profiles M0..M999, maximum16, with36 stable test switches. Default M1 excludes Radio configuration, RS232, PD and unresolved EEPROM; Radio communication/RS485 remain enabled. All-OFF is INCOMPLETE, exclusions never PASS. Enable repaired EEPROM explicitly after physical Write/Read evidence.
+- Profiles stored only in qc-profiles/profiles-v1 with schema/CRC/readback and optimistic revision validation. Active profile edits reset session/results/captures and stop outputs; calibration and PCB identity retained. Direct API enforcement, input/background acquisition/result guards, profile mask/revision in JSON/CSV/QC code.
+- AHT10: consistent ahtDetail, stage/Wire/frame diagnostics; calibrated startup probe before E1/reset,350ms command/reset settle, one six-byte measurement transaction, bounded busy/short-frame recovery. No AHT20 command/model inference. Physical sensor acceptance pending.
+- EEPROM: transport Read success is distinct from missing/empty identity; bounded read/address/write/ACK/readback errors identify failing phase. Protect foreign bytes/old valid slot; no EEPROM erase or region change.
+- UI retains unchanged output/table DOM rather than replacing buttons every poll. Immediate progress, serialized8-command queue and priority Stop cancelling queued work. Polling1.5s pauses during requests; heartbeat remains1s.
+- Source1.5.1 ->1.6.0; installed baseline observed1.5.0 at192.168.1.31. No pin/partition/OTA-credential/WiFi-profile change. Build/upload/runtime evidence will be recorded in VALIDATION/worklog when completed.
+
 ## 1.5.1 — 2026-10-14
 
 - Fix DO startup: preload GPIO latch with ESP-IDF before pinMode and explicitly reassert OFF after Arduino GPIO registration. Core3.3.10 ignores digitalWrite before pinMode.

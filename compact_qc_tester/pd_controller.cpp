@@ -20,7 +20,7 @@ bool softReset() {
 } // namespace
 bool requestPd(uint16_t mv, uint16_t ma, String &out) {
   if (!qcPdEnabled()) {
-    out = "PD disabled: select M0; M1 unpopulated";
+    out = "PD test OFF: select a profile with STUSB4500 enabled";
     return false;
   }
   if (mv < 5000 || mv > 20000 || mv % 50 || ma < 10 || ma > 5000 || ma % 10) {
@@ -180,9 +180,9 @@ void pdState(JsonObject d) {
   if (!qcPdEnabled()) {
     d["valid"] = false;
     d["pending"] = false;
-    d["status"] = qcProfileSelected() ? "NOT APPLICABLE" : "SELECT DEVICE";
+    d["status"] = qcProfileSelected() ? "IGNORED BY PROFILE" : "SELECT DEVICE";
     d["detail"] =
-        qcProfileSelected() ? "M1: PD Sync unpopulated; no PD transactions" : "Pilih M0/M1 dahulu";
+        qcProfileSelected() ? "PD test OFF in selected QC profile; no PD transactions" : "Pilih profil QC dahulu";
     return;
   }
   d["valid"] = registersValid;

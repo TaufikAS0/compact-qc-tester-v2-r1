@@ -51,8 +51,8 @@ bool authorized() {
     return false;
   }
   if (!qcProfileSelected() && server.uri() != "/api/qc/new" && server.uri() != "/api/heartbeat" &&
-      server.uri() != "/api/stop") {
-    failure("Pilih device M0 atau M1 sebelum QC");
+      server.uri() != "/api/stop" && server.uri() != "/api/qc/profile") {
+    failure("Pilih profil device sebelum QC");
     return false;
   }
   if (networkQcBusy() && server.uri() != "/api/heartbeat" && server.uri() != "/api/stop") {
@@ -69,6 +69,36 @@ bool authorized() {
   if (radioQcActive() && server.uri() != "/api/heartbeat" && server.uri() != "/api/stop") {
     failure("Radio test/mode restoration active; wait before other QC actions");
     return false;
+  }
+  const String uri=server.uri();
+  String test;
+  if(uri=="/api/aht/config") test="AHT10";
+  else if(uri.startsWith("/api/identity")) test="EEPROM";
+  else if(uri.startsWith("/api/pd")) test="STUSB4500";
+  else if(uri=="/api/i2c") test="I2C scan";
+  else if(uri=="/api/ethernet") test="Ethernet";
+  else if(uri=="/api/sd") test="SD";
+  else if(uri.startsWith("/api/current")) test="ADS / 4-20mA";
+  else if(uri=="/api/serial/route" || uri=="/api/modbus/config") test=server.arg("route");
+  else if(uri.startsWith("/api/modbus") && !uri.endsWith("/stop")) test="RS485";
+  else if(uri=="/api/rs232/start") test="RS232";
+  else if(uri=="/api/serial/start") test=server.hasArg("mode")?server.arg("mode"):"RS232";
+  else if(uri=="/api/network/test") {
+    const String kind=server.arg("kind");
+    test=kind=="wifi"?"WiFi network":kind=="ethernet"?"Ethernet network":kind=="mqtt"?"MQTT":"";
+  } else if(uri=="/api/radio/start") {
+    if(server.arg("apply")=="1") test="Radio configuration";
+    else if(!qcTestEnabled("Radio configuration")) test="Radio communication";
+  } else if(uri=="/api/output" && server.arg("state")!="off") {
+    test=(server.arg("kind")=="led"?String("LED:"):String("Relay:"))+server.arg("index");
+  } else if(uri=="/api/qc/confirm") {
+    const String kind=server.arg("kind");
+    if(kind=="i2c") test="I2C scan";
+    else if(kind=="oled") test="OLED";
+    else if(kind=="led" || kind=="relay") test=(kind=="led"?String("LED:"):String("Relay:"))+server.arg("index");
+  }
+  if(test.length() && !qcTestEnabled(test)) {
+    failure("Test OFF in selected QC profile; enable it in Konfigurasi QC first"); return false;
   }
   return true;
 }

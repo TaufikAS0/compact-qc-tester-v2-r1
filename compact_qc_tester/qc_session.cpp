@@ -1,4 +1,5 @@
 #include "qc_session.h"
+#include "qc_profiles.h"
 #include "config.h"
 #include "ota_manager.h"
 #include "qc_hardware.h"
@@ -20,7 +21,7 @@ QcItem items[80];
 size_t count = 0, display = 0;
 uint32_t displayAt = 0;
 String operatorName, unit;
-DeviceVariant variant = DeviceVariant::Unselected;
+
 String sessionId;
 InputCycles cycles[7];
 bool live[13] = {}, attempted[13] = {}, onConfirmed[13] = {}, offConfirmed[13] = {};
@@ -86,12 +87,7 @@ void reset() {
     live[i] = attempted[i] = onConfirmed[i] = offConfirmed[i] = finalized[i] = false;
   for (const char *m : {"OLED", "I2C scan", "RTC", "EEPROM", "AHT10", "ADS / 4-20mA", "STUSB4500",
                         "Ethernet", "SD"})
-    qcRecord(m,
-             variant == DeviceVariant::M1 && String(m) == "STUSB4500" ? "NOT APPLICABLE"
-                                                                      : "BELUM DIUJI",
-             variant == DeviceVariant::M1 && String(m) == "STUSB4500"
-                 ? "M1: PD Sync unpopulated; excluded from QC"
-                 : "");
+    qcRecord(m, "BELUM DIUJI", "");
   for (size_t i = 0; i < 7; ++i)
     qcRecord("Input:" + String(inputName(i)), "MENUNGGU SIGNAL",
              "Dua siklus HIGH-LOW-HIGH, debounce 50ms; tanpa konfirmasi operator");
@@ -104,14 +100,15 @@ void reset() {
   qcRecord("Radio configuration", "BELUM DIUJI", "Compare supported parameters; LoRa SF/BW/CR unsupported");
 }
 } // namespace
-bool qcProfileSelected() { return variant != DeviceVariant::Unselected; }
-bool qcPdEnabled() { return pdApplicable(variant); }
-const char *qcVariantName() {
-  return variant == DeviceVariant::M0 ? "M0" : variant == DeviceVariant::M1 ? "M1" : "UNSELECTED";
-}
+bool qcProfileSelected() { return qcProfileIsSelected(); }
+bool qcPdEnabled() { return qcProfileSelected() && qcTestEnabled("STUSB4500"); }
+const char *qcVariantName() { return activeQcProfileName(); }
 void qcRecord(const String &name, const String &status, const String &detail) {
-  if (name == "STUSB4500" && variant == DeviceVariant::M1 && status != "NOT APPLICABLE")
-    return;
+  String effectiveStatus = status, effectiveDetail = detail;
+  if (qcProfileSelected() && !qcTestEnabled(name)) {
+    effectiveStatus = "IGNORED BY PROFILE";
+    effectiveDetail = String(qcVariantName()) + " rev" + activeQcProfileRevision() + ": test OFF; excluded from QC, not PASS";
+  }
   size_t i = 0;
   for (; i < count; ++i)
     if (items[i].name == name)
@@ -121,11 +118,11 @@ void qcRecord(const String &name, const String &status, const String &detail) {
       return;
     ++count;
   }
-  if (items[i].status != status || items[i].detail != detail) {
+  if (items[i].status != effectiveStatus || items[i].detail != effectiveDetail) {
     display = i;
     displayAt = millis();
   }
-  items[i] = {name, status, detail};
+  items[i] = {name, effectiveStatus, effectiveDetail};
 }
 void qcOutputsStopped() {
   for (auto &b : live)
@@ -159,6 +156,7 @@ void updateQcSession() {
   if (!qcProfileSelected())
     return;
   for (size_t i = 0; i < 7; ++i) {
+    if (!qcTestEnabled("Input:" + String(inputName(i)))) continue;
     int level = -1;
     readInput(i, level);
     unsigned before = cycles[i].cycles;
@@ -173,13 +171,14 @@ void qcState(JsonObject d) {
   d["operator"] = operatorName;
   d["variant"] = qcVariantName();
   d["profileSelected"] = qcProfileSelected();
+  qcProfilesState(d);
   d["sessionId"] = sessionId;
   auto scan = d["i2c"].to<JsonObject>();
   scan["scanned"] = i2cScanned; scan["devices"] = i2cDevices;
   auto a = d["tests"].to<JsonArray>();
   unsigned passed = 0, failed = 0, pending = 0, skipped = 0;
   String canonical = String("QC1|") + FW_VERSION + "|" + FW_BUILD_UTC + "|" + qcVariantName() +
-                     "|" + unitSerial() + "|" + sessionId;
+                     "|" + unitSerial() + "|" + sessionId + "|" + activeQcProfileRevision() + "|" + activeQcProfileMask();
   auto hashField = [&](const String &value) {
     canonical += "|" + String(value.length()) + ":" + value;
   };
@@ -188,7 +187,7 @@ void qcState(JsonObject d) {
     p["name"] = items[i].name;
     p["status"] = items[i].status;
     p["detail"] = items[i].detail;
-    bool applicable = testApplicable(variant, items[i].name.c_str());
+    bool applicable = qcProfileSelected() && qcTestEnabled(items[i].name);
     p["applicable"] = applicable;
     if (!applicable)
       ++skipped;
@@ -251,6 +250,7 @@ void qcState(JsonObject d) {
   radioQcState(d["radio"].to<JsonObject>());
 }
 void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
+  beginQcProfiles();
   web = &server;
   authorized = authorize;
   stopSafe = stop;
@@ -263,6 +263,24 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   functionCode = prefs.getUChar("fn", 3);
   regAddress = prefs.getUShort("reg", 0);
   regCount = prefs.getUShort("count", 1);
+  server.on("/api/qc/profile", HTTP_POST, [] {
+    if (!guard()) return;
+    if (pdNegotiating()) { error("Wait for PD negotiation before profile changes"); return; }
+    long revision;
+    if (!number("revision", 0, 2147483647, revision) || !web->hasArg("enabled")) {
+      error("Revision/test list required",400); return;
+    }
+    String id=web->arg("id"), detail;
+    bool active=qcProfileSelected() && id==qcVariantName();
+    stopSafe();
+    bool ok=saveQcProfile(id,web->arg("enabled"),revision,detail);
+    if(ok && active) {
+      if(!selectQcProfile(id)) { error("Saved profile cannot be selected"); return; }
+      reset(); resetCurrentPoints();
+      if(qcTestEnabled("AHT10")) configureAht10();
+    }
+    JsonDocument d; d["ok"]=ok; d["detail"]=detail; send(d,ok?200:409);
+  });
   server.on("/api/qc/new", HTTP_POST, [] {
     if (!guard())
       return;
@@ -272,20 +290,18 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       error("Operator max64", 400);
       return;
     }
-    DeviceVariant selected = parseVariant(web->arg("variant").c_str());
-    if (selected == DeviceVariant::Unselected) {
-      error("Pilih variant M0 atau M1", 400);
-      return;
-    }
     if (pdNegotiating()) {
       error("Wait for PD negotiation before changing/resetting device");
       return;
     }
+    if (!selectQcProfile(web->arg("variant"))) {
+      error("Unknown profile or profile storage unavailable", 400); return;
+    }
     stopSafe();
-    variant = selected;
     reset();
     operatorName = name;
     resetCurrentPoints();
+    if(qcTestEnabled("AHT10")) configureAht10();
     JsonDocument d;
     d["ok"] = true;
     send(d);
@@ -365,6 +381,9 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     d["ok"] = ok;
     d["detail"] = detail;
     hardwareState(d["hardware"].to<JsonObject>());
+    // An empty identity is a successful transport read, not a failed API call.
+    d["ok"] = identityBusReadable();
+    d["identityValid"] = ok;
     send(d);
   });
   server.on("/api/identity", HTTP_POST, [] {
@@ -445,7 +464,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     if (!guard())
       return;
     if (!qcPdEnabled()) {
-      error("M1: PD Sync unpopulated; not applicable");
+      error("PD test OFF in selected QC profile");
       return;
     }
     stopSafe();

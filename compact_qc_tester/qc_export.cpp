@@ -16,7 +16,7 @@ void beginQcExport(WebServer &server) {
   server.on("/export/qc.csv", HTTP_GET, [&server] {
     server.sendHeader("Cache-Control", "no-store");
     if (!qcProfileSelected()) {
-      server.send(409, "application/json", "{\"error\":\"Pilih M0 atau M1 dahulu\"}");
+      server.send(409, "application/json", "{\"error\":\"Pilih profil device dahulu\"}");
       return;
     }
     String date = server.arg("qcDate"), pic = server.arg("qcPic"),
@@ -57,6 +57,8 @@ void beginQcExport(WebServer &server) {
     add("qcCode", q["qcCode"].as<String>());
     add("qcCodeSchema", "QC1");
     add("sessionId", q["sessionId"].as<String>());
+    add("profileRevision",q["profileRevision"].as<String>());
+    add("profileMask",q["profileMask"].as<String>());
     add("firmwareVersion", FW_VERSION);
     add("buildUTC", FW_BUILD_UTC);
     add("hwTop", h["hwTop"].as<String>());

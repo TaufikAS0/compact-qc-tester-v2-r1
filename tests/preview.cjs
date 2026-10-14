@@ -8,6 +8,10 @@ state.hardware.currentQc={pending:-1,samples:0,detail:'PREVIEW only; no capture'
 state.qc.i2c={scanned:false,devices:0};
 state.qc.modbus={active:false,tags:[0,1].map(i=>({name:'Tag'+(i+1),baud:9600,parity:'N',slave:1,function:3,address:i,count:1,type:'Unsigned',order:'ABCD',timeout:2000,valid:false,status:'BELUM DIUJI',detail:'PREVIEW only'}))};
 state.qc.network={active:false,staSSID:'PREVIEW',staIP:'PREVIEW',detail:'PREVIEW only; no network test'};
+const catalogSource=fs.readFileSync(path.join(root,'compact_qc_tester/qc_profile_math.h'),'utf8');
+state.qc.testCatalog=[...catalogSource.matchAll(/\{"([a-z0-9_]+)","([^"]+)"\}/g)].map(m=>({id:m[1],name:m[2]}));
+state.qc.profiles=[{id:'M0',revision:1,enabled:state.qc.testCatalog.map(t=>t.id)},{id:'M1',revision:1,enabled:state.qc.testCatalog.filter(t=>!['pd','eeprom','rs232','radio_config'].includes(t.id)).map(t=>t.id)}];
+state.qc.profileStorageReady=true;state.qc.profileStorageDetail='PREVIEW defaults only; saves rejected, no NVS/device contact';
 for(const name of ['Modbus tag:1','Modbus tag:2','WiFi network','Ethernet network','MQTT'])state.qc.tests.push({name,status:'BELUM DIUJI',detail:'PREVIEW only; no hardware'});
 http.createServer((req,res)=>{
  if(req.url==='/'){const source=fs.readFileSync(path.join(root,'compact_qc_tester/web_ui.h'),'utf8');const html=source.match(/R"HTML\(([\s\S]*)\)HTML"/)[1].replace('<main>','<main><div class="notice">PREVIEW — tidak terhubung hardware. Tombol tidak melakukan QC.</div>');res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});res.end(html);return;}
