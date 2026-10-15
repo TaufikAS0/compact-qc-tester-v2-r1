@@ -1,11 +1,11 @@
 # Compact RTC + durable QC integration (COMPACT-RTC-1)
 
-Firmware owner: this Compact repository. Portal owner: separate Telemetric Hardware Portal repository. No portal source changes here. Source1.10.4; **check CURRENT/VALIDATION for exact installed build**, never infer deployment from this document.
+Firmware owner: this Compact repository. Portal owner: separate Telemetric Hardware Portal repository. No portal source changes here. Source1.10.6; **check CURRENT/VALIDATION for exact installed build**, never infer deployment from this document.
 
 ## Invariants
 
 - DS3231 at0x68. Existing SDA21/SCL22, outputs, WiFi, partitions and other NVS namespaces unchanged. New namespaces qc-rtc/meta-v1 and qc-progress/session-v1 only. No EEPROM identity writes or NVS erase/format.
-- All POST bodies are application/x-www-form-urlencoded. Existing device token from GET/api/state remains required. This intentional lab token model is not a cryptographic signature or Internet authentication.
+- RTC POST bodies are application/x-www-form-urlencoded. The one-time legacy bridge also accepts multipart text fields; use that with a minimal original-evidence projection to avoid large URL-decoding allocations. Existing device token from GET/api/state remains required. This intentional lab token model is not a cryptographic signature or Internet authentication.
 - UTC internally. RTC stores a local calendar; offset must be explicitly supplied. Calendar2000..2099 only. Firmware does not contact NTP; portal owns independent reference quality and network/quantization uncertainty.
 - An OSF-clean clock is not overall RTC PASS. RTC PASS requires the60s monotonic ticking test plus accepted accuracy and retention evidence. Retention is explicitly operator-declared physical power removal, not inferred from reboot. Other QC tests may continue during portal run.
 - A portal run binds the unit's current session/clockRevision, locks time setting and deliberate new-session/profile/recipe changes, and persists that lock across reboot. Finish or explicitly abort/release first. Never auto-sync RTC during a drift run.
@@ -84,7 +84,7 @@ One immutable normalized attachment per kind per QC session. Same payload is ide
 
 ### One-time legacy1.9.1 bridge
 
-The real owner had33 PASS in RAM on1.9.1/sessionEB4CDCB2 before this feature. The original sanitized GET/state+CSV were archived BEFORE upgrade. `POST /api/qc/import-legacy` (token,confirm=1,snapshot=<original JSON>, max50KB) is allowed only while unselected and no checkpoint exists. A failed migration may be retried over its own checkpoint only if original session/operator/source QC code and every non-RTC result still match, clockRevision remains0, and no RTC tick/external evidence/run exists. It verifies original1.9.1 QC1 CRC, serial, profile/preset revisions, calibration coefficients within original JSON rounding precision and exact captured calibration IDs. It stores a bounded checkpoint with original build/QCcode provenance and explicitly resumes completed evidence, never RTC acceptance or ON state. This is a narrow migration bridge, not a general user-edited PASS import; CRC is integrity, not authentication. Operator field stays empty if the original was empty. Downloaded original reports are not rewritten. Ordinary cross-build resume remains forbidden. Do not call this route with simulated or reconstructed physical results.
+The real owner had33 PASS in RAM on1.9.1/sessionEB4CDCB2 before this feature. The original sanitized GET/state+CSV were archived BEFORE upgrade. `POST /api/qc/import-legacy` (token,confirm=1,snapshot=<original JSON>, parser limit50KB, actual heap/transport capacity lower) is allowed only while unselected and no checkpoint exists. A failed migration may be retried over its own checkpoint only if original session/operator/source QC code and every non-RTC result still match, clockRevision remains0, and no RTC tick/external evidence/run exists. It verifies original1.9.1 QC1 CRC, serial, profile/preset revisions, calibration coefficients within original JSON rounding precision and exact captured calibration IDs. It stores a bounded checkpoint with original build/QCcode provenance and explicitly resumes completed evidence, never RTC acceptance or ON state. This is a narrow migration bridge, not a general user-edited PASS import; CRC is integrity, not authentication. Operator field stays empty if the original was empty. Downloaded original reports are not rewritten. Ordinary cross-build resume remains forbidden. Do not call this route with simulated or reconstructed physical results.
 
 ### Portal compatibility handoff
 
@@ -93,3 +93,9 @@ Read-only portal docs observed2026-10-15: `docs/RTC_FIRMWARE_CONTRACT.md` still 
 ## Acceptance boundary
 
 Read CURRENT for compile/API/browser/OTA evidence. Tests shorter than24h cannot be described as an actual24h test. No automatic physical PASS, supply removal, EEPROM write or radio/PD output operation is authorized merely to exercise the integration. Portal and firmware must each report their own deployed SHA/build and pending evidence.
+
+## Installed firmware acceptance2026-10-15
+
+1.10.6/build06:57:45Z installed by app-only OTA, runtime hash verified. Real set/readback/WIB,60s ticking, negative auth/context/bounds, run guards/abort, checkpoint/header/readback and two same-binary software reboot/resume cycles passed. An administrative bound run survived reboot and was aborted cleanly. Original33 historical PASS and82 analog/Modbus CSV columns remained exact. Live UI shows running-test LULUS while accuracy/retention remain pending. These do not prove24h accuracy, reference certification, physical power removal or battery health. No external positive evidence was fabricated or submitted. Portal still needs owner integration against this contract.
+
+For the legacy bridge, project only original root version/buildUTC/buildIdentity; hardware serial/calibration/currentQc; qc variant/profileSelected/sessionId/profileRevision/profileMask/operator/overall/qcCode/recipe/tests/outputs/inputs/modbus/network/serial/radio. Preserve their values and every CRC-covered test unchanged. Multipart projection11420 bytes was verified; full old encoded report failed under ESP32 memory pressure. Keep the immutable full original archive independently. Do not retry legacy now: installed clockRevision1 contains new RTC evidence.

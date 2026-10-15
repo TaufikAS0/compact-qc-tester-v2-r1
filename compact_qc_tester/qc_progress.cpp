@@ -43,7 +43,11 @@ void qcReleaseProgressCache(){saved.clear();}
 bool qcImportLegacy(JsonDocument &original,String &why){
  JsonObjectConst old=original.as<JsonObjectConst>();
  // One-time explicit bridge for the real1.9.1 RAM session. CRC is integrity/traceability, not a signature.
- if(qcProfileSelected()||old["version"]!="1.9.1"||old["hardware"]["serial"].as<String>()!=unitSerial()||!idle()||rtcRunActive()){why="Legacy import requires unselected device, exact serial/source1.9.1 and no RTC run";return false;}
+ if(qcProfileSelected()){why="Legacy import requires unselected device";return false;}
+ if(old["version"]!="1.9.1"){why="Legacy source version missing/different";return false;}
+ if(old["hardware"]["serial"].as<String>()!=unitSerial()){why="Legacy source serial missing/different";return false;}
+ if(!idle()){why="Legacy import blocked by capture/PD/OTA or unavailable calibration state";return false;}
+ if(rtcRunActive()){why="Legacy import blocked by active RTC run";return false;}
  auto q=old["qc"].as<JsonObjectConst>();String profile=q["variant"].as<String>();
  if(!q["profileSelected"].as<bool>()||old["buildIdentity"].as<String>()!=String("QC_BUILD=1.9.1|")+old["buildUTC"].as<String>()){why="Legacy build/profile invalid";return false;}
  String canonical=String("QC1|1.9.1|")+old["buildUTC"].as<String>()+"|"+profile+"|"+unitSerial()+"|"+q["sessionId"].as<String>()+"|"+q["profileRevision"].as<String>()+"|"+q["profileMask"].as<String>()+"|RECIPE:"+q["recipe"]["revision"].as<String>()+":"+q["recipe"]["crc"].as<String>();
@@ -56,7 +60,7 @@ bool qcImportLegacy(JsonDocument &original,String &why){
   for(size_t i=0;retry&&i<tests.size();++i)if(tests[i]["name"]!="RTC")retry=tests[i]["name"]==incoming[i]["name"]&&tests[i]["status"]==incoming[i]["status"]&&tests[i]["detail"]==incoming[i]["detail"];
   if(!retry){why="Existing checkpoint contains different/new evidence; legacy replacement blocked";return false;}
  }
- JsonDocument current;qcState(current.to<JsonObject>());bool profileOk=false,recipeOk=false;
+ JsonDocument current;qcProfilesState(current.to<JsonObject>());qcRecipesState(current.as<JsonObject>());bool profileOk=false,recipeOk=false;
  for(JsonObject p:current["profiles"].as<JsonArray>())if(p["id"]==profile&&p["revision"]==q["profileRevision"])profileOk=true;
  for(JsonObject p:current["recipes"].as<JsonArray>())if(p["id"]==profile&&p["revision"]==q["recipe"]["revision"]&&p["crc"]==q["recipe"]["crc"])recipeOk=true;
  JsonDocument cal;calibrationState(cal.to<JsonObject>());

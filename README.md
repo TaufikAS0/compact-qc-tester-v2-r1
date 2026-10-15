@@ -1,8 +1,8 @@
-# RTC and durable QC source1.10.4
+# RTC and durable QC1.10.6
 
-Adds explicit RTC time review/readback, 60-second ticking check, portal run/evidence API and persistent QC checkpoint/resume with outputs OFF. Original completed results remain labeled historical evidence. [Portal API contract](04_Dokumen/RTC_PORTAL_CONTRACT.md).
+Installed build2026-10-15T06:57:45Z /13:57:45 WIB at192.168.1.31; app-only OTA and exact runtime hash verified. Adds reviewed RTC time/WIB readback,60-second ticking check, persistent portal-run/evidence API and QC checkpoint/resume with outputs OFF. Original33 historical PASS and82 analog/Modbus CSV columns preserved through two actual software reboots. RTC remains UNVERIFIED pending real24h accuracy and physical battery-retention evidence. [Implemented portal contract](04_Dokumen/RTC_PORTAL_CONTRACT.md).
 
-Final build2026-10-15T06:42:50Z and software tests PASS. **Not yet uploaded:** target192.168.1.31 currently unreachable; last verified installed1.10.3. Corrected original-result migration, RTC60s and same-binary reboot/resume still need runtime verification. No24h accuracy or physical battery PASS. Read CURRENT/VALIDATION before continuing; never equate source version with installed version.
+Use **Simpan progres sekarang** and wait for success before cutting power. After reboot choose **Tinjau pemulihan sesi** before starting a new profile/session. Resume requires exact same unit/build/profile/preset/calibration; partial jobs do not resume. Autosave can lag60s; download reports/checkpoint for external archives. Clock setting/reset invalidates RTC evidence only and requires confirmation. Never auto-sync during a portal drift run. See CURRENT/VALIDATION for evidence and limitations.
 
 # Readable diagnosis charts1.9.1
 

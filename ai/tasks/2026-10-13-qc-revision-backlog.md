@@ -1,3 +1,5 @@
+RTC V2.28 COMPLETE firmware:1.10.6/build06:57:45Z installed OTA verified. Original33 and82 CSV analog/Modbus columns retained through two real software reboots, RTC set/readback/WIB/60s and persistent run lock PASS. No24h/physical battery PASS; portal integration separate owner. ClockRevision1, no active run, outputsOFF, clean checkpoint; NEVER reimport legacy/reset casually. Current detailed evidence and continuation in CURRENT V2.28.
+
 RTC V2.23: source1.10.4/build06:42:50Z compile/software PASS. Device192.168.1.31 unreachable; last verified1.10.3. OTA/migration/RTC60s/reboot/native pending. Preserve original33; exact continuation in CURRENT. No24h/battery PASS.
 
 # RTC durable QC1.10.0 - local implementation2026-10-15

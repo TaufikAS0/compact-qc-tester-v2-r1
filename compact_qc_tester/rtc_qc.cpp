@@ -45,7 +45,7 @@ void sample(JsonObject d,const Reading&r){
 }
 }
 uint32_t rtcClockRevision(){return meta["revision"]|0u;}
-bool rtcRunActive(){return meta["runId"].as<String>().length()>0;}
+bool rtcRunActive(){const char *run=meta["runId"]|"";return run[0]!='\0';}
 String rtcEvidenceIdentity(){String s;serializeJson(external,s);return String(rtcClockRevision())+"|"+s;}
 void rtcExportEvidence(JsonObject d){d["clockRevision"]=rtcClockRevision();d["tickPassed"]=tickPassed;d["tickFailed"]=tickFailed;d["external"].set(external.as<JsonObject>());}
 bool rtcRestoreEvidence(JsonObjectConst d){if(d["clockRevision"].as<uint32_t>()!=rtcClockRevision())return false;external.set(d["external"]);tickPassed=d["tickPassed"]|false;tickFailed=d["tickFailed"]|false;ticking=false;rtcDetail="Bukti RTC dipulihkan dari checkpoint; status hardware dibaca ulang";return true;}
