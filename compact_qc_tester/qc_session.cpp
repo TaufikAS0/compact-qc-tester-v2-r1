@@ -286,7 +286,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   });
   server.on("/api/qc/resume",HTTP_POST,[]{
     if(!guard())return;if(web->arg("confirm")!="1"){error("Explicit resume confirmation required",400);return;}
-    stopSafe();String why;bool ok=qcResumeProgress(why);JsonDocument d;d["ok"]=ok;d["detail"]=why;send(d,ok?200:409);
+    stopSafe();String why;bool ok=qcResumeProgress(why,web->arg("upgradeFromBuild"));JsonDocument d;d["ok"]=ok;d["detail"]=why;send(d,ok?200:409);
   });
   server.on("/api/qc/checkpoint",HTTP_GET,[]{JsonDocument d;qcSavedProgress(d.to<JsonObject>());send(d);});
   server.on("/api/qc/import-legacy",HTTP_POST,[]{

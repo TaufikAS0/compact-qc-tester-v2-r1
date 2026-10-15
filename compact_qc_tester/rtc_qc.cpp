@@ -10,7 +10,7 @@
 #include "ota_manager.h"
 #include <esp_timer.h>
 namespace {
-JsonDocument meta,external;
+JsonDocument meta,external,quick;
 WebServer *web;bool (*auth)();void (*stopSafe)();
 bool metadataReady=false,ticking=false,tickPassed=false,tickFailed=false;int64_t tickAt=0,tickEpoch=0;
 String rtcDetail="Belum diuji; komunikasi/waktu bukan akurasi atau retensi baterai",tickSession;
@@ -31,13 +31,16 @@ bool saveMeta(){String why;if(!qcSaveBlob("qc-rtc","meta-v1",meta,why)){metadata
 void record(const Reading&r){
  bool extPass=external["accuracy"]["result"]=="PASS"&&external["retention"]["result"]=="PASS";
  bool extFail=external["accuracy"]["result"]=="FAIL"||external["retention"]["result"]=="FAIL";
- const char *status=!r.transport||!r.valid||tickFailed||extFail?"FAIL":r.osf?"UNVERIFIED":ticking?"RUNNING":tickPassed&&extPass?"PASS":"UNVERIFIED";
- qcRecord("RTC",status,!r.transport?"DS3231 read failed":!r.valid?"Invalid RTC calendar":r.osf?"OSF active: set correct time/readback required; battery fault not proven":rtcDetail);
+ bool sameQuick=quick["sessionId"].as<String>()==qcSessionId()&&quick["clockRevision"].as<uint32_t>()==rtcClockRevision();
+ bool quickPass=sameQuick&&quick["result"]=="PASS"&&meta["writeVerified"]==true;
+ const char *status=!r.transport||!r.valid||tickFailed||extFail||(sameQuick&&quick["result"]=="FAIL")?"FAIL":r.osf?"UNVERIFIED":ticking?"RUNNING":quickPass||(tickPassed&&extPass)?"PASS":"UNVERIFIED";
+ qcRecord("RTC",status,!r.transport?"DS3231 read failed":!r.valid?"Invalid RTC calendar":r.osf?"OSF active: set correct time/readback required; battery fault not proven":quickPass&&String(status)=="PASS"?"QC CEPAT Write/Readback PASS; sampling60s/harian/baterai terpisah, bukan sertifikasi akurasi":rtcDetail);
 }
 void sample(JsonObject d,const Reading&r){
  d["schema"]="COMPACT-RTC-1";d["bootId"]=bootId;d["sampleUptimeUs"]=r.at;d["sampleCompletedUptimeUs"]=r.completed;d["resolutionMs"]=1000;
  d["communicationValid"]=r.transport;d["valid"]=r.valid;d["oscillatorStopped"]=r.osf;d["timeValid"]=r.valid&&!r.osf;d["clockRevision"]=rtcClockRevision();d["timezoneConfigured"]=meta["configured"].as<bool>()&&meta["writeVerified"].as<bool>();
  d["utcOffsetMinutes"]=meta["offsetMinutes"];d["lastSetUtcSeconds"]=meta["lastSetUtcSeconds"];d["writeVerified"]=meta["writeVerified"];d["metadataReady"]=metadataReady;
+ d["productionCriterion"]="WRITE_READBACK";d["quick"].set(quick.as<JsonObject>());d["samplingComplete"]=tickPassed&&external["accuracy"]["result"]=="PASS"&&external["retention"]["result"]=="PASS";
  if(r.transport)d["temperatureC"]=(int8_t)r.bytes[17]+(r.bytes[18]>>6)*.25;
  if(r.valid){uint8_t b[7];RtcMath::encode(r.local,b);char t[24];snprintf(t,sizeof(t),"%04d-%02d-%02d %02d:%02d:%02d",2000+RtcMath::dec(b[6]),RtcMath::dec(b[5]),RtcMath::dec(b[4]),RtcMath::dec(b[2]),RtcMath::dec(b[1]),RtcMath::dec(b[0]));d["time"]=t;d["rtcLocalEpochSeconds"]=r.local;
   if(metadataReady&&meta["configured"].as<bool>()&&meta["writeVerified"].as<bool>())d["utcSeconds"]=r.local-meta["offsetMinutes"].as<int>()*60LL;}
@@ -46,10 +49,10 @@ void sample(JsonObject d,const Reading&r){
 }
 uint32_t rtcClockRevision(){return meta["revision"]|0u;}
 bool rtcRunActive(){const char *run=meta["runId"]|"";return run[0]!='\0';}
-String rtcEvidenceIdentity(){String s;serializeJson(external,s);return String(rtcClockRevision())+"|"+s;}
-void rtcExportEvidence(JsonObject d){d["clockRevision"]=rtcClockRevision();d["tickPassed"]=tickPassed;d["tickFailed"]=tickFailed;d["external"].set(external.as<JsonObject>());}
-bool rtcRestoreEvidence(JsonObjectConst d){if(d["clockRevision"].as<uint32_t>()!=rtcClockRevision())return false;external.set(d["external"]);tickPassed=d["tickPassed"]|false;tickFailed=d["tickFailed"]|false;ticking=false;rtcDetail="Bukti RTC dipulihkan dari checkpoint; status hardware dibaca ulang";return true;}
-void resetRtcQc(){ticking=tickPassed=tickFailed=false;external.clear();rtcDetail="Belum diuji; jam berjalan, akurasi dan retensi terpisah";}
+String rtcEvidenceIdentity(){String s,q;serializeJson(external,s);serializeJson(quick,q);return String(rtcClockRevision())+"|"+s+"|"+q;}
+void rtcExportEvidence(JsonObject d){d["clockRevision"]=rtcClockRevision();d["tickPassed"]=tickPassed;d["tickFailed"]=tickFailed;d["external"].set(external.as<JsonObject>());d["quick"].set(quick.as<JsonObject>());d["productionCriterion"]="WRITE_READBACK";}
+bool rtcRestoreEvidence(JsonObjectConst d){if(d["clockRevision"].as<uint32_t>()!=rtcClockRevision())return false;external.set(d["external"]);quick.set(d["quick"]);tickPassed=d["tickPassed"]|false;tickFailed=d["tickFailed"]|false;ticking=false;rtcDetail="Bukti RTC dipulihkan dari checkpoint; status hardware dibaca ulang";return true;}
+void resetRtcQc(){ticking=tickPassed=tickFailed=false;external.clear();quick.clear();rtcDetail="Belum diuji; QC cepat Write/Readback dan sampling terpisah";}
 void rtcQcState(JsonObject d){Reading r=read();record(r);sample(d,r);}
 void updateRtcQc(){
  if(!ticking)return;
@@ -74,18 +77,25 @@ void beginRtcQc(WebServer &server,bool (*authorize)(),void (*stop)()){
  });
  server.on("/api/rtc/time",HTTP_POST,[]{
   if(!context())return;if(ticking||rtcRunActive()||pdNegotiating()||currentQcBusy()){error("RTC run/capture active; finish or abort before setting clock");return;}
+  if(web->hasArg("qcQuick")&&web->arg("qcQuick")!="1"){error("qcQuick must be1 when requesting quick QC",400);return;}bool quickTest=web->arg("qcQuick")=="1";
   JsonDocument cal;calibrationState(cal.to<JsonObject>());if(cal["pending"].as<int>()>=0){error("Wait for calibration capture");return;}
   int64_t utc,offset;if(!integer("utcSeconds",946684800LL,4102444799LL,utc)||!integer("utcOffsetMinutes",-720,840,offset)||web->arg("source").isEmpty()||web->arg("source").length()>64){error("UTC seconds2000..2099, offset -720..840 and source max64 required",400);return;}
   Reading before=read();uint8_t b[7];if(!before.transport||!RtcMath::encode(utc+offset*60,b)){error("RTC unreadable / local calendar outside2000..2099");return;}
   if(rtcClockRevision()==UINT32_MAX){error("Clock revision exhausted");return;}
   stopSafe();resetRtcQc();meta["revision"]=rtcClockRevision()+1;meta["configured"]=true;meta["offsetMinutes"]=offset;meta["lastSetUtcSeconds"]=utc;meta["source"]=web->arg("source");meta["writeVerified"]=false;if(!saveMeta()){error(rtcDetail);return;}
+  bool challengeOk=true;int64_t challengeLocal=-1,challengeReadback=-1;
+  if(quickTest){uint8_t probe[7];challengeLocal=RtcMath::writeChallenge(utc+offset*60,before.local);challengeOk=RtcMath::encode(challengeLocal,probe)&&qcWriteReg(0x68,0,probe,7);Reading check=read();challengeReadback=check.local;challengeOk=challengeOk&&check.transport&&check.valid&&RtcMath::readback(challengeLocal,check.local);}
   // Persist intent first. Any interruption leaves writeVerified=false; never infer time trust.
+  // Always attempt restoration to the reviewed real time, even if the deliberate challenge failed.
   bool ok=qcWriteReg(0x68,0,b,7);uint8_t control=before.bytes[14]&0x7f;if(ok)ok=qcWriteReg(0x68,14,&control,1);
-  Reading after=read();ok=ok&&after.transport&&after.valid&&after.local>=utc+offset*60&&after.local<=utc+offset*60+1;
+  Reading after=read();ok=ok&&after.transport&&after.valid&&RtcMath::readback(utc+offset*60,after.local);
   // Alarm flags are write-zero-to-clear: write ones to preserve flags that may have arrived meanwhile.
-  if(ok){uint8_t status=(after.bytes[15]&0x7f)|3;ok=qcWriteReg(0x68,15,&status,1);after=read();ok=ok&&after.transport&&after.valid&&!after.osf;}
-  meta["writeVerified"]=ok;if(!saveMeta()){error(rtcDetail);return;}
-  rtcDetail=ok?"Waktu ditulis dan dibaca balik; OSF dibersihkan. Belum bukti akurasi/baterai":"RTC write/readback failed; jangan percaya waktu, ulangi eksplisit";record(after);JsonDocument d;d["ok"]=ok;sample(d["rtc"].to<JsonObject>(),after);send(d,ok?200:409);
+  if(ok){uint8_t status=(after.bytes[15]&0x7f)|3;ok=qcWriteReg(0x68,15,&status,1);after=read();ok=ok&&after.transport&&after.valid&&!after.osf&&RtcMath::readback(utc+offset*60,after.local);}
+  bool restored=ok;ok=ok&&challengeOk;meta["writeVerified"]=restored;if(!saveMeta()){error(rtcDetail);return;}
+  rtcDetail=ok?"Waktu ditulis dan dibaca balik; OSF dibersihkan. Belum bukti akurasi/baterai":"RTC write/readback failed; jangan percaya waktu, ulangi eksplisit";
+  if(quickTest){quick["schema"]="QC-RTC-QUICK-1";quick["scope"]="WRITE_READBACK";quick["sessionId"]=qcSessionId();quick["clockRevision"]=rtcClockRevision();quick["result"]=ok?"PASS":"FAIL";quick["challengeUtcSeconds"]=challengeLocal-offset*60;quick["challengeReadbackUtcSeconds"]=challengeReadback<0?-1:challengeReadback-offset*60;quick["challengeVerified"]=challengeOk;quick["restorationVerified"]=restored;quick["requestedUtcSeconds"]=utc;quick["readbackUtcSeconds"]=after.valid?after.local-offset*60:-1;quick["utcOffsetMinutes"]=offset;quick["source"]=web->arg("source");quick["completedUptimeMs"]=millis();}
+  record(after);qcProgressDirty();bool saved=true;String why;cal.clear();if(quickTest)saved=qcSaveProgress(why);
+  JsonDocument d;d["ok"]=ok&&saved;d["writeReadbackVerified"]=ok;if(quickTest){d["checkpointSaved"]=saved;d["detail"]=why;}sample(d["rtc"].to<JsonObject>(),after);send(d,!saved?507:ok?200:409);
  });
  server.on("/api/rtc/tick",HTTP_POST,[]{if(!context())return;if(ticking||rtcRunActive()){error("RTC test already active");return;}Reading r=read();if(!r.transport||!r.valid||r.osf){error("RTC calendar/OSF invalid; set correct clock first");return;}ticking=true;tickPassed=tickFailed=false;tickAt=esp_timer_get_time();tickEpoch=r.local;tickRevision=rtcClockRevision();tickSession=qcSessionId();rtcDetail="Tes jam berjalan60 detik; bukan akurasi24jam atau retensi";JsonDocument d;d["ok"]=true;send(d);});
  server.on("/api/rtc/run",HTTP_POST,[]{

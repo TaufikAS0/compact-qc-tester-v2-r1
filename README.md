@@ -1,8 +1,10 @@
-# RTC and durable QC1.10.6
+# RTC QC cepat1.11.0
 
-Installed build2026-10-15T06:57:45Z /13:57:45 WIB at192.168.1.31; app-only OTA and exact runtime hash verified. Adds reviewed RTC time/WIB readback,60-second ticking check, persistent portal-run/evidence API and QC checkpoint/resume with outputs OFF. Original33 historical PASS and82 analog/Modbus CSV columns preserved through two actual software reboots. RTC remains UNVERIFIED pending real24h accuracy and physical battery-retention evidence. [Implemented portal contract](04_Dokumen/RTC_PORTAL_CONTRACT.md).
+Installed build2026-10-15T08:16:55Z /15:16:55 WIB at192.168.1.31, OTA/runtime hash verified. Operator: **I2C & Sensor ->pilih zona ->QC cepat: Write + Readback ->tinjau dan konfirmasi**. Firmware menulis pola waktu berbeda dan membacanya balik, lalu mengembalikan waktu laptop dan memverifikasi lagi. Kedua tahap wajib berhasil; checkpoint langsung disimpan/readback. Periksa waktu laptop dahulu.
 
-Use **Simpan progres sekarang** and wait for success before cutting power. After reboot choose **Tinjau pemulihan sesi** before starting a new profile/session. Resume requires exact same unit/build/profile/preset/calibration; partial jobs do not resume. Autosave can lag60s; download reports/checkpoint for external archives. Clock setting/reset invalidates RTC evidence only and requires confirmation. Never auto-sync during a portal drift run. See CURRENT/VALIDATION for evidence and limitations.
+PASS RTC produksi kini berarti **Write/Readback** sesuai keputusan pengguna. Jam berjalan60s, akurasi harian dan baterai tetap sampling terpisah, tidak otomatis PASS. Test sampling yang benar-benar FAIL/OSF/kalender tidak valid tetap memblokir PASS. Hasil QC lain tetap: actual34PASS termasuk RTC cepat, original33 dan82 kolom analog/Modbus CSV exact setelah reboot/pemulihan. [Kontrak API dan scope laporan](04_Dokumen/RTC_PORTAL_CONTRACT.md).
+
+Simpan progres eksplisit sebelum listrik diputus; setelah reboot gunakan **Tinjau pemulihan sesi** sebelum sesi/profil baru. Output tetap OFF. Resume biasa harus build/profil/preset/kalibrasi sama; hanya ada upgrade eksplisit khusus build1.10.6 terverifikasi ke1.11.0 dengan asal build tercatat. Autosave dapat tertinggal60s; unduh laporan/checkpoint untuk arsip eksternal. Baca CURRENT/VALIDATION untuk bukti dan keterbatasan.
 
 # Readable diagnosis charts1.9.1
 

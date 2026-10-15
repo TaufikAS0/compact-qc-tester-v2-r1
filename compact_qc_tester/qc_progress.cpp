@@ -25,15 +25,19 @@ bool qcSaveProgress(String &why){
  if(!qcSaveBlob("qc-progress","session-v1",next,why)){progressDetail=why;return false;}
  saved.set(next);savedSession=next["sessionId"].as<String>();autoSave=true;dirty=false;lastSave=millis();progressDetail=why;return true;
 }
-bool qcResumeProgress(String &why){
+bool qcResumeProgress(String &why,const String &upgradeFromBuild){
  if(qcProfileSelected()){why="Resume only before selecting a new session; do not overwrite active QC";return false;}
- if(!idle()||savedSession.isEmpty()||saved["schema"]!="QC-PROGRESS-1"||saved["serial"].as<String>()!=unitSerial()||saved["buildIdentity"]!=FW_BUILD_ID||saved["calibrationId"].as<uint32_t>()!=currentCalibrationId()){why="Checkpoint identity/build/calibration differs or unavailable; download saved evidence, do not mix";return false;}
- JsonDocument current;qcState(current.to<JsonObject>());String profile=saved["profile"].as<String>();bool found=false;
+ bool upgrading=!upgradeFromBuild.isEmpty();
+ if(upgrading&&(String(FW_VERSION)!="1.11.0"||upgradeFromBuild!="QC_BUILD=1.10.6|2026-10-15T06:57:45Z"||saved["buildIdentity"]!=upgradeFromBuild||rtcRunActive()||saved["rtcEvidence"]["clockRevision"].as<uint32_t>()!=rtcClockRevision())){why="Only explicit verified1.10.6 checkpoint upgrade without active run/clock change is allowed";return false;}
+ if(!idle()||savedSession.isEmpty()||saved["schema"]!="QC-PROGRESS-1"||saved["serial"].as<String>()!=unitSerial()||(!upgrading&&saved["buildIdentity"]!=FW_BUILD_ID)||saved["calibrationId"].as<uint32_t>()!=currentCalibrationId()){why="Checkpoint identity/build/calibration differs or unavailable; download saved evidence, do not mix";return false;}
+ JsonDocument current;qcProfilesState(current.to<JsonObject>());qcRecipesState(current.as<JsonObject>());String profile=saved["profile"].as<String>();bool found=false;
  for(JsonObject p:current["profiles"].as<JsonArray>())if(p["id"]==profile&&p["revision"]==saved["profileRevision"])found=true;
  bool recipeFound=false;for(JsonObject p:current["recipes"].as<JsonArray>())if(p["id"]==profile && String(p["revision"].as<unsigned long>())+":"+p["crc"].as<String>()==saved["recipeIdentity"].as<String>())recipeFound=true;
  if(!found||!recipeFound||!qcRecipesReady()){why="Saved profile/recipe revision unavailable";return false;}
  // Validate recipe identity before selecting anything. select only after complete structural validation.
  if(!qcValidateProgress(saved.as<JsonObjectConst>(),why))return false;
+ if(upgrading){current.clear();saved["buildIdentity"]=FW_BUILD_ID;saved["evidence"]["upgradeFromBuild"]=upgradeFromBuild;
+  if(!qcSaveBlob("qc-progress","session-v1",saved,why)){saved["buildIdentity"]=upgradeFromBuild;saved["evidence"].remove("upgradeFromBuild");return false;}}
  if(!selectQcProfile(profile)||activeQcProfileMask()!=saved["profileMask"].as<String>()||activeQcRecipeIdentity()!=saved["recipeIdentity"].as<String>()){why="Saved profile/mask/recipe differs; new session required";return false;}
  qcRestoreProgress(saved.as<JsonObjectConst>());rtcRestoreEvidence(saved["rtcEvidence"]);autoSave=true;dirty=false;progressDetail="Completed evidence restored; outputs OFF, unfinished tests must be repeated";why=progressDetail;return true;
 }

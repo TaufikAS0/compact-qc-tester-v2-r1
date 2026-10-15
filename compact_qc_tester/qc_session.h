@@ -23,7 +23,7 @@ void qcCaptureProgress(JsonObject out);
 bool qcValidateProgress(JsonObjectConst in,String &why);
 void qcRestoreProgress(JsonObjectConst in);
 bool qcSaveProgress(String &why);
-bool qcResumeProgress(String &why);
+bool qcResumeProgress(String &why,const String &upgradeFromBuild=String());
 void beginQcProgress();
 void updateQcProgress();
 void qcProgressDirty();

@@ -26,6 +26,8 @@ constexpr bool encode(int64_t e,uint8_t *b){
  b[0]=bcd(rest%60);b[1]=bcd(rest/60%60);b[2]=bcd(rest/3600);b[3]=uint8_t((e/86400+4)%7+1);b[4]=bcd(day+1);b[5]=bcd(m);b[6]=bcd(y-2000);return true;
 }
 constexpr bool tick(int64_t start,int64_t end,int64_t elapsedMs){return elapsedMs>=60000&&elapsedMs<=180000&&end-start>=elapsedMs/1000-2&&end-start<=elapsedMs/1000+2;}
+constexpr bool readback(int64_t requested,int64_t actual){return requested>=946684800LL&&requested<=4102444799LL&&actual>=requested&&actual<=requested+1&&actual<=4102444799LL;}
+constexpr int64_t writeChallenge(int64_t requested,int64_t current){const int delta[]={120,-120,240,-240};for(int d:delta){int64_t candidate=requested+d;int64_t difference=candidate>current?candidate-current:current-candidate;if(candidate>=946684800LL&&candidate<=4102444799LL&&difference>2)return candidate;}return -1;}
 // 0=insufficient evidence,1=PASS,-1=FAIL. Caller separately rejects non-finite/out-of-bound fields.
 constexpr int evidence(double elapsed,double drift,double uncertainty,double tolerance,bool quality,bool retention,bool physical){
  if(!quality||elapsed<(retention?60:86400)||uncertainty<1||uncertainty>=tolerance||(retention&&!physical))return 0;

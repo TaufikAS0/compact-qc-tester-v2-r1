@@ -1,13 +1,13 @@
 # Compact RTC + durable QC integration (COMPACT-RTC-1)
 
-Firmware owner: this Compact repository. Portal owner: separate Telemetric Hardware Portal repository. No portal source changes here. Source1.10.6; **check CURRENT/VALIDATION for exact installed build**, never infer deployment from this document.
+Firmware owner: this Compact repository. Portal owner: separate Telemetric Hardware Portal repository. No portal source changes here. Source1.11.0; **check CURRENT/VALIDATION for exact installed build**, never infer deployment from this document.
 
 ## Invariants
 
 - DS3231 at0x68. Existing SDA21/SCL22, outputs, WiFi, partitions and other NVS namespaces unchanged. New namespaces qc-rtc/meta-v1 and qc-progress/session-v1 only. No EEPROM identity writes or NVS erase/format.
 - RTC POST bodies are application/x-www-form-urlencoded. The one-time legacy bridge also accepts multipart text fields; use that with a minimal original-evidence projection to avoid large URL-decoding allocations. Existing device token from GET/api/state remains required. This intentional lab token model is not a cryptographic signature or Internet authentication.
 - UTC internally. RTC stores a local calendar; offset must be explicitly supplied. Calendar2000..2099 only. Firmware does not contact NTP; portal owns independent reference quality and network/quantization uncertainty.
-- An OSF-clean clock is not overall RTC PASS. RTC PASS requires the60s monotonic ticking test plus accepted accuracy and retention evidence. Retention is explicitly operator-declared physical power removal, not inferred from reboot. Other QC tests may continue during portal run.
+- Owner decision2026-10-15/source1.11.0: production RTC may PASS a real deliberate Write/Readback challenge AND verified restoration to the reviewed time. OSF-clean/read-only/time-sync alone never grants quick PASS.60s/daily accuracy/retention are separate sampling evidence; quick PASS does not imply those passed. Calendar/transport/OSF faults and real sampling FAIL still block/override production PASS. Retention is operator-declared physical power removal, not inferred from reboot. Earlier1.10.6 used the strict combined sampling criterion; do not infer identical PASS scope across versions.
 - A portal run binds the unit's current session/clockRevision, locks time setting and deliberate new-session/profile/recipe changes, and persists that lock across reboot. Finish or explicitly abort/release first. Never auto-sync RTC during a drift run.
 
 ## Read
@@ -31,6 +31,8 @@ Missing/invalid fields must not be coerced into time0 or valid measurements. `ut
 
 `GET /api/state` also includes `hardware.rtc`, `qc.progress`, `qc.rtcEvidence` and each test's `restoredEvidence` flag. GET/sample itself performs no clock writes or automatic test acceptance.
 
+From1.11.0, RTC includes `productionCriterion:"WRITE_READBACK"`, `quick` and `samplingComplete`. Quick evidence schema `QC-RTC-QUICK-1` stores scope, result, sessionId, clockRevision, challengeUtcSeconds/challengeReadbackUtcSeconds, challengeVerified, restorationVerified, requestedUtcSeconds/readbackUtcSeconds, offset/source and completedUptimeMs. Null/absent quick means not tested; metadata writeVerified alone is not quick PASS. Quick evidence is also in qc.rtcEvidence and CSV rtcEvidence.json. `samplingComplete` still requires60s ticking plus accepted accuracy AND retention PASS.
+
 ## Common POST context
 
 RTC mutation fields: `token`, `confirm=1`, `sessionId`, `profileRevision`, `clockRevision` must match fresh state. RTC must be enabled in active QC profile. Stale contexts409, missing confirmation400, auth403, unavailable persistence507 (some metadata failures409). Existing serial/radio/network/PD/capture/OTA ownership guards still apply. Inspect response detail, never treat HTTP200 alone as physical acceptance.
@@ -38,6 +40,8 @@ RTC mutation fields: `token`, `confirm=1`, `sessionId`, `profileRevision`, `cloc
 ### Set time
 
 `POST /api/rtc/time`: common fields plus `utcSeconds` (Unix seconds), `utcOffsetMinutes`(-720..840), `source`(1..64 bytes).
+
+Optional `qcQuick=1` explicitly requests production quick QC. Any other supplied qcQuick value400. Firmware selects a calendar challenge120/240s away from the requested time and different from the previous actual read, writes and verifies it, then ALWAYS attempts to restore the requested real time and verifies again. Both readbacks must be within0..1s, calendar valid and final OSF clear. Old RTC evidence is invalidated/new revision consumed; other tests unchanged. If the challenge fails but restoration succeeds, quick still FAIL; do not coerce a successful final write into PASS. Failure/power loss can leave an untrusted/test time; metadata intent is persisted before writes and operator must retry explicitly. No writes while any bound run or capture is active. Success immediately saves/readbacks the QC checkpoint;507 means not durably saved, even if hardware write was verified. No60s wait is required for this production criterion. Normal time setting without qcQuick does not create quick evidence.
 
 Explicitly review time+zone before calling. Send a fresh reference close to request dispatch; account for latency. Firmware persists unverified intent/new clockRevision before I2C writes, writes calendar/clears EOSC preserving other control bits, reads back, then clears OSF preserving EN32kHz/alarm flags and re-reads. Failure never claims writeVerified. Metadata/readback errors require operator action, never reset unrelated settings. Response `{ok,rtc}`. Setting changes RTC evidence only, not other QC results. Failed attempts also consume clockRevision, so portal must reread after errors.
 
@@ -70,7 +74,7 @@ For accuracy: drift is CHANGE of RTC-minus-reference offset since baseline, not 
 
 Finite numeric bounds: elapsed60..31536000s, uncertainty1..3600s, tolerance>0..3600s, abs drift<=31536000s. Firmware computes result; caller cannot choose PASS. Poor reference/current calendar/OSF, insufficient duration, uncertainty>=tolerance =>INCOMPLETE. Otherwise abs(drift)+uncertainty<=tolerance=>PASS; abs(drift)-uncertainty>tolerance=>FAIL; overlap=>INCOMPLETE. This cannot certify DS3231±2ppm from1s HTTP data in24h.
 
-One immutable normalized attachment per kind per QC session. Same payload is idempotent; changed attachment409. Use RTC-only reset/new portal run for a retest. Attachment ends/releases that run and forces checkpoint; response `{ok,result,detail}`. If507, portal retains its report and can retry same payload/checkpoint. Accuracy and retention can use different run IDs within one session. For final RTC PASS, both accepted attachments and ticking PASS are required; overall QC still depends on ALL enabled tests.
+One immutable normalized attachment per kind per QC session. Same payload is idempotent; changed attachment409. Use RTC-only reset/new portal run for a retest. Attachment ends/releases that run and forces checkpoint; response `{ok,result,detail}`. If507, portal retains its report and can retry same payload/checkpoint. Accuracy and retention can use different run IDs within one session. Both accepted attachments and ticking PASS are required for samplingComplete. From1.11.0 real quick Write/Readback may independently satisfy production RTC; overall QC still depends on ALL enabled tests and actual sampling failures override quick PASS.
 
 ## Durable progress / reboot / reports
 
@@ -81,6 +85,8 @@ One immutable normalized attachment per kind per QC session. Same payload is ide
 - Resume restores same session ID, completed PASS/FAIL evidence and completed input counts. Outputs remain physically commanded OFF; partial sequences/captures/serial jobs restart explicitly. No old worker resumes. Read-current hardware and retained historical evidence are separately labeled; RTC is re-read, OSF still authoritative. Retained tests may be repeated explicitly without resetting others (finalized outputs keep existing policy/new session).
 - JSON/CSV reports carry RTC evidence and retained checkpoint evidence plus restoredEvidence flags. QC code changes with new RTC evidence; earlier downloaded reports remain immutable. Portal must NOT edit an old report/CRC to insert PASS.
 - Any firmware upgrade during a bound run invalidates exact-build restoration. Abort/archive first. Power-off battery test should use SAME firmware/build and successful checkpoint, then explicit resume. Pure reboot is not a battery test.
+
+Only approved cross-build exception: source1.11.0 `POST /api/qc/resume` may explicitly include `upgradeFromBuild=QC_BUILD=1.10.6|2026-10-15T06:57:45Z`. Requires the NVS checkpoint to match that EXACT build, same serial/calibration/profile/preset/clock revision and no bound run. Source build provenance is retained under checkpointEvidence.upgradeFromBuild, new header is saved/read back before restoring. It never creates quick evidence or changes the RTC. Missing/wrong source retains strict rejection; arbitrary edited JSON imports are not accepted by this route. Ordinary1.11.0 reboot resumes same build without the parameter. Archive original progress before this deliberate upgrade.
 
 ### One-time legacy1.9.1 bridge
 
@@ -99,3 +105,7 @@ Read CURRENT for compile/API/browser/OTA evidence. Tests shorter than24h cannot 
 1.10.6/build06:57:45Z installed by app-only OTA, runtime hash verified. Real set/readback/WIB,60s ticking, negative auth/context/bounds, run guards/abort, checkpoint/header/readback and two same-binary software reboot/resume cycles passed. An administrative bound run survived reboot and was aborted cleanly. Original33 historical PASS and82 analog/Modbus CSV columns remained exact. Live UI shows running-test LULUS while accuracy/retention remain pending. These do not prove24h accuracy, reference certification, physical power removal or battery health. No external positive evidence was fabricated or submitted. Portal still needs owner integration against this contract.
 
 For the legacy bridge, project only original root version/buildUTC/buildIdentity; hardware serial/calibration/currentQc; qc variant/profileSelected/sessionId/profileRevision/profileMask/operator/overall/qcCode/recipe/tests/outputs/inputs/modbus/network/serial/radio. Preserve their values and every CRC-covered test unchanged. Multipart projection11420 bytes was verified; full old encoded report failed under ESP32 memory pressure. Keep the immutable full original archive independently. Do not retry legacy now: installed clockRevision1 contains new RTC evidence.
+
+## Installed quick-QC acceptance2026-10-15
+
+1.11.0/build08:16:55Z installed and runtime hash verified. Actual Operator button/review/confirmation executed a different-time challenge, readback, real-time restoration/readback in WIB. Receipt revision2/quickPASS persisted through an identical-binary software reboot+explicit resume.34 production tests PASS; original33 results and82 analog/Modbus CSV fields remain exact. Report quick receipt matches saved NVS checkpoint. SamplingComplete false; no sampling results or reference/battery acceptance invented. Auth/context/bounds/run-lock negative cases reject mutations; source1.10.6 compatible migration retains historical provenance. Read CURRENT/VALIDATION for exact artifacts. Quick test may temporarily alter RTC by120/240s; never run during a portal observation. Save progress again after live state re-evaluation if dirty is shown.
