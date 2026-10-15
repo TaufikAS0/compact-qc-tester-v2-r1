@@ -1,4 +1,4 @@
-CURRENT | V2.18 | 2026-10-15 | Codex | Installed1.9.1/build00:33:08Z exact MD5; readable charts native checked; Node/Python14/portal2 PASS | Next: feature push/parity; physical followups unchanged
+CURRENT | V2.18 | 2026-10-15 | Codex | Installed1.9.1/build00:33:08Z exact MD5; readable charts native checked; Node/Python14/portal2 PASS | Published source c2bd087 feature-only; next physical followups unchanged
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
