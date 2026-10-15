@@ -1,3 +1,15 @@
+# Installed diagnostic readability1.9.1 -2026-10-15
+
+- Firmware1.9.0 ->1.9.1. Final build UTC2026-10-15T00:33:08Z /07:33:08 WIB, app1426336 bytes SHA256f0045e69e579e3fd44dfa3845b91c2106edb38adddc5df8ad57c1413d334ed8e. Build-Firmware.ps1/metadata/legacy gates PASS. Sketch1426189 bytes68%, RAM56848 bytes17%. No firmware edits after final build start.
+- Authorized app-only OTA192.168.1.31 HTTP200; same serialTMC88F1559CA478, new boot/version/build and runtime/fileMD578216abd7926c5556ee64df06701584b verified. Profiles/recipes/calibration match before OTA; no erase. FinalM1 PD OFF/outputsOFF/faultfalse. First immediate postboot AHT was not ready; subsequent native browser shows fresh valid32.8C/41.9%RH. Do not misread initialization as permanent failure.
+- Native installed page reloaded: large32.81C/41.94%RH/3.67mA values visible with units, sample ages, numeric Y grid, elapsed seconds X, min/mean/max and proportional lines. Desktop1920 screenshot self-check confirms all three actual graphs; no mobile/printer/accuracy acceptance claim. Minimum spans1mA/2C/10%RH prevent exaggerated tiny changes; historical valid values stay separate from stale/offline current blank. Point titles provide exact value/time, native hover behavior not separately certified.
+- Node readability/station/operator regressions PASS (axes/units/time/gaps/minimum span/stale/offline/empty/single/negative), Python14 and portal2 PASS, diff checkPASS. No API/pin/NVS/driver/WiFi/polarity/calibration policy change. Read AGENTS/CURRENT and full Versioning/ChangeNotifications issue1 at start; shared lab WiFi retained. Feature-only publication, no merge.
+- Ignored evidence build/chart-pre-ota-v1_9_1.json,chart-post-ota-v1_9_1.json,chart-final-v1_9_1.json,firmware-manifest.json. Physical RTC OSF/battery/time, PD absence, EEPROMWrite/WC and load tests remain open, not changed by chart UI.
+
+# Diagnostic readability1.9.1 -2026-10-15
+
+Large latest values+units, numeric/time axes, min/mean/max, point value/time and honest minimum scale spans replace unlabeled exaggerated mini-lines. Stale/offline shows no current value; timestamp gaps remain gaps. Node tests PASS; build00:33:08Z running, OTA/native revised UI pending. No pin/NVS/API/driver changes. Latest CURRENT is continuation truth.
+
 Publication/native follow-up 2026-10-15: source55c0a57 pushed feature-only. Existing Chrome tab needed Reload for new HTML. Readiness/map/charts observed at960/1920 desktop widths; fresh AHT about32.7C/42.3%RH, RTC OSF warning retained. No output ON. Native history/print/preset/mobile/printer acceptance not claimed; API/software/QR evidence remains separate. Old scroll position can persist across navigation. CURRENT V2.16 records continuation. No firmware edits after final build.
 
 # Installed station1.9.0 -2026-10-15

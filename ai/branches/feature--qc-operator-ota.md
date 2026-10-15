@@ -1,4 +1,4 @@
-CURRENT | V2.16 | 2026-10-15 | Codex | Installed1.9.0/build00:17:08Z exact MD5; source55c0a57 pushed; API/reboot/archive/QR tests PASS; native readiness/map/charts observed | Next: physical fixture/RTC/PD/EEPROM followup; no automatic merge
+CURRENT | V2.18 | 2026-10-15 | Codex | Installed1.9.1/build00:33:08Z exact MD5; readable charts native checked; Node/Python14/portal2 PASS | Next: feature push/parity; physical followups unchanged
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,22 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.18 | 2026-10-15 | Codex
+
+- Firmware1.9.0 ->1.9.1. Final build UTC2026-10-15T00:33:08Z /07:33:08 WIB, app1426336 bytes SHA256f0045e69e579e3fd44dfa3845b91c2106edb38adddc5df8ad57c1413d334ed8e. Build-Firmware.ps1/metadata/legacy gates PASS. Sketch1426189 bytes68%, RAM56848 bytes17%. No firmware edits after final build start.
+- Authorized app-only OTA192.168.1.31 HTTP200; same serialTMC88F1559CA478, new boot/version/build and runtime/fileMD578216abd7926c5556ee64df06701584b verified. Profiles/recipes/calibration match before OTA; no erase. FinalM1 PD OFF/outputsOFF/faultfalse. First immediate postboot AHT was not ready; subsequent native browser shows fresh valid32.8C/41.9%RH. Do not misread initialization as permanent failure.
+- Native installed page reloaded: large32.81C/41.94%RH/3.67mA values visible with units, sample ages, numeric Y grid, elapsed seconds X, min/mean/max and proportional lines. Desktop1920 screenshot self-check confirms all three actual graphs; no mobile/printer/accuracy acceptance claim. Minimum spans1mA/2C/10%RH prevent exaggerated tiny changes; historical valid values stay separate from stale/offline current blank. Point titles provide exact value/time, native hover behavior not separately certified.
+- Node readability/station/operator regressions PASS (axes/units/time/gaps/minimum span/stale/offline/empty/single/negative), Python14 and portal2 PASS, diff checkPASS. No API/pin/NVS/driver/WiFi/polarity/calibration policy change. Read AGENTS/CURRENT and full Versioning/ChangeNotifications issue1 at start; shared lab WiFi retained. Feature-only publication, no merge.
+- Ignored evidence build/chart-pre-ota-v1_9_1.json,chart-post-ota-v1_9_1.json,chart-final-v1_9_1.json,firmware-manifest.json. Physical RTC OSF/battery/time, PD absence, EEPROMWrite/WC and load tests remain open, not changed by chart UI.
+
+
+### V2.17 | 2026-10-15 | Codex
+
+- User reports diagnosis graphs unreadable. Native existing1.9.0 page and source confirm no numeric/time axes/current reading and exaggerated tiny auto-range changes. Revision1.9.1 adds large fresh current readings+units, explicit stale/offline blank, numeric Y grid, elapsed-seconds X axis using real timestamps, min/mean/max, point titles with value/time, minimum spans1mA/2C/10%RH. Disconnect and >6s sample pauses split lines; history stays bounded120. Responsive cards put temperature/RH first. No sensor/driver/pin/NVS/API changes.
+- Node regressions PASS incl chart axes/units/timestamps/gaps/minimum span/stale/offline/empty/single/negative data. Final Build-Firmware.ps1 started UTC2026-10-15T00:33:08Z; no firmware edits after start. Build/OTA/native revised UI acceptance pending. Baselinee5a451f clean/fetched before edit, main unchanged. Versioning/ChangeNotifications read fully from issue1; approved WiFi/legacy partitions/calibration preserved.
+- Next: finish compile/gates, authorized app-only OTA exact manifest/hash/serial; compare old profiles/recipes/calibration, native reload+readability self-check, feature publication without merge. Do not promote physical acceptance.
+
 
 ### V2.16 | 2026-10-15 | Codex
 

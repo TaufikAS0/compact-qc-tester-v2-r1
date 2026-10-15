@@ -1,3 +1,7 @@
+# Readable diagnosis charts1.9.1
+
+Current values+units, numeric/time axes, min/mean/max and honest minimum scale ranges. Stale/offline current values are blank; graph gaps preserved. Installed build/OTA/self-check in VALIDATION and CURRENT.
+
 # QC station source1.9.0
 
 Adds perM test presets (tags, analog refs/tolerance, serial fixture, output timeout), readiness, schematic connection map, guided outputs, history/import on laptop, offline QR print and stale-aware mini charts. Loading presets only fills forms; actions remain explicit. Reports include preset revision/CRC. Run tools/laptop-qc/server.py and open http://127.0.0.1:8770/history to merge device archive bundles; import never opensCOM or contacts device. [Scope/limitations](04_Dokumen/QC_STATION_REVISION.md). Exact build/OTA/publication in CURRENT and VALIDATION.
