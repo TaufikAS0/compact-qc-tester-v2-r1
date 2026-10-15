@@ -27,6 +27,7 @@ void updatePd();
 void pdState(JsonObject out);
 
 bool pdNegotiating();
+void resetPdQcEvidence();
 
 bool identityBusReadable();
 

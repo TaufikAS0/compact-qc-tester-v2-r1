@@ -1,4 +1,4 @@
-CURRENT | V2.36 | 2026-10-15 | Codex | Installed1.12.0/build08:59:41Z via OTA192.168.1.44/TMC88F1559CA28C; PCB/fullCSV/reboot verified; Warranty exact10/software PASS and live rejection verified | M1rev1/sessionB6361F85 own1PASS/0FAIL/33pending/4ignored, PCBempty/checkpoint clean; no old unit results; complete feature-only publication/no merge
+CURRENT | V2.39 | 2026-10-15 | Codex | Source1.13.0/build11:18:57Z compile/gates/software/browser PREVIEW PASS; direct all-module/DI/DO reset + summary PIC + clickable error help | Target144 timeout; last installed1.12.0/C28C/sessionB6361F85/25PASS/PCB0004/RTCquick rev1 archived; feature publish now, OTA/upgrade/runtime/reboot pending reconnect
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,40 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.39 | 2026-10-15 | Codex
+
+# Module reset / Operator / error navigation1.13.0 - software verified, OTA blocked by offline target
+
+Final source1.13.0/build2026-10-15T11:18:57Z /18:18:57 WIB compile/metadata/legacy partition gates PASS. App1544496 bytes SHA256e58ac6ef069863e82df7c821ebe36d6456729ba07658029f56ba4293703bcb91; sketch1544353 bytes73%, staticRAM57480 bytes17%. No firmware source edits after final build began. Candidate09:28:18Z is superseded and was never uploaded. Node UI tests cover direct DI/DO/all-module review, Stop/context/QCcode race, profile exclusions, RTC run locks, operator draft/focus, error destinations and previous CSV/RTC regressions; Python14 and portal packaging2 PASS, static dependency scope assertions compiled, diff check PASS.
+
+User-facing: fill Operator/PIC in Ringkasan QC; report page links/focuses that field. Click error text to open/focus the required field or module; generic errors open the current workflow for diagnosis. Reset QC is directly on all7 input cards,11 LED rows,both DO rows,every other result card and all38 summary rows. Ignored tests stay disabled; RS485+tags and Radio groups explicitly reviewed. Reset clears selected result/counter/observations/raw QC only, preserves calibration/session/PCB/unrelated results, stops outputs and saves/readbacks checkpoint. RTC reset remains evidence-only/clockRevision and blocks active run/tick, no calendar write. Read MODULE_RESET.md for API/507 behavior.
+
+Actual in-app browser PREVIEW only: missing PIC error click focuses summary Operator input; direct DO1 reset opens correct one-channel review/cancel; all DI1..4/switch buttons and all module cards visible. Ignored build/module-reset-preview-operator.jpg/-do-review.jpg/-di.jpg. This is software/UI proof, NOT hardware reset/PASS/OTA evidence. Real192.168.1.44 timed out twice during final build; owner asked asynchronously to reconnect/provide new IP. Last actual device1.12.0/sourcebuild08:59:41Z, TMC88F1559CA28C/sessionB6361F85/PCB0004/25PASS/0FAIL/9pending/4ignored/RTCquick revision1 saved and archived. No1.13.0 OTA, no actual module reset or reboot test yet. Never overwrite these results or reuse old unit34PASS.
+
+Continuation: source feature publication first; when target responds, re-check same unit/chip/outputOFF/TPL/profile/calibration/no active workers/RTC run; save latest evidence again because operator may have added results. Sibling _codex_tmp/module_reset_runtime.py upload gates exact final11:18:57Z artifact and archives pre-upload state/checkpoint, uses app-only OTA/no erase; then resume explicitly ONLY exact1.12.0/build08:59:41Z->1.13.0, or same-build resume. Run verify to compare EVERY prior PASS/FAIL/detail/PCB/session/RTC receipt/revision; module_reset_checks.py negative guards. Test actual reset only a still-pending module via UI, preserve completed operator QC. Then identical binary OTA/reboot/resume and verify again. No hardware PASS fabricated, no RTC reset/EEPROM write/PD request/output ON to test UI. main35733ba unchanged; feature only/no merge.
+
+
+
+### V2.38 | 2026-10-15 | Codex
+
+# Module reset + actionable errors1.13.0 - final build pending
+
+Owner steering: Operator/PIC field moved from report page to Ringkasan QC, report button jumps/focuses it; polling preserves drafts and loads saved operator per session. All error banners are keyboard/click actionable with field/module destinations: PIC, PCB, QC/production dates, QC pending, session/profile, RTC/AHT/analog/PD/EEPROM, serial/network/SPI and report/archive. Endpoint context accompanies server errors; unknown errors open the current workflow for inspection, not an invented root-cause diagnosis. FAIL badges open the related test page. Rendering remains text-only.
+
+Direct reviewed reset buttons now on EACH DI1..4, DMM/Normal/Webserver input, EACH LED and DO1/DO2, every result card and all summary rows. Shared dependency/RTC/checkpoint policies remain MODULE_RESET.md. First09:28:18Z build compiled/gates PASS but is NOT final and was NEVER uploaded; subsequent UI edits require new final build. Final frozen build2026-10-15T11:18:57Z /18:18:57 WIB running, no further firmware edits. Node operator focus/draft/error/direct DI/DO/module reset and all earlier UI tests PASS. Actual baseline25PASS/PCB0004 retained; re-save latest before OTA. Feature push/OTA/explicit upgrade, runtime negative guards, actual pending-module reset and same-build reboot still pending.
+
+
+
+### V2.37 | 2026-10-15 | Codex
+
+# Module reset1.13.0 - implementation/build acceptance pending
+
+Owner requests reset QC per module plus push/OTA. See04_Dokumen/MODULE_RESET.md: per-row reviewed reset preserves session/operator/PCB/calibration/other results, stops outputs and saves/readbacks checkpoint. RS485+two tags and Radio communication/configuration are explicit shared groups; network tests/input/output rows independent. RTC retains checked evidence-only reset, revision increment and active-run/tick lock; no clock write. Token/confirm/session/profile/QCcode guards prevent stale reset. Receipt in state/checkpoint/QCcode,507 reports RAM-only reset when save fails. Ignored tests remain ignored.
+
+Live baseline192.168.1.44/TMC88F1559CA28C checked1.12.0/build08:59:41Z. User added evidence: latest backup25PASS/0FAIL/9pending/4ignored/sessionB6361F85/PCB0004/RTCquickPASS revision1, not previous1PASS checkpoint. Preserve ALL original accepted details/RTC receipt; ignored build/module-reset-pre.json/.csv/-checkpoint.json archived after explicit save. No other-unit evidence. Only approved exact1.12.0->1.13.0 resume; no erase. Source frozen build2026-10-15T09:28:18Z started; firmware untouched afterward. Node reset/Stop/race/sampling/profile and prior UI PASS; Python14/portal packaging2 PASS. Final compile/gates, feature push, OTA/upgrade/runtime reset/reboot/browser verification pending. main35733ba unchanged.
+
+
 
 ### V2.36 | 2026-10-15 | Codex
 

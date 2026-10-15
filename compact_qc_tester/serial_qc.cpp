@@ -59,6 +59,7 @@ void packet() {
 }
 }
 bool serialQcActive() { return active; }
+void resetSerialQcItem(const String &name){if(mode==name)resetSerialQc();}
 void resetSerialQc() {
   cancelSerialQc("Session reset"); runId = completed = rxBytes = txBytes = errors = 0;
   status = "BELUM DIUJI"; serialDetail = "USB-RS232 external fixture required";

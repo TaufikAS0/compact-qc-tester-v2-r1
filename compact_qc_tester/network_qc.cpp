@@ -82,6 +82,11 @@ void reply(WebServer &web,bool ok,const char *message) {
 bool networkQcBusy(){return busy;}
 void cancelNetworkQc(){if(busy)cancelled=true;}
 void resetNetworkQc(){cancelNetworkQc();wifiStatus=ethStatus=mqttStatus="BELUM DIUJI";latest={};networkDetail="New QC session";}
+void resetNetworkQcItem(const String &name){
+ int kind=name=="WiFi network"?0:name=="Ethernet network"?1:2;
+ (kind==0?wifiStatus:kind==1?ethStatus:mqttStatus)="BELUM DIUJI";
+ if(latest.kind==kind){latest={};networkDetail="Selected network QC reset; repeat explicit test";}
+}
 void beginNetworkQc(WebServer &web,bool (*authorize)(),void (*stop)()) {
   jobs=xQueueCreate(1,sizeof(Job));results=xQueueCreate(1,sizeof(Result));
   if(jobs&&results) { if(xTaskCreate(worker,"qc-network",6144,nullptr,1,nullptr)!=pdPASS){vQueueDelete(jobs);vQueueDelete(results);jobs=results=nullptr;} }

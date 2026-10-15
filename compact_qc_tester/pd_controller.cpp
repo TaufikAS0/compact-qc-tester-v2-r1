@@ -84,6 +84,12 @@ bool requestPd(uint16_t mv, uint16_t ma, String &out) {
   return true;
 }
 bool pdNegotiating() { return pending; }
+void resetPdQcEvidence(){
+ targetMV=requestedAt=lastPoll=rdo=0;sourceCount=fsm=sinkCount=capRetries=0;
+ pending=resetQueued=registersValid=attached=false;capRequestedAt=0;
+ for(auto &p:source)p=0;for(auto &p:sink)p=0;
+ status="BELUM REQUEST";pdDetail="QC evidence reset only; no PD request or voltage change sent";
+}
 void updatePd() {
   if (!qcPdEnabled())
     return;

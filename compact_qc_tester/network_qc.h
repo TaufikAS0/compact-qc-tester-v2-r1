@@ -7,3 +7,4 @@ void networkQcState(JsonObject out);
 bool networkQcBusy();
 void cancelNetworkQc();
 void resetNetworkQc();
+void resetNetworkQcItem(const String &name);

@@ -7,3 +7,4 @@ void serialQcState(JsonObject out);
 bool serialQcActive();
 void cancelSerialQc(const char *reason);
 void resetSerialQc();
+void resetSerialQcItem(const String &name);

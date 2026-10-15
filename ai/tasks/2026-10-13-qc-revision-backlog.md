@@ -1,3 +1,7 @@
+Module reset V2.39 SOFTWARE COMPLETE1.13.0/build11:18:57Z; allDI/DO/module buttons, summary PIC and actionable errors tested. Actual144 offline/OTA NOT done; preserve25PASS/PCB0004/RTCquick1. Final feature publication and exact resume procedure in CURRENT.
+
+Module reset V2.37: source1.13.0 per-module reviewed reset implemented; software PASS, frozen build09:28:18Z pending. Preserve actual25PASS/PCB0004/RTCquick revision1 on144; exact1.12->1.13 resume. See CURRENT/MODULE_RESET.md for pending compile/OTA/runtime/reboot/publication.
+
 Warranty/PCB V2.36 COMPLETE firmware1.12.0/build08:59:41Z OTA144/newserialC28C verified; PCB/fullCSV/same-build reboot/resume PASS; temporaryPCB cleared, own1PASS/33pending/clean checkpoint. Warranty exact10/software success+live rejection verified, live PASS download/import pending actual production QC. Source d1ef3d2 published before OTA; final docs-only feature publication, no merge. See CURRENT.
 
 RTC QUICK V2.32:1.11.0/build08:16:55Z installed OTA; actual Operator reviewed challenge/write/readback/restoration PASS,34PASS, original33/82CSV exact after reboot/resume. Daily/battery sampling remains separate, not PASS. ClockRevision2/no run/checkpoint clean; source provenance preserved. Current procedure/limitations in CURRENT V2.32 and RTC_PORTAL_CONTRACT.

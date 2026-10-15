@@ -1,3 +1,5 @@
+Module reset1.13.0: read04_Dokumen/MODULE_RESET.md. Preserve current target144 evidence25PASS/PCB0004/RTC revision1; current exact deployment in CURRENT. Reset per row only, shared RS485+tags/Radio explicitly reviewed, no calibration/EEPROM erase. Upgrade exception ONLY exact1.12.0/build08:59:41Z->1.13.0 same unit.
+
 Warranty/PCB1.12.0: read04_Dokumen/WARRANTY_CSV.md. Warranty EXACT10 supplied columns/noPCB, actualPASS only and serial.csv; old fullQC CSV unchanged columns plus pcbNumber LAST. PCB session metadata/checkpoint only, no EEPROM/test reset. OWNER TARGET192.168.1.44 serialTMC88F1559CA28C is DIFFERENT from earlierTMC...478: NEVER transfer old unit PASS. Approved1.11.0->1.12.0 checkpoint exception same unit only. Actual installed state in CURRENT.
 
 Owner decision2026-10-15: production RTC quick Write/Readback PASS is allowed after real different-time challenge AND verified restoration. Daily/60s/battery sampling separate; never fabricate their PASS. qcQuick=1 explicit reviewed mutation, same run/context guards. Preserve current results via documented exact-build checkpoint upgrade; no general cross-build bypass.

@@ -11,6 +11,7 @@
 #include "network_qc.h"
 #include "qc_math.h"
 #include "qc_report_math.h"
+#include "qc_reset_scope.h"
 #include "qc_export.h"
 #include "serial_qc.h"
 #include "radio_qc.h"
@@ -22,6 +23,7 @@ void (*stopSafe)();
 QcItem items[80];
 bool retained[80]={};
 JsonDocument retainedEvidence;
+JsonDocument lastReset;
 size_t count = 0, display = 0;
 uint32_t displayAt = 0;
 String operatorName, unit,pcbNumber;
@@ -80,6 +82,7 @@ bool decimal(const char *arg, float low, float high, float &v) {
 String outputName(int n) { return n < 11 ? "LED:" + String(n) : "Relay:" + String(n - 11); }
 void reset() {
   pcbNumber="";
+  lastReset.clear();
   qcProgressNewSession();resetRtcQc();retainedEvidence.clear();for(auto &b:retained)b=false;
   resetSerialQc(); resetRadioQc(); resetCurrentQc(); resetModbusQc(); resetNetworkQc();
   char id[9];
@@ -180,6 +183,7 @@ void qcState(JsonObject d) {
   d["unit"] = unitSerial();
   d["operator"] = operatorName;
   d["pcbNumber"] = pcbNumber;
+  d["lastReset"].set(lastReset.as<JsonObject>());
   d["variant"] = qcVariantName();
   d["profileSelected"] = qcProfileSelected();
   qcProfilesState(d);
@@ -202,6 +206,8 @@ void qcState(JsonObject d) {
     p["status"] = items[i].status;
     p["detail"] = items[i].detail;
     p["restoredEvidence"]=retained[i];
+    auto affected=p["resetTargets"].to<JsonArray>();
+    for(size_t j=0;j<count;++j)if(qcResetAffects(items[i].name.c_str(),items[j].name.c_str()))affected.add(items[j].name);
     bool applicable = qcProfileSelected() && qcTestEnabled(items[i].name);
     p["applicable"] = applicable;
     if (!applicable)
@@ -217,6 +223,7 @@ void qcState(JsonObject d) {
     hashField(items[i].detail);
   }
   hashField(rtcEvidenceIdentity());
+  String resetIdentity;serializeJson(lastReset,resetIdentity);hashField(resetIdentity);
   const char *overall = !qcProfileSelected() ? "INCOMPLETE"
                         : failed             ? "FAIL"
                         : !pending && passed ? "PASS"
@@ -415,7 +422,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       }
       int n = type == "led" ? index : 11 + index;
       if (finalized[n]) {
-        error("QC result already final; start a new session to repeat QC");
+        error("QC result already final; reset this module before repeating QC");
         return;
       }
       String expected = web->arg("state");
@@ -540,6 +547,39 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     d["ok"] = ok;
     d["detail"] = detail;
     send(d);
+  });
+  server.on("/api/qc/reset", HTTP_POST, [] {
+    if(!guard())return;
+    if(web->arg("confirm")!="1"){error("Explicit reset confirmation required",400);return;}
+    String target=web->arg("target");bool found=false;
+    for(size_t i=0;i<count;++i)if(items[i].name==target)found=true;
+    if(!found){error("Unknown QC module",400);return;}
+    if(!qcProfileSelected()||!qcTestEnabled(target)||web->arg("sessionId")!=sessionId||web->arg("profileRevision")!=String(activeQcProfileRevision())){error("Module disabled or session/profile changed");return;}
+    JsonDocument cal;calibrationState(cal.to<JsonObject>());
+    if(pdNegotiating()||currentQcBusy()||cal["pending"].as<int>()>=0||serialQcActive()||radioQcActive()||modbusQcActive()||networkQcBusy()){error("Finish active test/capture before module reset");return;}
+    JsonDocument current;qcState(current.to<JsonObject>());
+    if(web->arg("expectedQcCode").isEmpty()||web->arg("expectedQcCode")!=current["qcCode"].as<String>()){error("QC evidence changed; review reset again");return;}
+    if(target=="RTC"){
+      if(web->arg("clockRevision")!=String(rtcClockRevision())){error("RTC revision changed");return;}
+      String why;if(!resetRtcEvidence(why)){error(why.c_str());return;}
+    }
+    stopSafe();
+    if(target=="ADS / 4-20mA"){resetCurrentQc();retainedEvidence.remove("analog");}
+    if(qcResetAffects(target.c_str(),"RS485")){resetModbusQc();resetSerialQcItem("RS485");retainedEvidence.remove("modbus");}
+    if(target=="RS232")resetSerialQcItem(target);
+    if((target=="RS232"||qcResetAffects(target.c_str(),"RS485"))&&qcResetAffects(target.c_str(),(retainedEvidence["serial"]["mode"]|"")))retainedEvidence.remove("serial");
+    if(qcResetAffects(target.c_str(),"Radio communication")){resetRadioQc();retainedEvidence.remove("radio");}
+    if(target=="WiFi network"||target=="Ethernet network"||target=="MQTT")resetNetworkQcItem(target);
+    if(target=="I2C scan"){i2cScanned=false;i2cDevices=0;}
+    if(target=="STUSB4500")resetPdQcEvidence();
+    for(int i=0;i<7;++i)if(target=="Input:"+String(inputName(i)))cycles[i]={};
+    for(int i=0;i<13;++i)if(target==outputName(i))live[i]=attempted[i]=onConfirmed[i]=offConfirmed[i]=finalized[i]=false;
+    uint32_t previous=lastReset["sequence"]|0u;lastReset.clear();lastReset["sequence"]=previous+1;lastReset["target"]=target;lastReset["uptimeMs"]=millis();auto affected=lastReset["affected"].to<JsonArray>();
+    for(size_t i=0;i<count;++i)if(qcResetAffects(target.c_str(),items[i].name.c_str())){
+      affected.add(items[i].name);retained[i]=false;
+      qcRecord(items[i].name,items[i].name.startsWith("Input:")?"MENUNGGU SIGNAL":"BELUM DIUJI","QC modul direset oleh operator; ulangi tes dengan bukti baru");
+    }
+    qcProgressDirty();String why;bool ok=qcSaveProgress(why);JsonDocument d;d["ok"]=ok;d["resetApplied"]=true;d["affected"].set(affected);d["detail"]=String("Reset modul diterapkan; hasil lain tetap. ")+why;send(d,ok?200:507);
   });
   server.on("/api/qc/pcb", HTTP_POST, [] {
     if(!guard())return;
@@ -668,7 +708,7 @@ String qcSessionId(){return sessionId;}
 void qcRetest(const String &name){for(size_t i=0;i<count;++i)if(items[i].name==name){retained[i]=false;break;}}
 void qcCaptureProgress(JsonObject out){
  JsonDocument h;hardwareState(h.to<JsonObject>());
- out["sessionId"]=sessionId;out["operator"]=operatorName;out["pcbNumber"]=pcbNumber;out["savedUptimeMs"]=millis();
+ out["sessionId"]=sessionId;out["operator"]=operatorName;out["pcbNumber"]=pcbNumber;out["savedUptimeMs"]=millis();out["lastReset"].set(lastReset.as<JsonObject>());
  auto a=out["tests"].to<JsonArray>();for(size_t i=0;i<count;++i){auto p=a.add<JsonObject>();p["name"]=items[i].name;p["status"]=items[i].status;p["detail"]=items[i].detail;}
  auto c=out["cycles"].to<JsonArray>();for(auto &p:cycles)c.add(p.cycles);
  auto o=out["outputs"].to<JsonArray>();for(int i=0;i<13;++i){auto p=o.add<JsonObject>();p["finalized"]=finalized[i];p["onConfirmed"]=onConfirmed[i];p["offConfirmed"]=offConfirmed[i];}
@@ -679,6 +719,7 @@ void qcCaptureProgress(JsonObject out){
  out["evidence"]["modbus"].set(q["modbus"]);
  for(int i=0;i<2;++i)if(kept("Modbus tag:"+String(i+1))&&!retainedEvidence["modbus"]["tags"][i].isNull())out["evidence"]["modbus"]["tags"][i].set(retainedEvidence["modbus"]["tags"][i]);
  if(!kept("WiFi network")&&!kept("Ethernet network")&&!kept("MQTT"))out["evidence"]["network"].set(q["network"]);
+ for(const char *name:{"WiFi network","Ethernet network","MQTT"})if(!kept(name)){const char *key=String(name)=="WiFi network"?"wifiStatus":String(name)=="Ethernet network"?"ethernetStatus":"mqttStatus";out["evidence"]["network"][key].set(q["network"][key]);}
  if(!kept("RS485")&&!kept("RS232"))out["evidence"]["serial"].set(q["serial"]);
  if(!kept("Radio configuration")&&!kept("Radio communication"))out["evidence"]["radio"].set(q["radio"]);
  out["evidence"]["capturedBuildIdentity"]=FW_BUILD_ID;out["evidence"]["capturedSessionId"]=sessionId;
@@ -692,7 +733,7 @@ bool qcValidateProgress(JsonObjectConst d,String &why){
  return true;
 }
 void qcRestoreProgress(JsonObjectConst d){
- reset();sessionId=d["sessionId"].as<String>();operatorName=d["operator"].as<String>();pcbNumber=d["pcbNumber"]|"";
+ reset();sessionId=d["sessionId"].as<String>();operatorName=d["operator"].as<String>();pcbNumber=d["pcbNumber"]|"";lastReset.set(d["lastReset"]);
  for(size_t i=0;i<count;++i){String status=d["tests"][i]["status"].as<String>();if((status=="PASS"||status=="FAIL")&&items[i].name!="RTC"){items[i].status=status;items[i].detail=d["tests"][i]["detail"].as<String>();retained[i]=true;}}
  for(int i=0;i<7;++i){cycles[i]={};cycles[i].cycles=std::min(2u,d["cycles"][i].as<unsigned>());}
  for(int i=0;i<13;++i){int index=0;while(index<int(count)&&items[index].name!=outputName(i))++index;finalized[i]=index<int(count)&&retained[index]&&d["outputs"][i]["finalized"].as<bool>();onConfirmed[i]=finalized[i]&&d["outputs"][i]["onConfirmed"].as<bool>();offConfirmed[i]=finalized[i]&&d["outputs"][i]["offConfirmed"].as<bool>();live[i]=attempted[i]=false;}

@@ -53,6 +53,12 @@ String rtcEvidenceIdentity(){String s,q;serializeJson(external,s);serializeJson(
 void rtcExportEvidence(JsonObject d){d["clockRevision"]=rtcClockRevision();d["tickPassed"]=tickPassed;d["tickFailed"]=tickFailed;d["external"].set(external.as<JsonObject>());d["quick"].set(quick.as<JsonObject>());d["productionCriterion"]="WRITE_READBACK";}
 bool rtcRestoreEvidence(JsonObjectConst d){if(d["clockRevision"].as<uint32_t>()!=rtcClockRevision())return false;external.set(d["external"]);quick.set(d["quick"]);tickPassed=d["tickPassed"]|false;tickFailed=d["tickFailed"]|false;ticking=false;rtcDetail="Bukti RTC dipulihkan dari checkpoint; status hardware dibaca ulang";return true;}
 void resetRtcQc(){ticking=tickPassed=tickFailed=false;external.clear();quick.clear();rtcDetail="Belum diuji; QC cepat Write/Readback dan sampling terpisah";}
+bool resetRtcEvidence(String &why){
+ if(!metadataReady||rtcRunActive()||ticking||rtcClockRevision()==UINT32_MAX){why="RTC metadata unavailable or active run/tick; finish/abort before reset";return false;}
+ uint32_t previous=rtcClockRevision();meta["revision"]=previous+1;
+ if(!saveMeta()){meta["revision"]=previous;why=rtcDetail;return false;}
+ resetRtcQc();qcProgressDirty();return true;
+}
 void rtcQcState(JsonObject d){Reading r=read();record(r);sample(d,r);}
 void updateRtcQc(){
  if(!ticking)return;
@@ -71,9 +77,8 @@ void beginRtcQc(WebServer &server,bool (*authorize)(),void (*stop)()){
  if(!metadataReady)rtcDetail="RTC metadata invalid; explicit maintenance needed, no automatic erase";
  server.on("/api/rtc/sample",HTTP_GET,[]{if(!qcTestEnabled("RTC")){error("RTC disabled by profile");return;}JsonDocument d;d["serial"]=unitSerial();d["sessionId"]=qcSessionId();d["profile"]=qcVariantName();d["profileRevision"]=activeQcProfileRevision();d["version"]=FW_VERSION;d["buildUTC"]=FW_BUILD_UTC;sample(d["rtc"].to<JsonObject>(),read());send(d);});
  server.on("/api/rtc/reset",HTTP_POST,[]{
-  if(!context())return;if(rtcRunActive()||ticking||rtcClockRevision()==UINT32_MAX){error("Finish/abort active RTC run before retest");return;}
-  meta["revision"]=rtcClockRevision()+1;if(!saveMeta()){error(rtcDetail);return;}
-  resetRtcQc();qcProgressDirty();String why;bool ok=qcSaveProgress(why);JsonDocument d;d["ok"]=ok;d["detail"]="Hanya bukti RTC direset; tes lain tetap. "+why;send(d,ok?200:507);
+  if(!context())return;String why;if(!resetRtcEvidence(why)){error(why);return;}
+  bool ok=qcSaveProgress(why);JsonDocument d;d["ok"]=ok;d["detail"]="Hanya bukti RTC direset; tes lain tetap. "+why;send(d,ok?200:507);
  });
  server.on("/api/rtc/time",HTTP_POST,[]{
   if(!context())return;if(ticking||rtcRunActive()||pdNegotiating()||currentQcBusy()){error("RTC run/capture active; finish or abort before setting clock");return;}
