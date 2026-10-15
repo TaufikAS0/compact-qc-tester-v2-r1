@@ -1,4 +1,4 @@
-CURRENT | V2.23 | 2026-10-15 | Codex | Source1.10.4/build06:42:50Z compile/software PASS; target192.168.1.31 unreachable | Last verified device1.10.3; OTA/migration/RTC60s/reboot/native pending; helpers_patch4; preserve original33
+CURRENT | V2.24 | 2026-10-15 | Codex | Source1.10.4/build06:42:50Z compile/software PASS, published b577e0e | Last verified device1.10.3; target192.168.1.31 unreachable; OTA/migration/RTC60s/reboot/native pending; helpers_patch4; preserve original33
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,11 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.24 | 2026-10-15 | Codex
+
+- Implementation/contract/tests/checkpoint published b577e0e3a7259805b4a510a929d8c73ffccdc922 on feature/qc-operator-ota. HEAD/origin/ls-remote matched; main remains35733ba17a8e790fc68dafe9ba771295329a26fd, no merge. This docs-only publication checkpoint follows; no firmware edits/rebuild/OTA after V2.23 final artifact.
+- Third HTTP probe still timed out. Owner asked current device IP asynchronously; answer pending. Cannot honestly claim new OTA, original33 migration on1.10.4, actual60s RTC or reboot recovery success. Resume exact V2.23 procedure once target responds. Full implementation contract now public on feature branch for portal owner; portal code unchanged here.
 
 ### V2.23 | 2026-10-15 | Codex
 
