@@ -1,4 +1,4 @@
-CURRENT | V2.15 | 2026-10-15 | Codex | Installed1.9.0/build00:17:08Z exact MD5; tests/API/recipe reboot proof PASS; local archive running; source ready push | Next: feature publish/parity then native UI checks; no physical ON/PD/EEPROMWrite
+CURRENT | V2.16 | 2026-10-15 | Codex | Installed1.9.0/build00:17:08Z exact MD5; source55c0a57 pushed; API/reboot/archive/QR tests PASS; native readiness/map/charts observed | Next: physical fixture/RTC/PD/EEPROM followup; no automatic merge
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,13 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.16 | 2026-10-15 | Codex
+
+- Source1.9.0 published55c0a578d9a094c7dd70963105b9eb54bea0730a on feature/qc-operator-ota; local/origin matched after push. This docs-only publication checkpoint follows; final remote parity checked after it. No firmware edits/rebuild/extra OTA since V2.15. No main/develop merge or other project changes.
+- Native Chrome existing192.168.1.31 tab initially had old HTML with new runtime version. Visible Reload after activation loads new station navigation. Readiness, schematic map and diagnostic charts observed at desktop widths960/1920. Fresh AHT around32.7C/42.3%RH; readiness says accuracy unmeasured. Preset revision2/CRC6EAB66E6 loaded from NVS. RTC OSF remains PERIKSA/UNVERIFIED. No output ON or fixture acknowledgement sent.
+- Native navigation can retain prior scroll position and immediate accessibility snapshots can lag the click; re-observation confirmed readiness/map/charts. History/print/preset visual acceptance not claimed in this pass; software/API/independent QR checks remain PASS. A later history click landed summary during changed browser geometry, so no assertion that history was visually verified. No mobile/printer/physical-load proof.
+- Final continuation: firmware1.9.0 installed and app-only OTA/reboot persistence proven; loopback archive127.0.0.1:8770/history available while server runs. Physical PD0x28, EEPROM WC/read-write, RTC battery/time and output fixture acceptance remain open. Preserve existing profiles/calibration and explicit physical versus software evidence.
 
 ### V2.15 | 2026-10-15 | Codex
 

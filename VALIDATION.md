@@ -1,3 +1,5 @@
+Publication/native follow-up 2026-10-15: source55c0a57 pushed feature-only. Existing Chrome tab needed Reload for new HTML. Readiness/map/charts observed at960/1920 desktop widths; fresh AHT about32.7C/42.3%RH, RTC OSF warning retained. No output ON. Native history/print/preset/mobile/printer acceptance not claimed; API/software/QR evidence remains separate. Old scroll position can persist across navigation. CURRENT V2.16 records continuation. No firmware edits after final build.
+
 # Installed station1.9.0 -2026-10-15
 
 - Source/device1.8.0 ->1.9.0. Final Build-Firmware.ps1 PASS UTC2026-10-15T00:17:08Z /07:17:08 WIB, app1421824 bytes SHA2567448e56df50c5a5f8850583dd7def877717d2211397aff2cb481d79af7822038; core3.3.10/classic ESP32/16MB/2MB legacy gates PASS. Sketch1421677 bytes67%, RAM56848 bytes17%. No firmware edits after final build start. Candidate00:09:54Z failed detail/ArduinoJson namespace collision; renamed recipeDetail, superseded. UI init/guide phase/offline buffer fixes included before final freeze.
