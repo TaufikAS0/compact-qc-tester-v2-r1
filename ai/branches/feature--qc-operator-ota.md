@@ -1,4 +1,4 @@
-CURRENT | V2.28 | 2026-10-15 | Codex | Installed1.10.6/build06:57:45Z OTA+RTC60s+two reboot/resume proofs PASS; original33 intact | No24h/battery PASS; clockRevision1, no run, checkpoint clean; feature publication next
+CURRENT | V2.29 | 2026-10-15 | Codex | Installed1.10.6/build06:57:45Z OTA+RTC60s+two reboot/resume proofs PASS; original33 intact; published b01243e | No24h/battery PASS; clockRevision1, no run, checkpoint clean; portal integration separate owner
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,11 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.29 | 2026-10-15 | Codex
+
+- Final firmware corrections, installed evidence and portal contract published b01243e on feature/qc-operator-ota. This docs-only publication checkpoint follows; no firmware edits/rebuild/extra OTA since V2.28. Final HEAD/origin/ls-remote parity checked after push, main remains35733ba with no merge.
+- RTC firmware scope complete. Real24h reference accuracy/physical battery test and portal integration remain explicitly pending, owned by operator/portal task. Do not reset RTC or import old legacy results into revision1. Retain saved sessionEB4CDCB2, use explicit save before power-off and same-build resume afterward.
 
 ### V2.28 | 2026-10-15 | Codex
 
