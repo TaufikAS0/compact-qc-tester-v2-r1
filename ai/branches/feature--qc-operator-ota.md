@@ -1,4 +1,4 @@
-CURRENT | V2.33 | 2026-10-15 | Codex | Installed1.11.0/build08:16:55Z Operator quick Write/Readback+reboot/resume PASS,34PASS; original33/82CSV exact; published3d45c9d | RTCrevision2/checkpoint clean/no run; sampling separate/unperformed; no merge
+CURRENT | V2.35 | 2026-10-15 | Codex | Source1.12.0/build08:59:41Z compile/software PASS; exact Warranty10 columns + PCBfullQC only confirmed | Target192.168.1.44/TMC88F1559CA28C fresh1.9.1/unselected0PASS; publish then OTA144/newM1/metadata/CSV/reboot; never old unit PASS
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,18 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.35 | 2026-10-15 | Codex
+
+- Final1.12.0/build08:59:41Z compile/metadata/legacy gates PASS, app1530208 SHA256cf55d345afa0215f6daf1ac1c5a2b5ac6985276ad6a9c1cebed8da2c47a31635, sketch1530061 bytes72%, staticRAM57416 bytes17%. No firmware edits after build began. Node UI metadata/Warranty/legacy/RTC regressions PASS; Python14 and portal packaging2 PASS, static calendar/PCB/date assertions compiled. Owner confirmed Warranty exact10/no PCB; docs WARRANTY_CSV.md matches. No actual Warranty web/import tested or requested.
+- New M1 target144 original1.9.1/unselected0PASS archived; baseline TMC88F1559CA28C, not olderTMC...478. Same classic chip/board/TPL/outputOFF confirmed. Prepare helper ota_warranty_144.py gates exact artifact/newserial/sourcebaseline, old profiles/calibration and no erase. Publish feature first, then authorized app-only OTA, select NEWM1 session, test PCB metadata+oldCSV and Warranty rejection while QC incomplete, reboot/resume, clear temporary PCB test label. Successful PASS Warranty body/filename conformance is software-tested; never fabricate new hardware results to force a live success. Runtime acceptance/publication next.
+
+### V2.34 | 2026-10-15 | Codex
+
+- Owner asks separate Warranty CSV matching D:/inventory-2026-10-15.csv and serial-only filename; preserve previous CSV format, add PCB input to summary and exports. Clarified answer: PCB only in full QC CSV; Warranty EXACT original10 columns. Defaults Telemetric Module Compact / Monitoring and Control / INVENTORY, delivery fields blank. ActualQC status requiredPASS, operator/date/production requiredvalid and production<=QC; example personal names/dates never copied. UTF8 no BOM for Warranty (sample), CRLF/RFC4180 and formula-safe; old fullCSV retains BOM and all existing column order, pcbNumber appended last.
+- New /api/qc/pcb confirmed token/session/revision/expected previousPCB mutation saves/readbacks own checkpoint, no test reset/time write. PCB max64 text/control guard/leadingzero preservation, JSON/snapshot/print/archive and QCcode provenance. New session clears PCB, resume restores. UI protects unsaved drafts/review and exports separate header+serial match. Explicit1.11.0/build08:16:55Z ->1.12.0 checkpoint upgrade only, same identities/no RTCrun, retains previous upgrade provenance; arbitrary cross-build resume still blocked.
+- Original192.168.1.31 HTTP timeout BEFORE backup/OTA; no mutation. OWNER redirected target to M1 at192.168.1.44. Actual GET identifies DIFFERENT serialTMC88F1559CA28C/classicESP32-D0WD-V3, source1.9.1/build00:44:55Z, unselected0PASS/0FAIL/INCOMPLETE, outputsOFF/faultfalse/TPLready; sanitized original state archived ignored build/warranty-144-pre-state.json. NEVER migrate old TMC...478 results here. New target EEPROM identity invalid; no Write attempted. Select freshM1 after OTA only; do not fabricate physical PASS to exercise Warranty download.
+- Rules/AGENTS/CURRENT/latest2/task/README/VALIDATION/HANDOFF and full issue1 vault snapshots read. Clean feature9bb404d/fetched at start, main35733ba unchanged. Node PCB draft/review/leadingzero + Warranty header/filename/PASS/date/unit guards PASS. Calendar/PCB validation assertions added. Final source frozen Build-Firmware.ps1 started08:59:41Z; no later firmware edits. Sibling _codex_tmp/ota_warranty_144.py exact target/build; compile/OTA/newM1 metadata/CSV/reboot/native/push pending. No portal/web Warranty code or imports authorized/changed.
 
 ### V2.33 | 2026-10-15 | Codex
 

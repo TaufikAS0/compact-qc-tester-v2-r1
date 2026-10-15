@@ -61,3 +61,5 @@ constexpr bool qcIsoDate(std::string_view s) {
     return false;
   return d >= 1 && d <= days[m - 1] + (m == 2 && y % 4 == 0 && (y % 100 != 0 || y % 400 == 0));
 }
+constexpr bool qcPcbNumberValid(std::string_view s){if(s.size()>64)return false;for(char c:s)if(static_cast<uint8_t>(c)<32||static_cast<uint8_t>(c)==127)return false;return true;}
+constexpr bool qcWarrantyDates(std::string_view date,std::string_view production){return !date.empty()&&!production.empty()&&qcIsoDate(date)&&qcIsoDate(production)&&production<=date;}

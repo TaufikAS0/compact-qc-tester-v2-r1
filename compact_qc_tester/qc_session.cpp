@@ -24,7 +24,7 @@ bool retained[80]={};
 JsonDocument retainedEvidence;
 size_t count = 0, display = 0;
 uint32_t displayAt = 0;
-String operatorName, unit;
+String operatorName, unit,pcbNumber;
 
 String sessionId;
 InputCycles cycles[7];
@@ -79,6 +79,7 @@ bool decimal(const char *arg, float low, float high, float &v) {
 }
 String outputName(int n) { return n < 11 ? "LED:" + String(n) : "Relay:" + String(n - 11); }
 void reset() {
+  pcbNumber="";
   qcProgressNewSession();resetRtcQc();retainedEvidence.clear();for(auto &b:retained)b=false;
   resetSerialQc(); resetRadioQc(); resetCurrentQc(); resetModbusQc(); resetNetworkQc();
   char id[9];
@@ -178,6 +179,7 @@ void updateQcSession() {
 void qcState(JsonObject d) {
   d["unit"] = unitSerial();
   d["operator"] = operatorName;
+  d["pcbNumber"] = pcbNumber;
   d["variant"] = qcVariantName();
   d["profileSelected"] = qcProfileSelected();
   qcProfilesState(d);
@@ -190,7 +192,7 @@ void qcState(JsonObject d) {
   auto a = d["tests"].to<JsonArray>();
   unsigned passed = 0, failed = 0, pending = 0, skipped = 0;
   String canonical = String("QC1|") + FW_VERSION + "|" + FW_BUILD_UTC + "|" + qcVariantName() +
-                     "|" + unitSerial() + "|" + sessionId + "|" + activeQcProfileRevision() + "|" + activeQcProfileMask()+"|RECIPE:"+activeQcRecipeIdentity();
+                     "|" + unitSerial() + "|" + sessionId + "|" + activeQcProfileRevision() + "|" + activeQcProfileMask()+"|RECIPE:"+activeQcRecipeIdentity()+"|PCB:"+String(pcbNumber.length())+":"+pcbNumber;
   auto hashField = [&](const String &value) {
     canonical += "|" + String(value.length()) + ":" + value;
   };
@@ -539,6 +541,15 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     d["detail"] = detail;
     send(d);
   });
+  server.on("/api/qc/pcb", HTTP_POST, [] {
+    if(!guard())return;
+    if(web->arg("confirm")!="1"){error("Explicit PCB metadata confirmation required",400);return;}
+    if(!web->hasArg("pcbNumber")){error("pcbNumber field required; empty value clears it explicitly",400);return;}
+    if(web->arg("sessionId")!=sessionId||web->arg("profileRevision")!=String(activeQcProfileRevision())||!web->hasArg("expectedPcbNumber")||web->arg("expectedPcbNumber")!=pcbNumber){error("PCB/session/profile changed; reload and review");return;}
+    String value=web->arg("pcbNumber");value.trim();
+    if(!qcPcbNumberValid(std::string_view(value.c_str(),value.length()))){error("PCB number max64 bytes, no control characters",400);return;}
+    stopSafe();pcbNumber=value;qcProgressDirty();String why;bool ok=qcSaveProgress(why);JsonDocument d;d["ok"]=ok;d["pcbNumber"]=pcbNumber;d["detail"]=why;send(d,ok?200:507);
+  });
   server.on("/api/qc/report", HTTP_POST, [] {
     if (!guard()) return;
     String pic=web->arg("operator"), date=web->arg("qcDate"), production=web->arg("productionDate");
@@ -549,6 +560,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     if(web->arg("sessionId")!=sessionId || web->arg("revision")!=String(activeQcProfileRevision())) {
       error("Sesi/profil berubah; tinjau laporan ulang"); return;
     }
+    if(web->hasArg("pcbNumber")&&web->arg("pcbNumber")!=pcbNumber){error("PCB changed; save and review report again");return;}
     JsonDocument calibration;
     calibrationState(calibration.to<JsonObject>());
     if(pdNegotiating() || currentQcBusy() || calibration["pending"].as<int>()>=0 || serialQcActive() || radioQcActive() || modbusQcActive() || networkQcBusy()) {
@@ -656,7 +668,7 @@ String qcSessionId(){return sessionId;}
 void qcRetest(const String &name){for(size_t i=0;i<count;++i)if(items[i].name==name){retained[i]=false;break;}}
 void qcCaptureProgress(JsonObject out){
  JsonDocument h;hardwareState(h.to<JsonObject>());
- out["sessionId"]=sessionId;out["operator"]=operatorName;out["savedUptimeMs"]=millis();
+ out["sessionId"]=sessionId;out["operator"]=operatorName;out["pcbNumber"]=pcbNumber;out["savedUptimeMs"]=millis();
  auto a=out["tests"].to<JsonArray>();for(size_t i=0;i<count;++i){auto p=a.add<JsonObject>();p["name"]=items[i].name;p["status"]=items[i].status;p["detail"]=items[i].detail;}
  auto c=out["cycles"].to<JsonArray>();for(auto &p:cycles)c.add(p.cycles);
  auto o=out["outputs"].to<JsonArray>();for(int i=0;i<13;++i){auto p=o.add<JsonObject>();p["finalized"]=finalized[i];p["onConfirmed"]=onConfirmed[i];p["offConfirmed"]=offConfirmed[i];}
@@ -672,6 +684,7 @@ void qcCaptureProgress(JsonObject out){
  out["evidence"]["capturedBuildIdentity"]=FW_BUILD_ID;out["evidence"]["capturedSessionId"]=sessionId;
 }
 bool qcValidateProgress(JsonObjectConst d,String &why){
+ if(!d["pcbNumber"].isNull()&&(!d["pcbNumber"].is<const char*>()||!qcPcbNumberValid(d["pcbNumber"].as<const char*>()))){why="Invalid PCB metadata";return false;}
  auto a=d["tests"].as<JsonArrayConst>();String sid=d["sessionId"].as<String>();
  if(sid.length()!=8||a.size()!=count||d["cycles"].size()!=7||d["outputs"].size()!=13){why="Invalid checkpoint shape";return false;}
  for(char c:sid)if(!isxdigit((unsigned char)c)){why="Invalid checkpoint session";return false;}
@@ -679,7 +692,7 @@ bool qcValidateProgress(JsonObjectConst d,String &why){
  return true;
 }
 void qcRestoreProgress(JsonObjectConst d){
- reset();sessionId=d["sessionId"].as<String>();operatorName=d["operator"].as<String>();
+ reset();sessionId=d["sessionId"].as<String>();operatorName=d["operator"].as<String>();pcbNumber=d["pcbNumber"]|"";
  for(size_t i=0;i<count;++i){String status=d["tests"][i]["status"].as<String>();if((status=="PASS"||status=="FAIL")&&items[i].name!="RTC"){items[i].status=status;items[i].detail=d["tests"][i]["detail"].as<String>();retained[i]=true;}}
  for(int i=0;i<7;++i){cycles[i]={};cycles[i].cycles=std::min(2u,d["cycles"][i].as<unsigned>());}
  for(int i=0;i<13;++i){int index=0;while(index<int(count)&&items[index].name!=outputName(i))++index;finalized[i]=index<int(count)&&retained[index]&&d["outputs"][i]["finalized"].as<bool>();onConfirmed[i]=finalized[i]&&d["outputs"][i]["onConfirmed"].as<bool>();offConfirmed[i]=finalized[i]&&d["outputs"][i]["offConfirmed"].as<bool>();live[i]=attempted[i]=false;}

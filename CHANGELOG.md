@@ -1,3 +1,11 @@
+# Warranty/PCB1.12.0 - source/build verified, runtime pending
+
+Owner confirmed Warranty EXACT10 columns from supplied inventory template, PCB only in existing fullQC CSV (appended LAST, previous columns/BOM/order retained). New summary PCB metadata/review/save, checkpoint/JSON/print/archive/CRC; no test/RTC reset or EEPROM write. New Warranty endpoint/button requires actualQC PASS, PIC+valid QC/production dates, production<=QC, fixed product labels/INVENTORY/blank delivery; UTF8 noBOM/CRLF and serial-only.csv. User-provided sample serials/names/dates not copied. See WARRANTY_CSV.md.
+
+Final build1.12.0 UTC2026-10-15T08:59:41Z /15:59:41 WIB app1530208 SHA256cf55d345afa0215f6daf1ac1c5a2b5ac6985276ad6a9c1cebed8da2c47a31635; metadata/legacy gates, Node UI, Python14, packaging2 and compiled date/PCB assertions PASS. No firmware edits after build start. Runtime/OTA pending CURRENT.
+
+OWNER NEW TARGET192.168.1.44/TMC88F1559CA28C/classicESP32-D0WD-V3/TMCV2_R1: actual1.9.1/build00:44:55Z unselected0PASS archived, outputsOFF/TPLready. Previous192.168.1.31/TMC...478 offline and NOT target now; NEVER transfer old34PASS to newunit. Fresh M1 session after OTA, no manufactured hardware PASS for Warranty test. Narrow approved1.11.0/build08:16:55Z->1.12.0 same-unit checkpoint upgrade only for a unit that actually owns that evidence. WiFi/pins/polarity/partitions and unrelated NVS unchanged. Feature publication/actual newtarget tests pending.
+
 ### V2.32 | 2026-10-15 | Codex
 
 - Owner requested fast production Write/Readback QC; daily/battery checks remain separate sampling. Final1.10.6 ->1.11.0, actual build2026-10-15T08:16:55Z /15:16:55 WIB. App1519696 bytes SHA256dfeb0873e23e5b79378517a434404967b292634bff5ee23bd6642f30d8aaab5f, runtime/fileMD5ef0d6918932ae6ff356e979950fd0fe0. Build-Firmware.ps1/metadata/legacy partition gates PASS; sketch1519541 bytes72%, staticRAM57400 bytes17%. Authorized app-only OTA HTTP200, same serial/calibration/profiles retained; no erase, GPIO/WiFi/polarity/partition changes. No firmware edits after final build start.

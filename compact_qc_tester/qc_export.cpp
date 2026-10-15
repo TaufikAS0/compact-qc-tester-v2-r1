@@ -82,9 +82,28 @@ String qcSnapshotCsv(JsonDocument &snapshot, String date, String pic, String pro
   }
   JsonObject network=(historical("WiFi network")||historical("Ethernet network")||historical("MQTT"))?q["checkpointEvidence"]["network"].as<JsonObject>():q["network"].as<JsonObject>();
   for(const char *key:{"staSSID","staIP","staConnected","lastIP","mqttCode"})add(String("Network.")+key,network[key].isNull()?"":network[key].as<String>());
+  // Append only: preserve every existing column and the first-ten Longhi import order.
+  add("pcbNumber",q["pcbNumber"]|"");
   return String("\xef\xbb\xbf") + header + "\r\n" + row + "\r\n";
 }
+String qcWarrantyCsv(JsonDocument &snapshot,const String &date,const String &pic,const String &production){
+  String csv="serialNumber,productName,productType,productionDate,qcStatus,qcDate,qcPic,status,deliveredAt,deliveredTo\r\n";
+  const String values[]={snapshot["hardware"]["serial"].as<String>(),"Telemetric Module Compact","Monitoring and Control",production,snapshot["qc"]["overall"].as<String>(),date,pic,"INVENTORY","",""};
+  for(unsigned i=0;i<10;++i){if(i)csv+=',';csv+=csvCell(values[i]);}return csv+"\r\n";
+}
 void beginQcExport(WebServer &server) {
+  server.on("/export/warranty.csv",HTTP_GET,[&server]{
+    server.sendHeader("Cache-Control","no-store");
+    if(!qcProfileSelected()){server.send(409,"application/json","{\"error\":\"Pilih profil device dahulu\"}");return;}
+    String date=server.arg("qcDate"),production=server.arg("productionDate"),pic=server.arg("qcPic");pic.trim();
+    if(pic.isEmpty()||pic.length()>64||!qcWarrantyDates(date.c_str(),production.c_str())){server.send(400,"application/json","{\"error\":\"Warranty perlu PIC, tanggal QC dan produksi valid; produksi tidak boleh setelah QC\"}");return;}
+    JsonDocument snapshot;hardwareState(snapshot["hardware"].to<JsonObject>());qcState(snapshot["qc"].to<JsonObject>());auto q=snapshot["qc"].as<JsonObject>();
+    if(q["overall"]!="PASS"||q["serial"]["active"]==true||q["radio"]["active"]==true||q["network"]["active"]==true||q["modbus"]["active"]==true){server.send(409,"application/json","{\"error\":\"CSV Warranty hanya untuk QC PASS dan tes telah selesai\"}");return;}
+    for(JsonObject output:q["outputs"].as<JsonArray>())if(output["commandedOn"]==true){server.send(409,"application/json","{\"error\":\"Hentikan output sebelum CSV Warranty\"}");return;}
+    String serial=snapshot["hardware"]["serial"].as<String>();bool safe=!serial.isEmpty()&&serial.length()<=64;for(char c:serial)safe=safe&&(isalnum((unsigned char)c)||c=='_'||c=='-');
+    if(!safe){server.send(409,"application/json","{\"error\":\"Serial tidak valid untuk nama file Warranty\"}");return;}
+    server.sendHeader("Content-Disposition","attachment; filename=\""+serial+".csv\"");server.send(200,"text/csv; charset=utf-8",qcWarrantyCsv(snapshot,date,pic,production));
+  });
   server.on("/export/qc.csv", HTTP_GET, [&server] {
     server.sendHeader("Cache-Control", "no-store");
     if (!qcProfileSelected()) {

@@ -1,3 +1,5 @@
+Current1.12.0 exports/PCB revision: RTC quick/sampling semantics unchanged. Current approved upgrade exception is exact1.11.0/build08:16:55Z ->1.12.0, documented in WARRANTY_CSV.md; earlier1.10.6->1.11.0 text below is historical and is not a general cross-build bypass. New owner target192.168.1.44 has different serial; never transfer previous unit evidence.
+
 # Compact RTC + durable QC integration (COMPACT-RTC-1)
 
 Firmware owner: this Compact repository. Portal owner: separate Telemetric Hardware Portal repository. No portal source changes here. Source1.11.0; **check CURRENT/VALIDATION for exact installed build**, never infer deployment from this document.

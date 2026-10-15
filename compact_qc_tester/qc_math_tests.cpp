@@ -154,3 +154,7 @@ constexpr bool relayInitializationTest() {
 static_assert(relayInitializationTest(), "OFF preloaded before enable and reasserted after core3 GPIO registration");
 static_assert(relayLevel(0,false)==0 && relayLevel(0,true)==1, "DO1 correction active HIGH");
 static_assert(relayLevel(1,false)==0 && relayLevel(1,true)==1, "DO2 correction active HIGH");
+static_assert(qcPcbNumberValid("000123")&&qcPcbNumberValid("PCB, \"R1\""));
+static_assert(!qcPcbNumberValid("PCB\nOTHER")&&!qcPcbNumberValid("12345678901234567890123456789012345678901234567890123456789012345"));
+static_assert(qcWarrantyDates("2026-10-15","2026-10-14")&&qcWarrantyDates("2024-02-29","2024-02-29"));
+static_assert(!qcWarrantyDates("2026-10-15","")&&!qcWarrantyDates("2026-01-09","2026-12-15")&&!qcWarrantyDates("2025-02-29","2025-02-28"));
