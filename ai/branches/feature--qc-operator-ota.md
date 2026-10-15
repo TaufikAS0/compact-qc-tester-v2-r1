@@ -1,4 +1,4 @@
-CURRENT | V2.35 | 2026-10-15 | Codex | Source1.12.0/build08:59:41Z compile/software PASS; exact Warranty10 columns + PCBfullQC only confirmed | Target192.168.1.44/TMC88F1559CA28C fresh1.9.1/unselected0PASS; publish then OTA144/newM1/metadata/CSV/reboot; never old unit PASS
+CURRENT | V2.36 | 2026-10-15 | Codex | Installed1.12.0/build08:59:41Z via OTA192.168.1.44/TMC88F1559CA28C; PCB/fullCSV/reboot verified; Warranty exact10/software PASS and live rejection verified | M1rev1/sessionB6361F85 own1PASS/0FAIL/33pending/4ignored, PCBempty/checkpoint clean; no old unit results; complete feature-only publication/no merge
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,17 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.36 | 2026-10-15 | Codex
+
+Firmware on replacement M1 at192.168.1.44 upgraded1.9.1 ->1.12.0, actual build2026-10-15T08:59:41Z /15:59:41 WIB. App-only OTA HTTP200; actual serialTMC88F1559CA28C/build/runtime MD5 matched, profiles and inactive calibration preserved, no erase. Feature source d1ef3d2 was pushed BEFORE OTA. App1530208 bytes SHA256cf55d345afa0215f6daf1ac1c5a2b5ac6985276ad6a9c1cebed8da2c47a31635, MD5 7a17c29e84860296b63d37805c2ccd72. No firmware edits after final build began.
+
+Actual Operator browser created this unit's own M1 rev1/sessionB6361F85. Temporary PCB000TEST-PCB saved/read back, full QC CSV preserved all previous columns in order with pcbNumber LAST, and the same session/PCB survived identical-binary OTA reboot and explicit resume. Temporary PCB then cleared and checkpoint saved/read back clean; final PCB empty awaiting actual production number. Actual browser download C:/Users/taufi/Downloads/Compact_QC.csv verified this serial and empty final PCB. Screenshot/evidence remain ignored under build/warranty-144-*.
+
+Actual Warranty endpoint correctly rejected incomplete QC409, missing PIC400, invalid date400 and production-after-QC400. Exact10 header/serial-only filename/successful PASS row are software-tested; live successful Warranty download/import remains unverified because this replacement is only1PASS(AHT communication)/0FAIL/33pending/4ignored/overallINCOMPLETE. No manufactured PASS, no old unit34PASS copied. RTC clockRevision0/OSF active, no quick RTC/time write on this unit. No output ON, EEPROM write, PD request or radioApply. Build/Node UI/Python14/portal packaging2/date+PCB assertions PASS. main unchanged35733ba; feature only, no merge.
+
+- Continuation: keep this unit sessionB6361F85; enter real PCB via Ringkasan QC ->Tinjau & simpan. Resume saved session after reboot before creating any new session. Complete actual production QC and PIC/dates before CSV Warranty; do not fake PASS to exercise export. Historical1.11.0/34PASS below belongs to different serialTMC...478, not this target. Do not rerun temporary metadata/prepare helpers or old-unit RTC migration scripts. Final docs-only publication follows; no rebuild/extra OTA needed.
+
 
 ### V2.35 | 2026-10-15 | Codex
 

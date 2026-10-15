@@ -1,4 +1,4 @@
-Warranty/PCB V2.35: source1.12.0/build08:59:41Z compile/software PASS, exact10 Warranty columns confirmed/noPCB; append PCB only to fullQC CSV. OWNER target changed to192.168.1.44/TMC88F1559CA28C fresh1.9.1/unselected0PASS. Never old unit34PASS. Publish, OTA144/newM1/metadata/reboot checks next; see CURRENT.
+Warranty/PCB V2.36 COMPLETE firmware1.12.0/build08:59:41Z OTA144/newserialC28C verified; PCB/fullCSV/same-build reboot/resume PASS; temporaryPCB cleared, own1PASS/33pending/clean checkpoint. Warranty exact10/software success+live rejection verified, live PASS download/import pending actual production QC. Source d1ef3d2 published before OTA; final docs-only feature publication, no merge. See CURRENT.
 
 RTC QUICK V2.32:1.11.0/build08:16:55Z installed OTA; actual Operator reviewed challenge/write/readback/restoration PASS,34PASS, original33/82CSV exact after reboot/resume. Daily/battery sampling remains separate, not PASS. ClockRevision2/no run/checkpoint clean; source provenance preserved. Current procedure/limitations in CURRENT V2.32 and RTC_PORTAL_CONTRACT.
 
