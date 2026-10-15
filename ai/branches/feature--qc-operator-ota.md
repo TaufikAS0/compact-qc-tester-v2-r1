@@ -1,4 +1,4 @@
-CURRENT | V2.42 | 2026-10-15 | Codex | Source1.13.1/build11:36:34Z compile/gates/software PASS, actual oldFAIL409 reproduced | Feature publish then OTA144/C28C/exact1.13.0 upgrade/liveFAIL CSV200; preserve33PASS1FAIL/PCB0004/RTC1
+CURRENT | V2.43 | 2026-10-15 | Codex | Installed1.13.1/build11:36:34Z on144/C28C; actualFAIL Warranty200 with qcStatusFAIL/exact10/serial.csv, tests PASS | Original33PASS1FAIL/sessionB6361F85/PCB0004/RTCquick1/raw evidence preserved/clean checkpoint; source57448f8 published beforeOTA, final docs push/no merge
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,22 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.43 | 2026-10-15 | Codex
+
+# Warranty FAIL1.13.1 - installed and verified2026-10-15
+
+Owner permits Warranty export for actual PASS OR FAIL; qcStatus remains the real result. INCOMPLETE still409; PIC/dates/order, active-job/capture/RTC-run/ON-output guards remain. Exact10 columns/noPCB/serial-only filename/noBOM unchanged. Old fullQC CSV and all QC evidence unaffected. Supersedes historical PASS-only policy below. Actual Warranty-web import/acceptance has not been tested.
+
+Installed1.13.0 ->1.13.1/build2026-10-15T11:36:34Z /18:36:34 WIB via authorized app-only OTA144/C28C. HTTP200; runtime version/build/serial/MD5/profiles/calibration verified. App1545040 SHA2561fa829104bb96008f8c25b2381d2b0f83fe592c34f3071004ab5bca2cc2c0bee, MD5ba6265dc9d8f69c068d03e74eaa24549. Compile/metadata/legacy gates, static PASS/FAIL/nonterminal assertions, Node UI PASS+FAIL download/status/filename and prior regressions, Python14/portal packaging2 PASS. No firmware edits after final build began. Source57448f8 pushed to feature BEFORE OTA; no main merge/erase/pin/WiFi changes.
+
+Original own unit33PASS/1FAIL/sessionB6361F85/PCB0004/operatorempty/RTCquick revision1 saved+archived before upload. Explicit exact1.13.0/build11:18:57Z->1.13.1 checkpoint upgrade/readback/resume preserved ALL original PASS/FAIL/details, counts/overall, PCB/operator/session/lastReset, raw analog/Modbus/radio/network evidence and RTC receipt/revision; checkpoint clean. No reset, output ON, radioApply, EEPROM write, PD request or RTC/calendar write. FAIL was already present; no fabricated test result.
+
+Before upgrade actualFAIL export409 reproduced. After upgrade actualFAIL export200 verified exact10 header/one row/real serial/qcStatusFAIL/INVENTORY/blank delivery/noPCB/noBOM and Content-Disposition TMC88F1559CA28C.csv. Empty PIC/invalid date/production-after-QC still400. Export does not change qcCode/operator/session/results. Test PIC/date explicitly VALIDASI-CODEX-BUKAN-DATA-PRODUKSI; validation-only CSV saved ignored build/warranty-fail-validation-only.csv, not imported or stored as production metadata. User must enter actual PIC/dates for production export. Actual browser shows installed1.13.1, FAIL QC code and PASS/FAIL Warranty instructions/button; screenshot ignored build/warranty-fail-live-v1_13_1.jpg. Baseline/pre-upload/checkpoint/postOTA/final snapshots and original fullCSV remain ignored build/warranty-fail-*.
+
+Complete requested scope. Continue from this saved session; ordinary resume exact-build, no arbitrary cross-build import. Feature final docs-only publication follows, main remains35733ba. No further build/OTA needed for documentation.
+
+
 
 ### Warranty FAIL V2.42 | 2026-10-15 | Codex
 
