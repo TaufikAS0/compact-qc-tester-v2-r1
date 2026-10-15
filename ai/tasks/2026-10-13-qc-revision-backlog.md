@@ -1,3 +1,5 @@
+Warranty FAIL V2.41: owner permits actualFAIL export with qcStatusFAIL, no forcedPASS. Source1.13.1/UI tests done, build11:36:34Z running; preserve current144/C28C/33PASS1FAIL/PCB0004. Next gated compile/push/OTA/explicit1.13.0 upgrade/live read-onlyFAIL CSV. See CURRENT.
+
 Module reset V2.40 COMPLETE1.13.0/build11:18:57Z OTA144 verified. Summary PIC/error focus + direct allDI/DO/module reset, real Radio reset/readback and reboot recovery verified; own34PASS/PCB0004/RTCquick1/raw analog+Modbus retained. Source397858b published beforeOTA; final docs-only feature checkpoint/no merge. See CURRENT for limits.
 
 Module reset V2.39 SOFTWARE COMPLETE1.13.0/build11:18:57Z; allDI/DO/module buttons, summary PIC and actionable errors tested. Actual144 offline/OTA NOT done; preserve25PASS/PCB0004/RTCquick1. Final feature publication and exact resume procedure in CURRENT.

@@ -3,6 +3,7 @@
 #include "qc_hardware.h"
 #include "qc_report_math.h"
 #include "config.h"
+#include "ota_manager.h"
 #include <vector>
 namespace {
 // RFC4180 quoting plus Excel formula-injection protection for user metadata.
@@ -98,7 +99,7 @@ void beginQcExport(WebServer &server) {
     String date=server.arg("qcDate"),production=server.arg("productionDate"),pic=server.arg("qcPic");pic.trim();
     if(pic.isEmpty()||pic.length()>64||!qcWarrantyDates(date.c_str(),production.c_str())){server.send(400,"application/json","{\"error\":\"Warranty perlu PIC, tanggal QC dan produksi valid; produksi tidak boleh setelah QC\"}");return;}
     JsonDocument snapshot;hardwareState(snapshot["hardware"].to<JsonObject>());qcState(snapshot["qc"].to<JsonObject>());auto q=snapshot["qc"].as<JsonObject>();
-    if(q["overall"]!="PASS"||q["serial"]["active"]==true||q["radio"]["active"]==true||q["network"]["active"]==true||q["modbus"]["active"]==true){server.send(409,"application/json","{\"error\":\"CSV Warranty hanya untuk QC PASS dan tes telah selesai\"}");return;}
+    if(!qcWarrantyStatus((q["overall"]|""))||webOtaBusy()||snapshot["hardware"]["pd"]["pending"]==true||snapshot["hardware"]["rtc"]["runningTest"]==true||(snapshot["hardware"]["rtc"]["externalRunId"]|"")[0]!='\0'||snapshot["hardware"]["calibration"]["pending"].as<int>()>=0||snapshot["hardware"]["currentQc"]["pending"].as<int>()>=0||q["serial"]["active"]==true||q["radio"]["active"]==true||q["network"]["active"]==true||q["modbus"]["active"]==true){server.send(409,"application/json","{\"error\":\"CSV Warranty perlu hasil PASS atau FAIL; tunggu tes/capture selesai\"}");return;}
     for(JsonObject output:q["outputs"].as<JsonArray>())if(output["commandedOn"]==true){server.send(409,"application/json","{\"error\":\"Hentikan output sebelum CSV Warranty\"}");return;}
     String serial=snapshot["hardware"]["serial"].as<String>();bool safe=!serial.isEmpty()&&serial.length()<=64;for(char c:serial)safe=safe&&(isalnum((unsigned char)c)||c=='_'||c=='-');
     if(!safe){server.send(409,"application/json","{\"error\":\"Serial tidak valid untuk nama file Warranty\"}");return;}

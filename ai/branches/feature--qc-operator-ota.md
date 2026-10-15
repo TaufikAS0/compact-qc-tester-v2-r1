@@ -1,4 +1,4 @@
-CURRENT | V2.40 | 2026-10-15 | Codex | Installed1.13.0/build11:18:57Z on144/C28C; direct all-module/DI/DO reset + summary PIC/clickable error help; compile/software/live reset/reboot PASS | Own M1/sessionB6361F85/PCB0004/34PASS/0FAIL/4ignored, RTCquick rev1 and raw analog/Modbus exact/clean checkpoint; source397858b pushed beforeOTA, final docs-only push/no merge
+CURRENT | V2.42 | 2026-10-15 | Codex | Source1.13.1/build11:36:34Z compile/gates/software PASS, actual oldFAIL409 reproduced | Feature publish then OTA144/C28C/exact1.13.0 upgrade/liveFAIL CSV200; preserve33PASS1FAIL/PCB0004/RTC1
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,21 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### Warranty FAIL V2.42 | 2026-10-15 | Codex
+
+Final1.13.1/build2026-10-15T11:36:34Z compile/metadata/legacy gates PASS; app1545040 SHA2561fa829104bb96008f8c25b2381d2b0f83fe592c34f3071004ab5bca2cc2c0bee, sketch1544889 bytes73%, staticRAM57480 bytes17%. No source edits after build start. Node UI PASS/FAIL export, INCOMPLETE/date/unit guards and prior regressions PASS; Python14/portal packaging2 PASS, compiled PASS/FAIL status assertions PASS. Old actual1.13.0/FAIL export409 reproduced with validation-only PIC/date, no mutation. Publish feature first then gated OTA144, exact1.13.0 checkpoint upgrade, preserve current33PASS1FAIL/PCB0004/RTC1 and actual newFAIL export200. Runtime tests/import not yet claimed.
+
+
+### V2.41 | 2026-10-15 | Codex
+
+# Warranty FAIL export1.13.1 - implementation/build validation pending
+
+Owner decision2026-10-15 supersedes PASS-only Warranty policy: allow actual overall PASS OR FAIL, preserving actual qcStatus. INCOMPLETE remains409; no test result/profile coercion. PIC/date/order/exact10 columns/serial.csv/noPCB/UTF8-noBOM unchanged. Busy serial/radio/network/Modbus/PD/calibration/currentQC/RTC tick or external run/OTA and commanded ON outputs still block export. UI instructions/guard and compile-time PASS/FAIL/nonterminal assertions updated; Node FAIL download/status/header/filename regression and previous UI PASS, Python14/portal packaging2 PASS.
+
+Actual144/C28C1.13.0/build11:18:57Z sessionB6361F85 PCB0004,33PASS/1FAIL, RTCquick revision1. Baseline checkpoint/state/fullCSV saved in ignored build/warranty-fail-pre*. No result reset/retest/clock write or fabricated production metadata. Exact deliberate checkpoint upgrade ONLY1.13.0/build11:18:57Z->1.13.1 same serial/profile/preset/calibration/clock/no run; preserve original results/details/evidence/PCB/operator/reset receipt. No general cross-build bypass. Final frozen build2026-10-15T11:36:34Z /18:36:34 WIB running; no later firmware edits. Next compile/gates, feature push, app-only OTA, explicit resume, compare all original evidence, actual read-only FAIL CSV validation. Warranty test PIC/date will be explicitly validation-only and not stored/imported as production metadata. main35733ba unchanged/no merge.
+
+
 
 ### V2.40 | 2026-10-15 | Codex
 

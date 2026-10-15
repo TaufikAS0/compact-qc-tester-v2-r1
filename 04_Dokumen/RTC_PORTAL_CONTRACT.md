@@ -1,3 +1,5 @@
+Current1.13.1 Warranty FAIL export: RTC semantics unchanged; current approved checkpoint upgrade ONLY exact1.13.0/build11:18:57Z->1.13.1 same unit/no active run/clock change. See CURRENT/WARRANTY_CSV.md; earlier exceptions below historical.
+
 Current1.13.0 module reset: same checked RTC evidence-only reset and active-run/tick protection, exposed also via /api/qc/reset. Current approved upgrade exact1.12.0/build08:59:41Z->1.13.0 same unit; historical exceptions below are not a general bypass. Read MODULE_RESET.md/CURRENT.
 
 Current1.12.0 exports/PCB revision: RTC quick/sampling semantics unchanged. Current approved upgrade exception is exact1.11.0/build08:16:55Z ->1.12.0, documented in WARRANTY_CSV.md; earlier1.10.6->1.11.0 text below is historical and is not a general cross-build bypass. New owner target192.168.1.44 has different serial; never transfer previous unit evidence.

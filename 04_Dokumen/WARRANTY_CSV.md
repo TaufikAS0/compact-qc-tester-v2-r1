@@ -1,4 +1,6 @@
-# QC CSV and Warranty inventory CSV1.12.0
+Owner decision2026-10-15: PASS-only rule superseded. FAIL may be exported with qcStatus=FAIL; never relabel failure as PASS. INCOMPLETE remains blocked. Current compatible upgrade ONLY exact1.13.0/build11:18:57Z->1.13.1; earlier checkpoint exceptions below are historical.
+
+# QC CSV and Warranty inventory CSV1.13.1
 
 Owner supplied inventory CSV2026-10-15; only its schema/product labels are used. Sample serials, people and dates are not production defaults. Owner confirmed PCB belongs ONLY in the full QC CSV, not Warranty.
 
@@ -26,13 +28,13 @@ One data row, UTF8 WITHOUT BOM (matches example), CRLF/RFC4180 and formula-safe 
 | productName | Telemetric Module Compact |
 | productType | Monitoring and Control |
 | productionDate | Operator production-date input, required |
-| qcStatus | Actual current overall QC; export allowed only PASS |
+| qcStatus | Actual current overall QC; export allowed PASS or FAIL, preserving the actual status |
 | qcDate | Operator QC-date input, required |
 | qcPic | Operator/PIC input, required, max64 bytes |
 | status | INVENTORY |
 | deliveredAt / deliveredTo | Empty; delivery not asserted |
 
-Missing/invalid dates/PIC or production after QC ->400; unselected/incomplete/failed/busy QC or commanded ON outputs ->409. PASS is never forced from the sample row. Read-only export does not store invented PIC/date or contact/import into Warranty web. Current RTC PASS scope remains production quick Write/Readback; daily/battery sampling are separate per RTC_PORTAL_CONTRACT.
+Missing/invalid dates/PIC or production after QC ->400; unselected/INCOMPLETE/busy QC or commanded ON outputs ->409. PASS is never forced from the sample row. Read-only export does not store invented PIC/date or contact/import into Warranty web. Current RTC PASS scope remains production quick Write/Readback; daily/battery sampling are separate per RTC_PORTAL_CONTRACT.
 
 The user changed OTA target to M1 at192.168.1.44, a DIFFERENT serial from the earlier device. Fresh0PASS baseline was archived before upgrade; do not copy old unit results or fabricate PASS merely to test a successful Warranty download. Read CURRENT/VALIDATION for actual deployment and validation limits.
 

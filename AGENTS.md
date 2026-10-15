@@ -1,3 +1,5 @@
+Owner decision2026-10-15 / Warranty1.13.1: PASS OR FAIL may export Warranty; qcStatus MUST remain actual, no forced PASS. INCOMPLETE/busy/ON still blocked, exact10/noPCB/serial.csv unchanged. This supersedes historical PASS-only instructions below. Current upgrade exception ONLY exact1.13.0/build11:18:57Z->1.13.1 same unit; preserve all current evidence. See WARRANTY_CSV.md/CURRENT.
+
 Module reset1.13.0: read04_Dokumen/MODULE_RESET.md. Preserve current target144 evidence25PASS/PCB0004/RTC revision1; current exact deployment in CURRENT. Reset per row only, shared RS485+tags/Radio explicitly reviewed, no calibration/EEPROM erase. Upgrade exception ONLY exact1.12.0/build08:59:41Z->1.13.0 same unit.
 
 Warranty/PCB1.12.0: read04_Dokumen/WARRANTY_CSV.md. Warranty EXACT10 supplied columns/noPCB, actualPASS only and serial.csv; old fullQC CSV unchanged columns plus pcbNumber LAST. PCB session metadata/checkpoint only, no EEPROM/test reset. OWNER TARGET192.168.1.44 serialTMC88F1559CA28C is DIFFERENT from earlierTMC...478: NEVER transfer old unit PASS. Approved1.11.0->1.12.0 checkpoint exception same unit only. Actual installed state in CURRENT.
