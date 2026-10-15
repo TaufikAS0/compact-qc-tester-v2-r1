@@ -14,6 +14,7 @@
 #include "radio_qc.h"
 #include "tpl_watchdog.h"
 #include "web_ui.h"
+#include "qr_asset.h"
 #include "wifi_manager.h"
 #include <ArduinoJson.h>
 #include <SD.h>
@@ -27,6 +28,7 @@ WebServer server(80);
 String ssid, token;
 uint32_t lastHeartbeat = 0;
 OutputState outputState;
+uint32_t outputLimits[OutputState::COUNT]={};
 bool mcpReady = false, fault = false;
 bool relayReady[2] = {};
 uint16_t savedLatch = 0, savedDirection = 0;
@@ -51,7 +53,7 @@ bool authorized() {
     return false;
   }
   if (!qcProfileSelected() && server.uri() != "/api/qc/new" && server.uri() != "/api/heartbeat" &&
-      server.uri() != "/api/stop" && server.uri() != "/api/qc/profile") {
+      server.uri() != "/api/stop" && server.uri() != "/api/qc/profile" && server.uri() != "/api/qc/recipe") {
     failure("Pilih profil device sebelum QC");
     return false;
   }
@@ -336,6 +338,14 @@ void outputHandler() {
   }
   // An authenticated explicit command is fresh operator activity. Heartbeat loss
   // still turns active outputs OFF; OFF must never require a preceding heartbeat.
+  uint32_t limit=OUTPUT_PULSE_MS;
+  if(server.hasArg("seconds")) {
+    String seconds=server.arg("seconds");
+    if(seconds.length()!=1 || seconds[0]<'1' || seconds[0]>'9') {
+      if(seconds!="10"){failure("Step timeout1..10 seconds",400);return;}
+    }
+    limit=seconds.toInt()*1000;
+  }
   lastHeartbeat = millis();
   const bool on = state == "on";
   if (kind == "relay") {
@@ -354,6 +364,7 @@ void outputHandler() {
     failure("MCP command/readback failed; outputs stopped");
     return;
   }
+  outputLimits[kind=="led"?index:11+index]=limit;
   outputState.set(kind == "led" ? index : 11 + index, on, millis());
   qcOutputAttempt(kind, index, on);
   JsonDocument d;
@@ -389,6 +400,7 @@ void beginApp() {
   token = String(esp_random(), HEX) + String(esp_random(), HEX);
   beginLabWiFi(ssid.c_str());
   server.on("/", HTTP_GET, [] { server.send_P(200, "text/html; charset=utf-8", WEB_UI); });
+  server.on("/assets/qrcode.js",HTTP_GET,[]{server.send_P(200,"application/javascript; charset=utf-8",QR_ASSET);});
   server.on("/api/state", HTTP_GET, stateHandler);
   server.on("/api/i2c", HTTP_POST, scanHandler);
   server.on("/api/sd", HTTP_POST, sdHandler);
@@ -422,7 +434,7 @@ void updateApp() {
   if (outputState.any() && uint32_t(millis() - lastHeartbeat) >= SESSION_TIMEOUT_MS)
     stopOutputs();
   for (int n = 0; n < OutputState::COUNT; ++n) {
-    if (!outputState.expired(n, millis(), OUTPUT_PULSE_MS)) continue;
+    if (!outputState.expired(n, millis(), outputLimits[n]?outputLimits[n]:OUTPUT_PULSE_MS)) continue;
     if (n >= 11) digitalWrite(RELAY_PINS[n - 11], relayLevel(n - 11, false));
     else if (!mcpBit(MCP1_ADDR, LED_BITS[n], !LED_ACTIVE_HIGH)) {
       fault = true; stopOutputs(); break;

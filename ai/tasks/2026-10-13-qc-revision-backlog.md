@@ -1,3 +1,11 @@
+# ST01..07 SOFTWARE/OTA DONE1.9.0
+
+Exact1.9.0/build00:17:08Z installed and MD5/serial verified. Recipes persisted across second same-binary OTA boot; old profiles/calibration retained. Node/Python14/portal2/QR independent decode, live recipe/report/laptop archive API PASS. Native browser/mobile/physical limitations and publication in CURRENT. No actual outputON/EEPROMWrite/PDrequest/radioApply.
+
+# ST01..07 local1.9.0 -2026-10-15
+
+Seven scoped follow-ups implemented; Node/Python14/portal2/independentQR decode PASS. Firmware build/OTA/runtime/browser acceptance pending. Existingdevice1.8.0 evidence historical below. CURRENT/04_Dokumen/QC_STATION_REVISION.md is continuation entry. No physicalON/EEPROMWrite/PDrequest/radioApply.
+
 # WEB01..07 SOFTWARE/OTA DONE1.8.0
 
 Final build14:54:18Z gates PASS, exact runtime MD5/serial and profile/calibration persistence verified. Report API/CSV/RTC runtime PASS, Node/Python10/portal2 PASS. Browser visual/layout/archive persistence is not claimed after policy interruption; current limitations/publication in CURRENT. Physical PD/WC/load acceptance remains separate.

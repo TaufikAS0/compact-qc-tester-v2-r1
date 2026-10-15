@@ -1,4 +1,4 @@
-CURRENT | V2.12 | 2026-10-14 | Codex | Published e4515d4; installed1.8.0/build14:54:18Z exact MD5; tests/API/browser-save PASS; M1/outputs OFF | Next: optional browser reload-persistence/mobile check after URL-policy stop; physical PD/WC unverified; no source/OTA pending
+CURRENT | V2.15 | 2026-10-15 | Codex | Installed1.9.0/build00:17:08Z exact MD5; tests/API/recipe reboot proof PASS; local archive running; source ready push | Next: feature publish/parity then native UI checks; no physical ON/PD/EEPROMWrite
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,32 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.15 | 2026-10-15 | Codex
+
+- Final1.9.0 Build-Firmware.ps1 PASS UTC2026-10-15T00:17:08Z, app1421824 SHA7448e56df50c5a5f8850583dd7def877717d2211397aff2cb481d79af7822038, metadata/legacy gates PASS; no later firmware edits. Candidate failed ArduinoJson/detail collision superseded by recipeDetail fix. Node/Python14/portal2 and independent QRdecode PASS.
+- First app-only OTA1.8->1.9 HTTP200, exact serial/build/file-runtimeMD50adb38e994b4ad773d456918a9ea8f4d. Real recipe confirm/bounds/stale/readback/active-inactive session/export guards PASS. Same exact binary uploaded a second time to prove fresh boot token and recipe persistence; recipes+old profile masks/calibration exactly match before reboot. New ownqc-recipes namespace, no erase. M1/M2 presets default settings revision2 after tests; old M2 profile remainsrev6/DO testsOFF.
+- Real local laptop archive API Host/token/import/dedup/list/JSON/CSV/history PASS, server127.0.0.1:8770 session98948 running, serial idle. Browser station UI pending/native policy only; no alternate control bypass. First QRasset verification failed verifier default encoding; UTF8 comparison nowPASS, no firmware change.
+- FinalM1/PD OFF/outputOFF/faultfalse. No actual outputON, EEPROMWrite, PDrequest/radioApply or physicalPASS. Evidence ignored build/first-v1_9_0-pre/post-ota-state.json,pre/post-ota-state.json,station-report-runtime-v1_9_0.json,recipes-before-reboot-v1_9_0.json,runtime-final-v1_9_0.json,laptop-archive-runtime-v1_9_0.json,qr-reference-test.json/png.
+- Source/docs/test ready feature commit/push, origin2b5af1a. Next publish/parity then native browser check self-tested new UI; no merge/general serial-web changes.
+
+
+### V2.14 | 2026-10-15 | Codex
+
+- Added unselected-boot editor/default selection, guide phase ordering and bounded offline chart-gap regressions; Node all PASS. Python14/portal2 PASS, OpenCV independently decodes exact offline QR. Pin map is explicitly schematic, not PCB component placement. No actual outputON, EEPROMWrite, PD request or radioApply.
+- First00:09:54Z compile candidate failed qc_recipes global detail versus ArduinoJson namespace collision. Renamed recipeDetail. Final Build-Firmware.ps1 starts2026-10-15T00:17:08Z; no later firmware edits. Never upload the failed/candidate artifact or relabel stale binary.
+- Actual loopback laptop service started on free127.0.0.1:8770 (exec session98948), no COM opened. HTTP archive Host/token403 guards, import/dedup/list/JSON/CSV/history PASS with historical1.8 CODEX SOFTWARE CHECK INCOMPLETE report, ignored under tools/laptop-qc/reports/archive. Worker remains idle. Service must be restarted from updated source on another laptop; no Windows startup automation added.
+- Read-only device readiness1.8.0/build2026-10-14T14:54:18Z, classic ESP32, outputOFF/faultfalse/TPLready, OTA Digest200. Helper gated to1.9.0 artifact+new boot token. Next finish compile/gates, authorized OTA, actual recipe bounds/readback/stale/session/export/unchanged old profiles+calibration, then second identical gated OTA to prove new recipe persistence. Preserve first-upload evidence; no erase. Browser self-check only through allowed native skill, no URL-policy bypass.
+
+### V2.13 | 2026-10-15 | Codex
+
+- User authorizes all seven follow-up ideas, self-check and app-only OTA. Baseline2b5af1a clean/fetched/push up-to-date first; read AGENTS/CURRENT/latest2/backlog/README/VALIDATION/handoff and full Versioning/ChangeNotifications via issue1. Scope04_Dokumen/QC_STATION_REVISION.md ST01..07; no other repository/merge.
+- Local1.9.0 qc_recipes own qc-recipes/recipes-v1+crc-v1, schema/revision/normalized limits/readback; perM two Modbus tags/analog refs+tolerance/serial fixture settings/1..10sec output limit. No migration of existing profile/calibration NVS. Recipe rev/CRC enters QC code/JSON/CSV; active save resets session, load only fills forms. Invalid saved recipe blocks selection rather than silently fallback.
+- UI readiness, schematic verified-pin map(not physical PCB placement), bounded/stale-gapped charts, staged guide with explicit ON/OFF and two physical observations; firmware TTL independent of browser. Stop/session/disconnect cancels. Mock discovered stale pre-command snapshot falsely cancelling guide; fixed fresh poll before observe phase. No actual ON command sent.
+- Immutable browser unit history/comparison and loopback laptop archive import/serial-search/download; token/Host gates retained, no COM/device contact on import. Offline pinned QR qrcode-generator2.0.4 MIT npm SHA1 verified, license/provenance; print original snapshot/status, no CDN/signature claim.
+- Additional boot-state test found empty preset editor when device UNSELECTED; fixed to first actual saved profile. Build started00:09:54Z is therefore a compile candidate only, NOT for OTA. A fresh final build after source freeze is required.
+- Node expanded station/operator/archive/PD/Stop PASS; Python14 PASS incl append/dedup/no overwrite/corrupt import/CSV formula/multi-device; portal2 PASS. Independent OpenCV decodes exact generated QR reference. Firmware compile/runtime recipe persistence/browser/OTA still pending. All source/tests/docs local, origin2b5af1a. Next frozen final build, verify live1.8 baseline and artifacts then authorized OTA, runtime/archive/browser tests and feature publication. Physical PD/WC/accuracy/load unknown.
+
 
 ### V2.12 | 2026-10-14 | Codex
 

@@ -12,8 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from protocol import exercise
+from qc_archive import Archive, report_csv as archive_csv
 
 ROOT = Path(__file__).parent
+ARCHIVE = Archive(ROOT/"reports"/"archive")
 LOCK = threading.Lock()
 CANCEL = threading.Event()
 LOCAL_TOKEN = secrets.token_hex(24)
@@ -144,6 +146,15 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.valid_host(): return self.send(403, {'error':'Invalid Host'})
         if self.path == '/': return self.send(200, (ROOT/'index.html').read_bytes(), 'text/html; charset=utf-8')
+        if self.path == '/history': return self.send(200,(ROOT/'history.html').read_bytes(),'text/html; charset=utf-8')
+        if self.path == '/api/archive': return self.send(200,ARCHIVE.list())
+        if self.path.startswith('/archive/'):
+            try:
+                filename=self.path.removeprefix('/archive/');identity,ext=filename.rsplit('.',1)
+                if ext not in ('json','csv'): raise ValueError('Invalid extension')
+                entry=ARCHIVE.read(identity)
+                return self.send(200,archive_csv(entry) if ext=='csv' else entry,'text/csv; charset=utf-8' if ext=='csv' else 'application/json')
+            except (OSError,ValueError,KeyError,TypeError) as exc:return self.send(404,{'error':str(exc)})
         if self.path == '/api/state': return self.send(200, {**snapshot(), 'localToken': LOCAL_TOKEN})
         if self.path == '/api/ports':
             try:
@@ -160,10 +171,14 @@ class Handler(BaseHTTPRequestHandler):
         if not self.valid_host(): return self.send(403, {'error':'Invalid Host'})
         try:
             length = int(self.headers.get('Content-Length', 0))
-            if not 0 < length <= 4096: raise ValueError('Request size invalid')
+            if not 0 < length <= (4*1024*1024 if self.path=='/api/archive/import' else 4096): raise ValueError('Request size invalid')
             data = json.loads(self.rfile.read(length))
+            if not isinstance(data,dict): raise ValueError('Request must be JSON object')
             if not secrets.compare_digest(str(data.pop('localToken', '')), LOCAL_TOKEN):
                 return self.send(403, {'error':'Invalid local session'})
+            if self.path == '/api/archive/import':
+                try:return self.send(200,ARCHIVE.import_reports(data.get('payload')))
+                except OSError as exc:return self.send(503,{'error':'Archive storage failed; partial imports may remain: '+str(exc)})
             if self.path == '/api/stop': CANCEL.set(); return self.send(200, {'ok':True})
             if self.path != '/api/start': return self.send(404, {'error':'Not found'})
             cfg = settings_from(data)

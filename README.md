@@ -1,3 +1,7 @@
+# QC station source1.9.0
+
+Adds perM test presets (tags, analog refs/tolerance, serial fixture, output timeout), readiness, schematic connection map, guided outputs, history/import on laptop, offline QR print and stale-aware mini charts. Loading presets only fills forms; actions remain explicit. Reports include preset revision/CRC. Run tools/laptop-qc/server.py and open http://127.0.0.1:8770/history to merge device archive bundles; import never opensCOM or contacts device. [Scope/limitations](04_Dokumen/QC_STATION_REVISION.md). Exact build/OTA/publication in CURRENT and VALIDATION.
+
 # Current operator workflow - source1.8.0
 
 Operator view shows active profile, next test and pending/fail/all filters. Switch to Technician for profile configuration, calibration and OTA; this is a presentation mode, not authentication. Session/profile changes require review before apply. Reports require operator/date and are saved as immutable snapshots in laptop browser storage, with exact JSON/CSV downloads; downloaded files are durable handoff. Browser archive may be cleared with browser data. RTC OSF is UNVERIFIED, never PASS. [Revision/procedure](04_Dokumen/OPERATOR_WEB_REVISION.md). Device/build/push truth is latest CURRENT/VALIDATION; older installed records below historical.

@@ -43,6 +43,8 @@ String qcSnapshotCsv(JsonDocument &snapshot, String date, String pic, String pro
   add("sessionId", q["sessionId"].as<String>());
   add("profileRevision",q["profileRevision"].as<String>());
   add("profileMask",q["profileMask"].as<String>());
+  add("recipeRevision",q["recipe"]["revision"].as<String>());
+  add("recipeCRC",q["recipe"]["crc"].as<String>());
   add("firmwareVersion", FW_VERSION);
   add("buildUTC", FW_BUILD_UTC);
   add("hwTop", h["hwTop"].as<String>());

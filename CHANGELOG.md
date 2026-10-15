@@ -1,3 +1,7 @@
+##1.9.0 -2026-10-15
+
+ST01..07: perM test recipes in independent CRC/revisioned NVS, readiness, clickable schematic map, bounded output guide with explicit ON/OFF observations and firmware timeout, unit history/laptop append-only archive, offline QR print/reference and bounded stale-aware mini charts. Recipe identity exported/hashed; old profile/calibration/pins/partitions preserved. Never infer physical PASS. See QC_STATION_REVISION.md and CURRENT/VALIDATION for exact build/install evidence.
+
 ##1.8.0 -2026-10-14
 
 Operator/Technician view, explicit active versus draft profile with session/save review, guided applicable-test progress/filter/navigation, grouped profiles/clone/diff, optional technical details and retained DOM. New/api/qc/report captures authoritative QC/hardware snapshot plus matching CSV after OFF, requiresPIC/date/session/revision/QCcode, rejects stale/active capture. Laptop browser archive50 records/no silent eviction, JSON/CSV/bundle downloads and visible quota/corruption errors; immutable snapshots remain FAIL/INCOMPLETE. RTC OSF nowUNVERIFIED, communication/time validity separate. NVS/EEPROM/pins/polarity/WiFi/legacy partition retained. See04_Dokumen/OPERATOR_WEB_REVISION.md and VALIDATION for actual deployment.

@@ -1,5 +1,6 @@
 #include "qc_session.h"
 #include "qc_profiles.h"
+#include "qc_recipes.h"
 #include "config.h"
 #include "ota_manager.h"
 #include "qc_hardware.h"
@@ -172,13 +173,14 @@ void qcState(JsonObject d) {
   d["variant"] = qcVariantName();
   d["profileSelected"] = qcProfileSelected();
   qcProfilesState(d);
+  qcRecipesState(d);
   d["sessionId"] = sessionId;
   auto scan = d["i2c"].to<JsonObject>();
   scan["scanned"] = i2cScanned; scan["devices"] = i2cDevices;
   auto a = d["tests"].to<JsonArray>();
   unsigned passed = 0, failed = 0, pending = 0, skipped = 0;
   String canonical = String("QC1|") + FW_VERSION + "|" + FW_BUILD_UTC + "|" + qcVariantName() +
-                     "|" + unitSerial() + "|" + sessionId + "|" + activeQcProfileRevision() + "|" + activeQcProfileMask();
+                     "|" + unitSerial() + "|" + sessionId + "|" + activeQcProfileRevision() + "|" + activeQcProfileMask()+"|RECIPE:"+activeQcRecipeIdentity();
   auto hashField = [&](const String &value) {
     canonical += "|" + String(value.length()) + ":" + value;
   };
@@ -251,6 +253,7 @@ void qcState(JsonObject d) {
 }
 void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   beginQcProfiles();
+  beginQcRecipes();
   web = &server;
   authorized = authorize;
   stopSafe = stop;
@@ -281,6 +284,18 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     }
     JsonDocument d; d["ok"]=ok; d["detail"]=detail; send(d,ok?200:409);
   });
+  server.on("/api/qc/recipe",HTTP_POST,[] {
+    if(!guard())return;
+    if(web->arg("confirm")!="1"){error("Konfirmasi preset diperlukan",400);return;}
+    long revision;
+    if(!number("revision",0,2147483647,revision)||pdNegotiating()||currentQcBusy()){error("Revisi/pending test preset tidak valid");return;}
+    JsonDocument c;calibrationState(c.to<JsonObject>());
+    if(c["pending"].as<int>()>=0){error("Tunggu capture selesai");return;}
+    String id=web->arg("id"),why;bool active=qcProfileSelected()&&id==qcVariantName();
+    stopSafe();bool ok=saveQcRecipe(id,revision,web->arg("settings"),why);
+    if(ok&&active){reset();resetCurrentPoints();}
+    JsonDocument out;out["ok"]=ok;out["detail"]=why;send(out,ok?200:409);
+  });
   server.on("/api/qc/new", HTTP_POST, [] {
     if (!guard())
       return;
@@ -294,6 +309,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       error("Wait for PD negotiation before changing/resetting device");
       return;
     }
+    if (!qcRecipesReady()) { error("Preset storage unavailable; periksa konfigurasi sebelum QC"); return; }
     if (!selectQcProfile(web->arg("variant"))) {
       error("Unknown profile or profile storage unavailable", 400); return;
     }
@@ -305,6 +321,18 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     JsonDocument d;
     d["ok"] = true;
     send(d);
+  });
+  server.on("/api/qc/sequence/observe",HTTP_POST,[] {
+    if(!guard())return;
+    String kind=web->arg("kind"),expected=web->arg("state"),verdict=web->arg("verdict");long index;
+    if((kind!="led"&&kind!="relay")||!number("index",0,kind=="led"?10:1,index)||(expected!="on"&&expected!="off")||(verdict!="PASS"&&verdict!="FAIL")) {error("Invalid sequence observation",400);return;}
+    int n=kind=="led"?index:11+index;
+    if(web->arg("sessionId")!=sessionId||!qcTestEnabled(outputName(n))||finalized[n]||!attempted[n]||live[n]!=(expected=="on")) {error("State/profile/session changed or QC final; observe only current attempted state");return;}
+    if(verdict=="FAIL"){finalized[n]=true;stopSafe();qcRecord(outputName(n),"FAIL","Guided sequence: user observes mismatch at "+expected);}
+    else {if(expected=="on")onConfirmed[n]=true;else offConfirmed[n]=true;
+      finalized[n]=onConfirmed[n]&&offConfirmed[n];
+      qcRecord(outputName(n),finalized[n]?"PASS":"INCOMPLETE",finalized[n]?"Guided sequence: user observed both ON and OFF sesuai":"Guided sequence: one observation recorded; ON and OFF both required");}
+    JsonDocument d;d["ok"]=true;d["detail"]="Observasi urutan dicatat; bukan feedback beban otomatis";send(d);
   });
   server.on("/api/qc/confirm", HTTP_POST, [] {
     if (!guard())
