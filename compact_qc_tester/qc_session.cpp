@@ -1,4 +1,5 @@
 #include "qc_session.h"
+#include "rtc_qc.h"
 #include "qc_profiles.h"
 #include "qc_recipes.h"
 #include "config.h"
@@ -19,6 +20,8 @@ WebServer *web;
 bool (*authorized)();
 void (*stopSafe)();
 QcItem items[80];
+bool retained[80]={};
+JsonDocument retainedEvidence;
 size_t count = 0, display = 0;
 uint32_t displayAt = 0;
 String operatorName, unit;
@@ -76,6 +79,7 @@ bool decimal(const char *arg, float low, float high, float &v) {
 }
 String outputName(int n) { return n < 11 ? "LED:" + String(n) : "Relay:" + String(n - 11); }
 void reset() {
+  qcProgressNewSession();resetRtcQc();retainedEvidence.clear();for(auto &b:retained)b=false;
   resetSerialQc(); resetRadioQc(); resetCurrentQc(); resetModbusQc(); resetNetworkQc();
   char id[9];
   snprintf(id, sizeof(id), "%08lX", static_cast<unsigned long>(esp_random()));
@@ -119,7 +123,9 @@ void qcRecord(const String &name, const String &status, const String &detail) {
       return;
     ++count;
   }
+  if(retained[i] && name!="RTC")return;
   if (items[i].status != effectiveStatus || items[i].detail != effectiveDetail) {
+    qcProgressDirty();
     display = i;
     displayAt = millis();
   }
@@ -130,6 +136,7 @@ void qcOutputsStopped() {
     b = false;
 }
 void qcNoteI2cScan(unsigned devices) {
+  qcRetest("I2C scan");
   i2cScanned = true; i2cDevices = devices;
   qcRecord("I2C scan", devices ? "DETECTED" : "FAIL",
            devices ? "ACK list ready; awaiting user PASS/FAIL, not protocol proof"
@@ -154,6 +161,7 @@ void updateQcSession() {
     displayAt = now;
     display = (display + 1) % count;
   }
+  updateRtcQc();updateQcProgress();
   if (!qcProfileSelected())
     return;
   for (size_t i = 0; i < 7; ++i) {
@@ -175,6 +183,8 @@ void qcState(JsonObject d) {
   qcProfilesState(d);
   qcRecipesState(d);
   d["sessionId"] = sessionId;
+  qcProgressState(d["progress"].to<JsonObject>());
+  rtcExportEvidence(d["rtcEvidence"].to<JsonObject>());
   auto scan = d["i2c"].to<JsonObject>();
   scan["scanned"] = i2cScanned; scan["devices"] = i2cDevices;
   auto a = d["tests"].to<JsonArray>();
@@ -189,6 +199,7 @@ void qcState(JsonObject d) {
     p["name"] = items[i].name;
     p["status"] = items[i].status;
     p["detail"] = items[i].detail;
+    p["restoredEvidence"]=retained[i];
     bool applicable = qcProfileSelected() && qcTestEnabled(items[i].name);
     p["applicable"] = applicable;
     if (!applicable)
@@ -203,6 +214,7 @@ void qcState(JsonObject d) {
     hashField(items[i].status);
     hashField(items[i].detail);
   }
+  hashField(rtcEvidenceIdentity());
   const char *overall = !qcProfileSelected() ? "INCOMPLETE"
                         : failed             ? "FAIL"
                         : !pending && passed ? "PASS"
@@ -250,6 +262,7 @@ void qcState(JsonObject d) {
   networkQcState(d["network"].to<JsonObject>());
   serialQcState(d["serial"].to<JsonObject>());
   radioQcState(d["radio"].to<JsonObject>());
+  if(retainedEvidence.size())d["checkpointEvidence"].set(retainedEvidence.as<JsonObject>());
 }
 void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   beginQcProfiles();
@@ -259,6 +272,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   stopSafe = stop;
   reset();
   beginQcExport(server);
+  beginQcProgress();
   prefs.begin("qc-settings", false);
   baud = prefs.getUInt("baud", 9600);
   parity = prefs.getString("parity", "N");
@@ -266,8 +280,36 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   functionCode = prefs.getUChar("fn", 3);
   regAddress = prefs.getUShort("reg", 0);
   regCount = prefs.getUShort("count", 1);
+  server.on("/api/qc/checkpoint",HTTP_POST,[]{
+    if(!guard())return;if(web->arg("confirm")!="1"||web->arg("sessionId")!=sessionId){error("Checkpoint confirm/session required",400);return;}
+    stopSafe();String why;bool ok=qcSaveProgress(why);JsonDocument d;d["ok"]=ok;d["detail"]=why;send(d,ok?200:507);
+  });
+  server.on("/api/qc/resume",HTTP_POST,[]{
+    if(!guard())return;if(web->arg("confirm")!="1"){error("Explicit resume confirmation required",400);return;}
+    stopSafe();String why;bool ok=qcResumeProgress(why);JsonDocument d;d["ok"]=ok;d["detail"]=why;send(d,ok?200:409);
+  });
+  server.on("/api/qc/checkpoint",HTTP_GET,[]{JsonDocument d;qcSavedProgress(d.to<JsonObject>());send(d);});
+  server.on("/api/qc/import-legacy",HTTP_POST,[]{
+    if(!guard())return;if(web->arg("confirm")!="1"){error("Explicit legacy import confirmation required",400);return;}
+    if(qcProfileSelected()){error("Legacy import cannot replace an active QC session");return;}
+    // Free the cold NVS cache before copying/parsing a large HTTP argument; reload it for validation.
+    qcReleaseProgressCache();String payload=web->arg("snapshot");
+    if(payload.isEmpty()||payload.length()>50000){payload=String();beginQcProgress();error("Bounded legacy snapshot required",400);return;}
+    JsonDocument filter;for(const char *k:{"version","buildUTC","buildIdentity"})filter[k]=true;
+    filter["hardware"]["serial"]=true;for(const char *k:{"active","gain","offset"})filter["hardware"]["calibration"][k]=true;
+    filter["hardware"]["currentQc"]=true;
+    for(const char *k:{"variant","profileSelected","sessionId","profileRevision","profileMask","operator","overall","qcCode","modbus","network","serial","radio"})filter["qc"][k]=true;
+    for(const char *k:{"revision","crc"})filter["qc"]["recipe"][k]=true;
+    for(const char *k:{"name","status","detail"})filter["qc"]["tests"][0][k]=true;
+    for(const char *k:{"finalized","onConfirmed","offConfirmed"})filter["qc"]["outputs"][0][k]=true;
+    filter["qc"]["inputs"][0]["cycles"]=true;
+    JsonDocument legacy;auto parse=deserializeJson(legacy,payload,DeserializationOption::Filter(filter));payload=String();filter.clear();beginQcProgress();
+    if(parse){legacy.clear();String message=String("Legacy JSON parse: ")+parse.c_str();error(message.c_str(),parse==DeserializationError::NoMemory?507:400);return;}
+    stopSafe();String why;bool ok=qcImportLegacy(legacy,why);JsonDocument d;d["ok"]=ok;d["detail"]=why;send(d,ok?200:409);
+  });
   server.on("/api/qc/profile", HTTP_POST, [] {
     if (!guard()) return;
+    if (rtcRunActive()) {error("Abort/finish RTC portal run before profile changes");return;}
     if (pdNegotiating()) { error("Wait for PD negotiation before profile changes"); return; }
     long revision;
     if (!number("revision", 0, 2147483647, revision) || !web->hasArg("enabled")) {
@@ -287,6 +329,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   server.on("/api/qc/recipe",HTTP_POST,[] {
     if(!guard())return;
     if(web->arg("confirm")!="1"){error("Konfirmasi preset diperlukan",400);return;}
+    if(rtcRunActive()){error("Abort/finish RTC run before preset changes");return;}
     long revision;
     if(!number("revision",0,2147483647,revision)||pdNegotiating()||currentQcBusy()){error("Revisi/pending test preset tidak valid");return;}
     JsonDocument c;calibrationState(c.to<JsonObject>());
@@ -299,6 +342,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   server.on("/api/qc/new", HTTP_POST, [] {
     if (!guard())
       return;
+    if(rtcRunActive()){error("Abort/finish RTC run before starting a new QC session");return;}
     String name = web->arg("operator");
     name.trim();
     if (name.length() > 64) {
@@ -346,6 +390,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       if (!i2cScanned || (verdict == "PASS" && !i2cDevices)) {
         error("Run I2C scan first; empty scan cannot PASS"); return;
       }
+      qcRetest("I2C scan");
       qcRecord("I2C scan", verdict,
                "User confirms scanned ACK list " + String(verdict == "PASS" ? "sesuai" : "tidak sesuai") +
                "; " + String(i2cDevices) + " addresses; no IC/protocol acceptance inferred");
@@ -356,6 +401,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
         error("OLED initialization unavailable");
         return;
       }
+      qcRetest("OLED");
       qcRecord("OLED", verdict,
                verdict == "PASS" ? "User confirms OLED text visible"
                                  : "User reports blank/unreadable OLED");
@@ -404,6 +450,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       return;
     String detail;
     bool ok = readIdentity(detail);
+    qcRetest("EEPROM");
     qcRecord("EEPROM", ok ? "PASS" : identityBusReadable() ? "DETECTED" : "FAIL", detail);
     JsonDocument d;
     d["ok"] = ok;
@@ -420,6 +467,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     stopSafe();
     String detail;
     bool ok = saveIdentity(web->arg("top"), web->arg("bottom"), detail);
+    qcRetest("EEPROM");
     qcRecord("EEPROM", ok ? "PASS" : "FAIL", detail);
     JsonDocument d;
     d["ok"] = ok;
@@ -455,6 +503,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     }
     String detail;
     bool ok = saveCurrentCalibration(residual, detail);
+    if(ok){qcRetest("ADS / 4-20mA");qcRecord("ADS / 4-20mA","BELUM DIUJI","Calibration changed; repeat five-point QC");}
     JsonDocument d;
     d["detail"] = detail;
     send(d, ok ? 200 : 409);
@@ -470,6 +519,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
   server.on("/api/aht/config", HTTP_POST, [] {
     if (!guard())
       return;
+    qcRetest("AHT10");
     bool ok = configureAht10();
     JsonDocument d;
     d["ok"] = ok;
@@ -481,6 +531,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       return;
     stopSafe();
     String detail;
+    qcRetest("Ethernet");
     bool ok = testEthernet(detail);
     qcRecord("Ethernet", ok ? "PASS" : detail.indexOf("UNKNOWN") >= 0 ? "UNVERIFIED" : "FAIL", detail);
     JsonDocument d;
@@ -519,6 +570,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     snapshot["snapshotOnly"]=true;
     JsonDocument response;
     response["ok"]=true;
+    String checkpointWhy;response["checkpointSaved"]=qcSaveProgress(checkpointWhy);response["checkpointDetail"]=checkpointWhy;
     response["snapshot"].set(snapshot.as<JsonObject>());
     response["csv"]=qcSnapshotCsv(snapshot,date,pic,production);
     response["detail"]="Snapshot QC diambil; simpan arsip laptop. Sesi tetap tersedia, hasil berikutnya tidak mengubah snapshot.";
@@ -548,6 +600,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       error("Wait for ADC capture before PD negotiation");
       return;
     }
+    qcRetest("STUSB4500");
     bool ok = requestPd(mv, ma, detail);
     qcRecord("STUSB4500", ok ? "NEGOTIATING" : "FAIL", detail);
     JsonDocument d;
@@ -596,4 +649,39 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
     d["detail"] = "Config saved; MCP2A2 selected. Modbus remains deferred; use laptop serial QC for byte transactions.";
     send(d);
   });
+}
+
+
+String qcSessionId(){return sessionId;}
+void qcRetest(const String &name){for(size_t i=0;i<count;++i)if(items[i].name==name){retained[i]=false;break;}}
+void qcCaptureProgress(JsonObject out){
+ JsonDocument h;hardwareState(h.to<JsonObject>());
+ out["sessionId"]=sessionId;out["operator"]=operatorName;out["savedUptimeMs"]=millis();
+ auto a=out["tests"].to<JsonArray>();for(size_t i=0;i<count;++i){auto p=a.add<JsonObject>();p["name"]=items[i].name;p["status"]=items[i].status;p["detail"]=items[i].detail;}
+ auto c=out["cycles"].to<JsonArray>();for(auto &p:cycles)c.add(p.cycles);
+ auto o=out["outputs"].to<JsonArray>();for(int i=0;i<13;++i){auto p=o.add<JsonObject>();p["finalized"]=finalized[i];p["onConfirmed"]=onConfirmed[i];p["offConfirmed"]=offConfirmed[i];}
+ auto kept=[&](const String& name){for(size_t i=0;i<count;++i)if(items[i].name==name)return retained[i];return false;};
+ if(retainedEvidence.size())out["evidence"].set(retainedEvidence.as<JsonObject>());
+ if(!kept("ADS / 4-20mA"))out["evidence"]["analog"].set(h["currentQc"]);
+ JsonDocument q;qcState(q.to<JsonObject>());
+ out["evidence"]["modbus"].set(q["modbus"]);
+ for(int i=0;i<2;++i)if(kept("Modbus tag:"+String(i+1))&&!retainedEvidence["modbus"]["tags"][i].isNull())out["evidence"]["modbus"]["tags"][i].set(retainedEvidence["modbus"]["tags"][i]);
+ if(!kept("WiFi network")&&!kept("Ethernet network")&&!kept("MQTT"))out["evidence"]["network"].set(q["network"]);
+ if(!kept("RS485")&&!kept("RS232"))out["evidence"]["serial"].set(q["serial"]);
+ if(!kept("Radio configuration")&&!kept("Radio communication"))out["evidence"]["radio"].set(q["radio"]);
+ out["evidence"]["capturedBuildIdentity"]=FW_BUILD_ID;out["evidence"]["capturedSessionId"]=sessionId;
+}
+bool qcValidateProgress(JsonObjectConst d,String &why){
+ auto a=d["tests"].as<JsonArrayConst>();String sid=d["sessionId"].as<String>();
+ if(sid.length()!=8||a.size()!=count||d["cycles"].size()!=7||d["outputs"].size()!=13){why="Invalid checkpoint shape";return false;}
+ for(char c:sid)if(!isxdigit((unsigned char)c)){why="Invalid checkpoint session";return false;}
+ for(size_t i=0;i<count;++i)if(a[i]["name"].as<String>()!=items[i].name||a[i]["detail"].as<String>().length()>3000||a[i]["status"].as<String>().length()>40){why="Checkpoint test schema/name differs";return false;}
+ return true;
+}
+void qcRestoreProgress(JsonObjectConst d){
+ reset();sessionId=d["sessionId"].as<String>();operatorName=d["operator"].as<String>();
+ for(size_t i=0;i<count;++i){String status=d["tests"][i]["status"].as<String>();if((status=="PASS"||status=="FAIL")&&items[i].name!="RTC"){items[i].status=status;items[i].detail=d["tests"][i]["detail"].as<String>();retained[i]=true;}}
+ for(int i=0;i<7;++i){cycles[i]={};cycles[i].cycles=std::min(2u,d["cycles"][i].as<unsigned>());}
+ for(int i=0;i<13;++i){int index=0;while(index<int(count)&&items[index].name!=outputName(i))++index;finalized[i]=index<int(count)&&retained[index]&&d["outputs"][i]["finalized"].as<bool>();onConfirmed[i]=finalized[i]&&d["outputs"][i]["onConfirmed"].as<bool>();offConfirmed[i]=finalized[i]&&d["outputs"][i]["offConfirmed"].as<bool>();live[i]=attempted[i]=false;}
+ retainedEvidence.set(d["evidence"]);qcProgressDirty();
 }

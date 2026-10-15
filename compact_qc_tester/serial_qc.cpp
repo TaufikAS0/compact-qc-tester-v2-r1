@@ -86,7 +86,7 @@ void beginSerialQc(WebServer &web, bool (*authorize)(), void (*stop)()) {
              !number(web, "timeoutMs", 500, 10000, t)) d["error"] = "Invalid RS232 settings";
     else {
       stop();
-      mode = selected;
+      mode = selected;qcRetest(mode);
       completed = rxBytes = txBytes = errors = 0; runId = 0;
       record("TESTING", "Selecting " + mode + " route");
       uint8_t gpio = 0, dir = 0;

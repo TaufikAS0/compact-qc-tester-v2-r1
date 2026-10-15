@@ -120,6 +120,7 @@ void beginRadioQc(WebServer &web, bool (*authorize)(), void (*stop)()) {
     else if (!valid) d["error"] = "Invalid E70 targets";
     else {
       stop();
+      qcRetest("Radio communication");qcRetest("Radio configuration");
       commStatus = configStatus = "TESTING"; radioDetail = "Selecting radio configuration pin mode";
       for (auto &v : actual) v = -1;
       publish();

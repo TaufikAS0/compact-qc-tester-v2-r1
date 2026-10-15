@@ -68,11 +68,13 @@ void beginModbusQc(WebServer &web,bool (*authorize)(),void (*stop)()) {
     if(!authorize())return;
     int n;uint32_t b,t,s,f,a,c;String name=web.arg("name"),parity=web.arg("parity"),type=web.arg("type"),order=web.arg("order");
     if(webOtaBusy()||pending>=0||!selected(web,n)||!num(web,"baud",1200,115200,b)||!num(web,"timeout",100,10000,t)||!num(web,"slave",1,247,s)||!num(web,"function",1,4,f)||!num(web,"address",0,65535,a)||!num(web,"count",1,2,c)||a+c>65536||!name.length()||name.length()>10||(parity!="N"&&parity!="E"&&parity!="O")||(type!="Unsigned"&&type!="Signed"&&type!="Float")||(order!="ABCD"&&order!="CDAB")||(type=="Float"&&(f<3||c!=2))) {reply(web,false,"Invalid tag/link/datatype; Float requires2 registers");return;}
+    qcRetest("Modbus tag:"+String(n+1));
     auto &p=tags[n];p.name=name;p.parity=parity;p.type=type;p.order=order;p.baud=b;p.timeout=t;p.slave=s;p.function=f;p.address=a;p.count=c;p.valid=false;p.verdict=0;p.status="BELUM DIUJI";p.detail="Config saved in RAM; not communication evidence";record(n);reply(web,true,p.detail);
   });
   web.on("/api/modbus/tag/request",HTTP_POST,[&web,authorize,stop] {
     if(!authorize())return;
     int n;if(webOtaBusy()||pdNegotiating()||pending>=0||!selected(web,n)){reply(web,false,"Wait for active test/OTA/PD or choose valid tag");return;}
+    qcRetest("Modbus tag:"+String(n+1));
     stop();auto &p=tags[n];p.valid=false;p.raw[0]=p.raw[1]=0;p.verdict=0;p.status="TESTING";p.detail="Request queued";p.requestId=esp_random();
     if(!mcpBit(MCP2_ADDR,2,false)){p.status="FAIL";p.detail="MCP2A2 LOW route write/readback failed";record(n);reply(web,false,p.detail);return;}
     uart.setRxBufferSize(256);uart.begin(p.baud,p.parity=="E"?SERIAL_8E1:p.parity=="O"?SERIAL_8O1:SERIAL_8N1,SERIAL_RX,SERIAL_TX);

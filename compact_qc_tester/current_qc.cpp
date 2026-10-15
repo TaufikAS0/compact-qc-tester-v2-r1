@@ -52,6 +52,7 @@ void beginCurrentQc(WebServer &web, bool (*authorize)()) {
     for (int i = 0; i < 5; ++i) if (i != n && points[i].captured && fabs(points[i].target - ma) < .01) {
       response(web, false, "QC reference must differ from other captured points"); return;
     }
+    qcRetest("ADS / 4-20mA");
     pending = n; points[n] = {}; samples = 0; sum = squares = 0;
     target = ma; tolerance = tol; started = millis(); sampleAt = at;
     calibrationId = currentCalibrationId(); analogDetail = "Capturing16 fresh ADC readings; hold calibrator stable";
@@ -76,7 +77,7 @@ void beginCurrentQc(WebServer &web, bool (*authorize)()) {
   web.on("/api/current/qc/reset", HTTP_POST, [&web, authorize] {
     if (!authorize()) return;
     if (webOtaBusy()) { response(web, false, "OTA in progress"); return; }
-    resetCurrentQc(); record(); response(web, true, analogDetail);
+    qcRetest("ADS / 4-20mA");resetCurrentQc(); record(); response(web, true, analogDetail);
   });
 }
 void updateCurrentQc() {

@@ -45,6 +45,9 @@ String qcSnapshotCsv(JsonDocument &snapshot, String date, String pic, String pro
   add("profileMask",q["profileMask"].as<String>());
   add("recipeRevision",q["recipe"]["revision"].as<String>());
   add("recipeCRC",q["recipe"]["crc"].as<String>());
+  add("rtcClockRevision",q["rtcEvidence"]["clockRevision"].as<String>());
+  add("rtcTickPassed",q["rtcEvidence"]["tickPassed"].as<String>());
+  for(const char *key:{"rtcEvidence","checkpointEvidence"}){String evidence;serializeJson(q[key],evidence);add(String(key)+".json",evidence);}
   add("firmwareVersion", FW_VERSION);
   add("buildUTC", FW_BUILD_UTC);
   add("hwTop", h["hwTop"].as<String>());
@@ -61,19 +64,24 @@ String qcSnapshotCsv(JsonDocument &snapshot, String date, String pic, String pro
     add(name + ".status", test["status"].as<String>());
     add(name + ".detail", test["detail"].as<String>());
     add(name + ".applicable", test["applicable"].as<bool>() ? "true" : "false");
+    add(name + ".restoredEvidence",test["restoredEvidence"].as<bool>()?"true":"false");
   }
+  auto historical=[&](const String &name){for(JsonObject t:q["tests"].as<JsonArray>())if(t["name"]==name)return t["restoredEvidence"].as<bool>();return false;};
   int pointIndex=0;
-  for(JsonObject point:h["currentQc"]["points"].as<JsonArray>()) {
+  JsonArray analogPoints=historical("ADS / 4-20mA")?q["checkpointEvidence"]["analog"]["points"].as<JsonArray>():h["currentQc"]["points"].as<JsonArray>();
+  for(JsonObject point:analogPoints) {
     String prefix="AnalogPoint"+String(++pointIndex)+".";
     for(const char *key:{"captured","status","targetMA","measuredMA","errorMA","raw","noise","toleranceMA","calibrationId","uptimeMs"})add(prefix+key,point[key].isNull()?"":point[key].as<String>());
   }
   int tagIndex=0;
   for(JsonObject tag:q["modbus"]["tags"].as<JsonArray>()) {
+    if(historical("Modbus tag:"+String(tagIndex+1))&&!q["checkpointEvidence"]["modbus"]["tags"][tagIndex].isNull())tag=q["checkpointEvidence"]["modbus"]["tags"][tagIndex].as<JsonObject>();
     String prefix="ModbusTag"+String(++tagIndex)+".";
     for(const char *key:{"name","baud","parity","slave","function","address","count","type","order","timeout","valid","status","value","requestId","uptimeMs"})add(prefix+key,tag[key].isNull()?"":tag[key].as<String>());
     String raw;serializeJson(tag["raw"],raw);add(prefix+"raw",raw);
   }
-  for(const char *key:{"staSSID","staIP","staConnected","lastIP","mqttCode"})add(String("Network.")+key,q["network"][key].isNull()?"":q["network"][key].as<String>());
+  JsonObject network=(historical("WiFi network")||historical("Ethernet network")||historical("MQTT"))?q["checkpointEvidence"]["network"].as<JsonObject>():q["network"].as<JsonObject>();
+  for(const char *key:{"staSSID","staIP","staConnected","lastIP","mqttCode"})add(String("Network.")+key,network[key].isNull()?"":network[key].as<String>());
   return String("\xef\xbb\xbf") + header + "\r\n" + row + "\r\n";
 }
 void beginQcExport(WebServer &server) {

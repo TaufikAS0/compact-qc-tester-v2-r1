@@ -1,4 +1,5 @@
 #include "qc_hardware.h"
+#include "rtc_qc.h"
 #include "aht10_service.h"
 #include "current_qc.h"
 #include "mcp_math.h"
@@ -468,46 +469,6 @@ bool qcReadReg(uint8_t a, uint8_t r, uint8_t *data, size_t n) { return readReg(a
 bool qcWriteReg(uint8_t a, uint8_t r, const uint8_t *data, size_t n) {
   return writeReg(a, r, data, n);
 }
-void rtcState(JsonObject d) {
-  uint8_t b[19];
-  if (!readReg(0x68, 0, b, 19)) {
-    d["valid"] = false;
-    d["communicationValid"] = false;
-    d["timeValid"] = false;
-    d["detail"] = "DS3231 read failed";
-    qcRecord("RTC", "FAIL", "DS3231 read failed");
-    return;
-  }
-  auto dec = [](uint8_t x) {
-    return (x >> 4) <= 9 && (x & 15) <= 9 ? (x >> 4) * 10 + (x & 15) : -1;
-  };
-  int sec = dec(b[0] & 127), minute = dec(b[1] & 127), hour;
-  if (b[2] & 64) {
-    int h = dec(b[2] & 31);
-    hour = h < 1 || h > 12 ? -1 : h % 12 + ((b[2] & 32) ? 12 : 0);
-  } else
-    hour = dec(b[2] & 63);
-  int day = dec(b[4] & 63), month = dec(b[5] & 31), year = dec(b[6]);
-  bool ok = sec >= 0 && sec < 60 && minute >= 0 && minute < 60 && hour >= 0 && hour < 24 &&
-            day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 0;
-  const bool osf=(b[15]&128)!=0;
-  d["valid"] = ok;
-  d["communicationValid"] = true;
-  d["timeValid"] = ok && !osf;
-  qcRecord("RTC", !ok ? "FAIL" : osf ? "UNVERIFIED" : "PASS",
-           !ok ? "Invalid BCD clock" : osf ? "RTC read OK; OSF set, waktu belum valid. Periksa baterai dan set waktu melalui prosedur bench; bukan PASS."
-              : "DS3231 BCD clock read, OSF clear; accuracy/battery retention require bench reference");
-  d["oscillatorStopped"] = (b[15] & 128) != 0;
-  d["temperatureC"] = (int8_t)b[17] + (b[18] >> 6) * .25;
-  if (ok) {
-    char t[24];
-    snprintf(t, sizeof(t), "%04d-%02d-%02d %02d:%02d:%02d", 2000 + year + ((b[5] & 128) ? 100 : 0),
-             month, day, hour, minute, sec);
-    d["time"] = t;
-  }
-  d["detail"] = !ok             ? "Invalid BCD clock"
-                : (b[15] & 128) ? "OSF set: time may be invalid; check battery/time"
-                                : "DS3231 clock/temperature read; timezone is not stored by RTC";
-}
+void rtcState(JsonObject d) { rtcQcState(d); }
 
 bool identityBusReadable() { return identityReadable; }

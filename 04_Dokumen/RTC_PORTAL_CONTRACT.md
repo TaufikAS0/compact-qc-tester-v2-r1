@@ -1,6 +1,6 @@
 # Compact RTC + durable QC integration (COMPACT-RTC-1)
 
-Firmware owner: this Compact repository. Portal owner: separate Telemetric Hardware Portal repository. No portal source changes here. Source1.10.0; **check CURRENT/VALIDATION for exact installed build**, never infer deployment from this document.
+Firmware owner: this Compact repository. Portal owner: separate Telemetric Hardware Portal repository. No portal source changes here. Source1.10.4; **check CURRENT/VALIDATION for exact installed build**, never infer deployment from this document.
 
 ## Invariants
 
@@ -17,6 +17,7 @@ Firmware owner: this Compact repository. Portal owner: separate Telemetric Hardw
 ```
 {serial,sessionId,profile,profileRevision,version,buildUTC,
  rtc:{schema:"COMPACT-RTC-1",bootId,sampleUptimeUs,sampleCompletedUptimeUs,
+ snapshotResponseUptimeUs,sampleAgeUpperBoundMs,
  resolutionMs:1000,communicationValid,valid,timeValid,oscillatorStopped,
  time,rtcLocalEpochSeconds,utcSeconds,utcOffsetMinutes,timezoneConfigured,
  clockRevision,metadataReady,writeVerified,lastSetUtcSeconds,
@@ -25,6 +26,8 @@ Firmware owner: this Compact repository. Portal owner: separate Telemetric Hardw
 ```
 
 Missing/invalid fields must not be coerced into time0 or valid measurements. `utcSeconds` exists only after explicit successful setting with persisted timezone metadata. `timeValid` means valid calendar/OSF clear, NOT independently correct absolute time. Uptime is monotonic microseconds within `bootId`, unrelated to UTC. Timestamp brackets the I2C read; no subsecond phase is supplied. Add at least1s measurement uncertainty, plus transport/reference uncertainty. Do not infer hardware battery voltage from any field.
+
+`snapshotResponseUptimeUs` is sampled immediately before JSON serialization for GET/sample and GET/state. `sampleAgeUpperBoundMs` is rounded-up age from read START to that instant; it excludes subsequent JSON serialization/network transfer. Portal adds the full measured HTTP round-trip budget (which includes server processing/serialization) conservatively, plus reference uncertainty and at least1000ms quantization. A high RTT/gap invalidates precision claims, not permission to assume a cached sample is current. This is an acquisition-age bound under normal firmware execution, not an oscillator accuracy certificate.
 
 `GET /api/state` also includes `hardware.rtc`, `qc.progress`, `qc.rtcEvidence` and each test's `restoredEvidence` flag. GET/sample itself performs no clock writes or automatic test acceptance.
 
@@ -71,13 +74,21 @@ One immutable normalized attachment per kind per QC session. Same payload is ide
 
 ## Durable progress / reboot / reports
 
-- `POST /api/qc/checkpoint`: token,confirm=1,sessionId. Stops outputs, requires idle capture/PD and selected session. Saves own checksummed single NVS blob with readback (max16KB). One checkpoint per unit, not unlimited report history. Explicit success is required before cutting power. NVS full/unavailable507; never format or erase other data.
+- `POST /api/qc/checkpoint`: token,confirm=1,sessionId. Stops outputs, requires idle capture/PD and selected session. Saves own checksummed single NVS blob with readback (logical JSON max16KB; dictionary+MessagePack max9KB, to respect the existing32KB NVS partition). No partition resize. One checkpoint per unit, not unlimited report history. Explicit success is required before cutting power. NVS full/unavailable507; never format or erase other data.
 - After first save/bind/report, autosave only dirty progress, debounced2s and at most once/minute. Up to60s unflushed changes may be lost on sudden power loss. `qc.progress.dirty/detail/autoSave` exposes this. Portal still archives every observation independently.
 - `GET /api/qc/checkpoint`: bounded saved JSON (no auth tokens/passwords). Archive it on server. Do not expose it publicly just because the device LAN API is public lab.
 - On reboot, get fresh token and sample. If `qc.progress.available`, before selecting a NEW profile call `POST /api/qc/resume` with token,confirm=1. Requires same serial, exact build identity, profile revision/mask, preset identity and calibration ID. Never automatically merge a changed firmware/profile/calibration. A rejected checkpoint remains downloadable.
 - Resume restores same session ID, completed PASS/FAIL evidence and completed input counts. Outputs remain physically commanded OFF; partial sequences/captures/serial jobs restart explicitly. No old worker resumes. Read-current hardware and retained historical evidence are separately labeled; RTC is re-read, OSF still authoritative. Retained tests may be repeated explicitly without resetting others (finalized outputs keep existing policy/new session).
 - JSON/CSV reports carry RTC evidence and retained checkpoint evidence plus restoredEvidence flags. QC code changes with new RTC evidence; earlier downloaded reports remain immutable. Portal must NOT edit an old report/CRC to insert PASS.
 - Any firmware upgrade during a bound run invalidates exact-build restoration. Abort/archive first. Power-off battery test should use SAME firmware/build and successful checkpoint, then explicit resume. Pure reboot is not a battery test.
+
+### One-time legacy1.9.1 bridge
+
+The real owner had33 PASS in RAM on1.9.1/sessionEB4CDCB2 before this feature. The original sanitized GET/state+CSV were archived BEFORE upgrade. `POST /api/qc/import-legacy` (token,confirm=1,snapshot=<original JSON>, max50KB) is allowed only while unselected and no checkpoint exists. A failed migration may be retried over its own checkpoint only if original session/operator/source QC code and every non-RTC result still match, clockRevision remains0, and no RTC tick/external evidence/run exists. It verifies original1.9.1 QC1 CRC, serial, profile/preset revisions, calibration coefficients within original JSON rounding precision and exact captured calibration IDs. It stores a bounded checkpoint with original build/QCcode provenance and explicitly resumes completed evidence, never RTC acceptance or ON state. This is a narrow migration bridge, not a general user-edited PASS import; CRC is integrity, not authentication. Operator field stays empty if the original was empty. Downloaded original reports are not rewritten. Ordinary cross-build resume remains forbidden. Do not call this route with simulated or reconstructed physical results.
+
+### Portal compatibility handoff
+
+Read-only portal docs observed2026-10-15: `docs/RTC_FIRMWARE_CONTRACT.md` still describes1.9.1 and proposes future fields/routes. Its existing GET/state adapter remains compatible with the retained identity/RTC fields and uptime. This COMPACT-RTC-1 document is the implemented firmware contract for new features; proposed portal field/route spellings are not silently treated as supported. Portal owner should map the microsecond timing fields, UTC/offset/boot/revision guards and form-encoded routes explicitly, keep its immutable reports/segments and distinguish observed tests from deployments. No portal repository edits by this firmware task.
 
 ## Acceptance boundary
 

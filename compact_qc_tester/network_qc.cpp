@@ -102,6 +102,7 @@ void beginNetworkQc(WebServer &web,bool (*authorize)(),void (*stop)()) {
     }
     if(job.kind==0 && String(job.ssid)==STA_SSID && !job.wifiPassword[0]) strncpy(job.wifiPassword,STA_PASSWORD,sizeof(job.wifiPassword)-1);
     if(job.kind==2 && job.password[0] && !job.user[0]){reply(web,false,"MQTT password authentication requires a username");return;}
+    qcRetest(item(job.kind));
     stop();cancelled=false;busy=true;
     networkDetail="Network test queued; settings volatile, credentials excluded from report"; if(job.kind==0)wifiStatus="TESTING";else if(job.kind==1)ethStatus="TESTING";else mqttStatus="TESTING";
     qcRecord(item(job.kind),"TESTING",networkDetail);

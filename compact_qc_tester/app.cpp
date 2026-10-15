@@ -6,6 +6,7 @@
 #include "ota_manager.h"
 #include "qc_hardware.h"
 #include "qc_session.h"
+#include "rtc_qc.h"
 #include "output_state.h"
 #include "current_qc.h"
 #include "modbus_qc.h"
@@ -23,6 +24,7 @@
 #include <WiFi.h>
 #include <Wire.h>
 #include <driver/gpio.h>
+#include <esp_timer.h>
 
 WebServer server(80);
 String ssid, token;
@@ -37,6 +39,10 @@ const char *deviceNames[] = {"RTC",  "EEPROM",    "AHT",          "MCP1", "MCP2"
                              "OLED", "ATtiny404", "PD converter", "ADS"};
 
 void reply(JsonDocument &doc, int code = 200) {
+  if(doc["hardware"]["rtc"]["schema"]=="COMPACT-RTC-1"){
+    int64_t now=esp_timer_get_time();doc["hardware"]["rtc"]["snapshotResponseUptimeUs"]=now;
+    doc["hardware"]["rtc"]["sampleAgeUpperBoundMs"]=(now-doc["hardware"]["rtc"]["sampleUptimeUs"].as<int64_t>()+999)/1000;
+  }
   String body;
   serializeJson(doc, body);
   server.sendHeader("Cache-Control", "no-store");
@@ -53,7 +59,7 @@ bool authorized() {
     return false;
   }
   if (!qcProfileSelected() && server.uri() != "/api/qc/new" && server.uri() != "/api/heartbeat" &&
-      server.uri() != "/api/stop" && server.uri() != "/api/qc/profile" && server.uri() != "/api/qc/recipe") {
+      server.uri() != "/api/stop" && server.uri() != "/api/qc/profile" && server.uri() != "/api/qc/recipe" && server.uri() != "/api/qc/resume" && server.uri() != "/api/qc/import-legacy" && server.uri() != "/api/rtc/run/release") {
     failure("Pilih profil device sebelum QC");
     return false;
   }
@@ -74,7 +80,8 @@ bool authorized() {
   }
   const String uri=server.uri();
   String test;
-  if(uri=="/api/aht/config") test="AHT10";
+  if(uri.startsWith("/api/rtc/")) test="RTC";
+  else if(uri=="/api/aht/config") test="AHT10";
   else if(uri.startsWith("/api/identity")) test="EEPROM";
   else if(uri.startsWith("/api/pd")) test="STUSB4500";
   else if(uri=="/api/i2c") test="I2C scan";
@@ -245,6 +252,7 @@ void scanHandler() {
 void sdHandler() {
   if (!authorized())
     return;
+  qcRetest("SD");
   stopOutputs();
   JsonDocument d;
   if (!SD.begin(SD_CS, SPI, 4000000)) {
@@ -388,6 +396,7 @@ void beginApp() {
   beginTplWatchdog();
   beginQcSession(server, authorized, stopOutputs);
   beginQcHardware();
+  beginRtcQc(server,authorized,stopOutputs);
   beginCurrentQc(server, authorized);
   beginSerialQc(server, authorized, stopOutputs);
   beginModbusQc(server, authorized, stopOutputs);

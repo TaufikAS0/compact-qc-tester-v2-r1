@@ -1,3 +1,9 @@
+# RTC and durable QC source1.10.4
+
+Adds explicit RTC time review/readback, 60-second ticking check, portal run/evidence API and persistent QC checkpoint/resume with outputs OFF. Original completed results remain labeled historical evidence. [Portal API contract](04_Dokumen/RTC_PORTAL_CONTRACT.md).
+
+Final build2026-10-15T06:42:50Z and software tests PASS. **Not yet uploaded:** target192.168.1.31 currently unreachable; last verified installed1.10.3. Corrected original-result migration, RTC60s and same-binary reboot/resume still need runtime verification. No24h accuracy or physical battery PASS. Read CURRENT/VALIDATION before continuing; never equate source version with installed version.
+
 # Readable diagnosis charts1.9.1
 
 Current values+units, numeric/time axes, min/mean/max and honest minimum scale ranges. Stale/offline current values are blank; graph gaps preserved. Installed build/OTA/self-check in VALIDATION and CURRENT.

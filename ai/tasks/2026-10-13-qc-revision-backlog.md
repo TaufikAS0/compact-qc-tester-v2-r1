@@ -1,3 +1,13 @@
+RTC V2.23: source1.10.4/build06:42:50Z compile/software PASS. Device192.168.1.31 unreachable; last verified1.10.3. OTA/migration/RTC60s/reboot/native pending. Preserve original33; exact continuation in CURRENT. No24h/battery PASS.
+
+# RTC durable QC1.10.0 - local implementation2026-10-15
+
+COMPACT-RTC-1 contract04_Dokumen/RTC_PORTAL_CONTRACT.md: explicit RTCset/readback/OSF handling+offset metadata/clockRevision, monotonic60s tick, persistent portal run lock, bounded immutable external accuracy+retention summaries and RTC-only retest. RTC no longer PASS from clean OSF alone. Progress own NVS CRC/readback, explicit resume (same build/profile/recipe/calibration), completed evidence retained/labeled; outputs OFF and partial jobs not resumed. Autosave opt-in after save/bind/report, max1/min; explicit save before power-off. No erase.
+
+Live1.9.1 user sessionEB4CDCB2 has33 existing PASS/RTCUNVERIFIED, not Codex physical acceptance. Original sanitized state+CSV archived ignored build/rtc-legacy-original-v1_9_1.json/.csv; JSON17866 bytes SHA25699fe1e83761fa93e1fb157afc51bb68080e26e8479b8e23c7548b5d98768a8fb. Original operator empty, do not fabricate PIC. One-time explicit1.9.1 CRC-verified import bridge preserves these33 results after first upgrade, origin build/code traced; never force ordinary cross-build resume. Do not upload until original evidence safely saved and bridge tested.
+
+Build03:01:50Z is a compile CANDIDATE ONLY: source changed afterward for safety/legacy migration fixes. Never upload it. Need fresh final source-frozen Build-Firmware.ps1, metadata/legacy gates, API/actual60s tick and same-binary reboot/resume proof. Node prior regressions pass; additional RTC cases underway. No portal repo edits; portal integration/24h/physical battery acceptance pending. Read rules/version/current/task/readme/validation/handoff; feature baselinea20e067 clean/fetched, existing WiFi/pins/polarity/partition/calibration kept.
+
 # ST01..07 SOFTWARE/OTA DONE1.9.0
 
 Exact1.9.0/build00:17:08Z installed and MD5/serial verified. Recipes persisted across second same-binary OTA boot; old profiles/calibration retained. Node/Python14/portal2/QR independent decode, live recipe/report/laptop archive API PASS. Native browser/mobile/physical limitations and publication in CURRENT. No actual outputON/EEPROMWrite/PDrequest/radioApply.
