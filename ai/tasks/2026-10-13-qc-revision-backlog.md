@@ -1,3 +1,5 @@
+Module reset V2.40 COMPLETE1.13.0/build11:18:57Z OTA144 verified. Summary PIC/error focus + direct allDI/DO/module reset, real Radio reset/readback and reboot recovery verified; own34PASS/PCB0004/RTCquick1/raw analog+Modbus retained. Source397858b published beforeOTA; final docs-only feature checkpoint/no merge. See CURRENT for limits.
+
 Module reset V2.39 SOFTWARE COMPLETE1.13.0/build11:18:57Z; allDI/DO/module buttons, summary PIC and actionable errors tested. Actual144 offline/OTA NOT done; preserve25PASS/PCB0004/RTCquick1. Final feature publication and exact resume procedure in CURRENT.
 
 Module reset V2.37: source1.13.0 per-module reviewed reset implemented; software PASS, frozen build09:28:18Z pending. Preserve actual25PASS/PCB0004/RTCquick revision1 on144; exact1.12->1.13 resume. See CURRENT/MODULE_RESET.md for pending compile/OTA/runtime/reboot/publication.

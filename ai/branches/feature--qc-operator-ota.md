@@ -1,4 +1,4 @@
-CURRENT | V2.39 | 2026-10-15 | Codex | Source1.13.0/build11:18:57Z compile/gates/software/browser PREVIEW PASS; direct all-module/DI/DO reset + summary PIC + clickable error help | Target144 timeout; last installed1.12.0/C28C/sessionB6361F85/25PASS/PCB0004/RTCquick rev1 archived; feature publish now, OTA/upgrade/runtime/reboot pending reconnect
+CURRENT | V2.40 | 2026-10-15 | Codex | Installed1.13.0/build11:18:57Z on144/C28C; direct all-module/DI/DO reset + summary PIC/clickable error help; compile/software/live reset/reboot PASS | Own M1/sessionB6361F85/PCB0004/34PASS/0FAIL/4ignored, RTCquick rev1 and raw analog/Modbus exact/clean checkpoint; source397858b pushed beforeOTA, final docs-only push/no merge
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,22 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.40 | 2026-10-15 | Codex
+
+# Module reset / Operator / error navigation1.13.0 - installed and verified
+
+Installed via authorized app-only OTA192.168.1.44, original1.12.0 ->1.13.0/build2026-10-15T11:18:57Z /18:18:57 WIB. App1544496 bytes SHA256e58ac6ef069863e82df7c821ebe36d6456729ba07658029f56ba4293703bcb91; runtime/fileMD596356ffdcefeb5ff17cd31f0cc7dd20b. Source397858b published on feature/qc-operator-ota BEFORE OTA. HTTP200, same serialTMC88F1559CA28C/classicESP32-D0WD-V3, profiles/calibration/hash/build verified; no erase/pin/polarity/WiFi/partition change. Build metadata/legacy gates, Node UI/error/direct reset regressions, Python14, portal packaging2 and compiled dependency assertions PASS. No firmware edits after final build started.
+
+Owner reconnected after timeout and had rebooted1.12.0: own saved sessionB6361F85 now33PASS/1RadioFAIL/PCB0004/RTCquick revision1. Original checkpoint/state/CSV archived, same-build resume performed BEFORE upload then latest checkpoint saved again. Explicit approved1.12.0->1.13.0 upgrade/readback/resume preserved EVERY original PASS/FAIL/detail/PCB/session/RTC receipt. Older25PASS and other-unit34PASS are not current evidence. Negative actual API token403/confirm400/unknown400/session409/profile409/staleQCcode409/disabled409/RTC revision409 rejected without changing evidence.
+
+Actual installed browser: missing PIC error click focuses Operator field in Ringkasan QC; direct DI1 and DO1 buttons open exact one-channel reviews, then cancelled to preserve their existing PASS. All7 input/11LED/2DO and other module cards/summary reset controls present. Actual Radio FAIL reset confirmed: affected Radio communication+configuration; communication becomes BELUM DIUJI, configuration remains IGNORED BY PROFILE, reset receipt and checkpoint saved/readback; all original33 PASS/details unchanged. Then explicit READ & VALIDATE (no Apply config) obtained real E70 AT/version/channel CNCFG0 readback and communication PASS. WMCFG unreadable; configuration stays profile-ignored, no configuration/RF/coverage PASS claimed. Latest own unit now34PASS/0FAIL/0pending/4ignored/overallPASS. Operator remains empty for the real user to fill; no invented PIC/dates/Warranty report.
+
+Identical-binary second OTA reboot -> explicit same-build resume -> save/readback: all34 statuses/details, latest reset receipt, original RTCquick/revision1, PCB0004/sessionB6361F85 and clean checkpoint verified. Original pre-upgrade raw analog and Modbus evidence compare EXACT to final checkpoint; final fullQC CSV PCB0004 verified. No output ON, EEPROM write, PD request, radioApply or RTC/calendar write performed. Evidence ignored build/module-reset-pre*, -found-after-owner-reboot, -pre-upload*, -post-ota, -negative-checks, -radio-applied, -after-radio*, -verified.json/-final.csv. Installed UI screenshots module-reset-live-operator-v1_13_0.jpg, -live-do-review-v1_13_0.jpg, -final-v1_13_0.jpg; earlier preview screenshots are explicitly simulations.
+
+Usage: Ringkasan QC ->Operator/PIC; click error to open required field/module; Reset QC on the relevant card/DI/DO/LED or Summary ->Semua ->row ->review ->confirm. Reset affects the listed evidence; shared RS485+tags and Radio groups are explicit. Save progress before power-off and Resume before new session. RTC evidence reset blocks active run/tick and does not set time. Remaining physical limits: DI/DO destructive reset was software-tested plus live review/cancel, not cleared on this completed production session; real24h/battery/RF/voltage accuracy not certified. No Warranty import tested. Main35733ba unchanged/no merge; final docs-only publication follows, no rebuild/extra OTA required.
+
+
 
 ### V2.39 | 2026-10-15 | Codex
 

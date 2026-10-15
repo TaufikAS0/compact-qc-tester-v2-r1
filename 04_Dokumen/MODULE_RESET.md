@@ -17,3 +17,7 @@ Preserve current device results across this deliberate upgrade using ONLY explic
 ## Operator/error navigation and direct controls
 
 Operator/PIC input is in Ringkasan QC. Report page has an explicit focus link to it. Draft text survives polling; the existing report/new-session submission stores operator metadata, while entering text alone never resets QC. All validation/command/connection error banners are clickable and keyboard accessible, directing to the required field or related workflow; unknown failures direct to the current workflow for diagnosis. Server endpoint context selects the module when the message is generic. FAIL result badges open their module. Direct reset buttons appear on all seven input cards, eleven LED rows, both DO rows, every module result card and summary row. Review/Stop/context/RTC/run guards apply to every entry point.
+
+## Installed acceptance2026-10-15
+
+Final1.13.0/build11:18:57Z app-only OTA144/C28C verified. Original33PASS/1RadioFAIL preserved before deliberate reset. Actual Radio reset ->pending/checkpoint ->real AT/channel readback PASS, latest34PASS; ignored configuration stays ignored. Exact same-binary reboot/resume preserves latest receipt/all34/PCB0004/RTCquick rev1 and original analog/Modbus evidence. Live PIC-error focus and DI/DO review/cancel verified; DI/DO completed production results not cleared solely for UI proof. Build/software/API guards PASS; physical RF/accuracy/daily/battery acceptance separate. Source397858b pushed before OTA; final publication/current status in CURRENT.
