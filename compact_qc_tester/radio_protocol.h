@@ -12,7 +12,7 @@ constexpr int parse(std::string_view line,int index){
  if(index<0||index>=7)return -1;line=trim(line);if(!line.empty()&&line.front()=='+')line.remove_prefix(1);
  size_t at=0;while(at<line.size()&&line[at]!=':'&&line[at]!='='&&static_cast<unsigned char>(line[at])!=0xef)++at;
  if(at==line.size())return -1;auto label=trim(line.substr(0,at));
- if(!same(label,keys[index])&&!(index==0&&same(label,"Channel")))return -1;
+ if(!same(label,keys[index])&&!(index==0&&same(label,"Channel"))&&!(index==1&&same(label,"Mode")))return -1;
  if(static_cast<unsigned char>(line[at])==0xef){if(line.substr(at,3)!="\xef\xbc\x9a")return -1;at+=3;}else ++at;
  auto value=trim(line.substr(at));if(value.empty()||value.size()>5)return -1;int n=0;for(char c:value){if(c<'0'||c>'9')return -1;n=n*10+c-'0';}return n<=maxima[index]?n:-1;
 }

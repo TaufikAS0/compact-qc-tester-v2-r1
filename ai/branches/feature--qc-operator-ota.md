@@ -1,4 +1,4 @@
-CURRENT | V2.49 | 2026-10-16 | Codex | Owner Get/edit/Send+Get clarification and serial-only temporaryQC CSV implemented, UI PASS | final03:35:28Z build running after CSV String compile correction;144 reconnected same-build own6F614 resumed; OTA/rawradio verification pending
+CURRENT | V2.50 | 2026-10-16 | Codex | Actual WMCFG responds Mode:4, alias fix1.14.1 implemented/UI PASS | final03:40:40Z build running;1.14.0 installed/resumed, current6F61432PASS2FAIL pending newactualread; no writes/profile reset
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog

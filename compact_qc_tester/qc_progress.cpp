@@ -28,7 +28,7 @@ bool qcSaveProgress(String &why){
 bool qcResumeProgress(String &why,const String &upgradeFromBuild){
  if(qcProfileSelected()){why="Resume only before selecting a new session; do not overwrite active QC";return false;}
  bool upgrading=!upgradeFromBuild.isEmpty();
- if(upgrading&&(String(FW_VERSION)!="1.14.0"||upgradeFromBuild!="QC_BUILD=1.13.1|2026-10-15T11:36:34Z"||saved["buildIdentity"]!=upgradeFromBuild||rtcRunActive()||saved["rtcEvidence"]["clockRevision"].as<uint32_t>()!=rtcClockRevision())){why="Only explicit verified1.13.1 checkpoint upgrade without active run/clock change is allowed";return false;}
+ if(upgrading&&(String(FW_VERSION)!="1.14.1"||upgradeFromBuild!="QC_BUILD=1.14.0|2026-10-16T03:35:28Z"||saved["buildIdentity"]!=upgradeFromBuild||rtcRunActive()||saved["rtcEvidence"]["clockRevision"].as<uint32_t>()!=rtcClockRevision())){why="Only explicit verified1.14.0 checkpoint upgrade without active run/clock change is allowed";return false;}
  if(!idle()||savedSession.isEmpty()||saved["schema"]!="QC-PROGRESS-1"||saved["serial"].as<String>()!=unitSerial()||(!upgrading&&saved["buildIdentity"]!=FW_BUILD_ID)||saved["calibrationId"].as<uint32_t>()!=currentCalibrationId()){why="Checkpoint identity/build/calibration differs or unavailable; download saved evidence, do not mix";return false;}
  JsonDocument current;qcProfilesState(current.to<JsonObject>());qcRecipesState(current.as<JsonObject>());String profile=saved["profile"].as<String>();bool found=false;
  for(JsonObject p:current["profiles"].as<JsonArray>())if(p["id"]==profile&&p["revision"]==saved["profileRevision"])found=true;

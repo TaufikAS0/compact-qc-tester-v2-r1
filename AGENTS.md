@@ -1,3 +1,5 @@
+Radio1.14.1 actual root cause: E70V1.0 WMCFG replies Mode:4. Parse matching Mode alias ONLY index1 bounds0..4. Upgrade ONLY exact1.14.0/build2026-10-16T03:35:28Z->1.14.1. CURRENT V2.50 authoritative. Preserve own6F614; no profile reset/writes invented.
+
 Owner clarification2026-10-16: radio Get auto-fills actual stored values, no CPU defaults; Send+Get changed fields requires ACK/readback match. Actual completed read/write failure FAIL; stale context/cancel never PASS. Temporary fullQC CSV filename serial.csv both browser/server; content unchanged. See CURRENT V2.48 for final build/deployment.
 
 Radio1.14.0: read04_Dokumen/RADIO_WORKFLOW.md. Owner simple READ/EDIT/WRITE/READBACK. Keep stable radio test/profile IDs; partial read UNVERIFIED, draft mismatch not hardwareFAIL, read never writePASS. Only explicit changed fields + confirm/readId/context/preflight may write. Preserve current own144 session6F614ECF (NOT olderB6361F85); latest CURRENT authoritative. Upgrade ONLY exact1.13.1/build11:36:34Z->1.14.0.
