@@ -1,4 +1,4 @@
-CURRENT | V2.54 | 2026-10-16 | Codex | Actual GET waits/SEND enabled verified1.15.0; actual SEND responds bareOK, ACK parser fixed1.15.1/UI PASS | final04:18:24Z build running; current own6F614 radioFAIL/no falsePASS, unrelatedQC preserved; OTA/livecycle pending
+CURRENT | V2.55 | 2026-10-16 | Codex | Installed1.15.1/build04:18:24Z OTA144/C28C verified; actual GET waits -> confirmed SEND/OK/readback PASS -> reboot/resume PASS -> newGET waits verified | FINAL own6F61432PASS1FAIL1pending RADIO, SEND enabled; unrelatedQC exact/cleancheckpoint; no main merge
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,17 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.55 | 2026-10-16 | Codex - complete actual acceptance
+
+Installed1.15.1/build2026-10-16T04:18:24Z (11:18:24 WIB) via app-only OTA144/C28C. Compile/metadata/legacy gates PASS; app1557440 SHA256a02b1de193c17ffb982361ce443918fa36444cbaadd5b9f8b6cc49c10e92228a MD5bcbf71f24a6e0e168b2190e67e71c708, sketch1557289 bytes74%, staticRAM57672 bytes17%. Source5eccfcb feature pushed BEFORE OTA, exact runtime build/MD5/unit/profiles/calibration verified. No firmware edits after build start. No main merge/erase/profile revision or mask change.
+
+ACTUAL browser acceptance: upgraded narrow exact1.15.0->1.15.1, retained actual failed earlier transaction and ALL unrelated own6F614ECF M1rev3 results/evidence. GET ->MENUNGGU SEND (32PASS1FAIL1pending), SEND enabled despite legacy configOFF. Clicked Send+Get, review visibly scrolls into view, confirmed CNCFG0->0. Real TX AT+CNCFG=0 / RX OK, all7 GET readbacks valid, ACK mask1/write mask1/writeAttempted+writeVerified true ->cyclePASS (33PASS1FAIL). This tests real write ACK/readback, not changed-value or power-cycle persistence. All7 final settings identical to original; no factory defaults/autorestart/RF frames.
+
+Uploaded IDENTICAL final binary once more to test ESP soft-reboot/checkpoint recovery. Same-build explicit resume retained fullcyclePASS and receipt GET_SEND_GET_V1; ALL unrelated PASS/FAIL/details/rawanalog/Modbus/network/RTC/PCB/operator/reset/profile/calibration remained exact. This is checkpoint retention, not radio power-cycle certification. Then deliberately started a NEW GET through actual UI to prove oldPASS cannot carry into a new cycle: final MENUNGGU SEND, writeAttempted/writeVerified false, SEND ENABLED, totals32PASS1FAIL1pending; remaining pending is RADIO waiting operator SEND, existing DO2FAIL retained. Final checkpoint saved/readback clean. User can edit then Send+Get and confirm; no profile switch/reset needed.
+
+Node UI tests PASS (M1 SEND, GET-only pending, no-edit actualchannel resend/review, bothOFF, old Stop/stale guards); C++ cycle/ACK/Mode alias negative+positive assertions compiled PASS; earlier samecycle Python14 and portal2 PASS. Final live temporaryCSV HTTP200 serial-only filename/pcbNumber retained; Warranty format unchanged. Ignored evidence build/radio-cycle-* (1.15.0 realGET/oldACKfailure), build/radio-ack-* (1.15.1 migrated/get/pass/resumed/ready), screenshots radio-cycle-pass-v1_15_1.jpg and radio-cycle-ready-v1_15_1.jpg are REAL device, not preview. Final docs publication/parity only remains. No outputsON/RTC write/EEPROM/PD commands or test reset for unrelated modules.
+
 
 ### V2.54 | 2026-10-16 | Codex
 

@@ -1,3 +1,5 @@
+ACCEPTANCE1.15.1 CURRENT V2.55: actual GET alone MENUNGGU SEND, M1 SEND enabled, real SEND bareOK+GET verified PASS, samebuild reboot/resume retains valid cyclePASS. Final NEW GET intentionally waiting operator SEND:32PASS1FAIL1pending own6F614, all unrelated evidence preserved, checkpoint clean. Latest acceptance supersedes pending-build notes; no profile reset/mask changes.
+
 Radio1.15.1 actual E70 write ACK is bareOK; accept exact trimmed OK OR +OK, never substring/echo. GET-only still MENUNGGU SEND; both profile gates per1.15.0. Narrow upgrade ONLY1.15.0/build04:05:15Z->1.15.1. CURRENT V2.54 is actual status; realSEND failed old ACK parser, final verification pending.
 
 Owner correction1.15.0: SINGLE radio QC GET->SEND->GET; GET alone MENUNGGU SEND neverPASS. radio_comm enabled authorizes SEND even legacy radio_configOFF, bothOFF denies. No profile/mask reset. Read RADIO_WORKFLOW.md and CURRENT V2.52. Invalidate legacy read-only radioPASS on resume; preserve unrelated results. Narrow exact1.14.1/build03:40:40Z->1.15.0 upgrade.

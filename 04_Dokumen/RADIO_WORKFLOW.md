@@ -1,3 +1,5 @@
+Current acceptance:1.15.1/build2026-10-16T04:18:24Z installed144/C28C; actual GET->SEND/OK->GET PASS and checkpoint reboot/resume verified. Final fresh GET deliberately MENUNGGU SEND with SEND enabled for owner; unchanged currentchannel0 resend tested, changed-value/power-cycle/RF untested. See CURRENT V2.55.
+
 # Radio QC - GET -> SEND -> GET (1.15.1)
 
 Owner correction 2026-10-16 supersedes historical separate read-PASS/write-PASS semantics.
