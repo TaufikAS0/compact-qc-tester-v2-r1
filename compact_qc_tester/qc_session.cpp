@@ -15,6 +15,7 @@
 #include "qc_export.h"
 #include "serial_qc.h"
 #include "radio_qc.h"
+#include "radio_cycle.h"
 #include <Preferences.h>
 namespace {
 WebServer *web;
@@ -105,7 +106,7 @@ void reset() {
   for (const char *name : {"Modbus tag:1", "Modbus tag:2", "WiFi network", "Ethernet network", "MQTT"}) qcRecord(name, "BELUM DIUJI", "");
   qcRecord("RS485", "BELUM DIUJI", "Laptop USB-RS485; automatic direction confirmed by user");
   qcRecord("RS232", "BELUM DIUJI", "Laptop USB-RS232 QC protocol required");
-  qcRecord("Radio communication", "BELUM DIUJI", "E70-915NW14S UART AT readback");
+  qcRecord("Radio communication", "BELUM DIUJI", "GET -> SEND -> GET ulang diperlukan sebelum PASS");
   qcRecord("Radio configuration", "BELUM DIUJI", "Compare supported parameters; LoRa SF/BW/CR unsupported");
 }
 } // namespace
@@ -737,5 +738,9 @@ void qcRestoreProgress(JsonObjectConst d){
  for(size_t i=0;i<count;++i){String status=d["tests"][i]["status"].as<String>();if((status=="PASS"||status=="FAIL")&&items[i].name!="RTC"){items[i].status=status;items[i].detail=d["tests"][i]["detail"].as<String>();retained[i]=true;}}
  for(int i=0;i<7;++i){cycles[i]={};cycles[i].cycles=std::min(2u,d["cycles"][i].as<unsigned>());}
  for(int i=0;i<13;++i){int index=0;while(index<int(count)&&items[index].name!=outputName(i))++index;finalized[i]=index<int(count)&&retained[index]&&d["outputs"][i]["finalized"].as<bool>();onConfirmed[i]=finalized[i]&&d["outputs"][i]["onConfirmed"].as<bool>();offConfirmed[i]=finalized[i]&&d["outputs"][i]["offConfirmed"].as<bool>();live[i]=attempted[i]=false;}
- retainedEvidence.set(d["evidence"]);qcProgressDirty();
+ retainedEvidence.set(d["evidence"]);
+ const auto radio=d["evidence"]["radio"];
+ bool cycleProof=RadioCycle::resumable(radio["criterion"]|"",radio["writeVerified"]|false,radio["writeAttempted"]|false,radio["writeMask"]|0u,radio["ackedMask"]|0u);
+ if(!cycleProof){for(size_t i=0;i<count;++i)if(items[i].name.startsWith("Radio ")&&items[i].status=="PASS"){retained[i]=false;qcRecord(items[i].name,"BELUM DIUJI","Ulangi siklus GET -> SEND -> GET; bukti lama belum membuktikan siklus lengkap");}}
+ qcProgressDirty();
 }

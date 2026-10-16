@@ -1,4 +1,4 @@
-CURRENT | V2.51 | 2026-10-16 | Codex | Installed1.14.1/build03:40:40Z OTA144/C28C exactverified; Get all7 PASS, serial-only QC CSV actual browser download PASS | own6F61433PASS1FAIL preserved/cleancheckpoint; M1 writeOFF no physicalwrite; no main merge
+CURRENT | V2.52 | 2026-10-16 | Codex | Radio single GET_SEND_GET cycle1.15.0 implemented/UI PASS, final04:01:50Z build running | M1 SEND fixed without profile reset; old read-onlyPASS invalidated onlyradio; OTA/livecycle pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,15 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.52 | 2026-10-16 | Codex
+
+Owner correction: radio QC is ONE GET -> SEND -> GET cycle, GET-only MUST NOT PASS; SEND must be available on current M1 without resetting profile. Source1.15.0 replaces read-only PASS with MENUNGGU SEND. Actual acknowledged SEND plus all7 fresh reads and sent-key matching required for cyclePASS; errors FAIL, Stop/stale context noPASS. Radio communication now combinedcycle gate (old configOFF no longer blocks it); either existing radio switch permits cycle, bothOFF deny browser AND backend. Stable IDs/profile masks/revisions unchanged; legacy config result hidden in radio card, primary result labels fullcycle. No peer/RF test added.
+
+No draft change -> review explicitly resends ACTUAL read channel only (not factory/default), still sends AT write and requires +OK/readback; proves transaction, not changed-value persistence. Changed fields still selective/reviewed/context-guarded. New GET starts fresh cycle, clears write proof. Snapshot criterion GET_SEND_GET_V1; resume invalidates old read-only radioPASS only, keeps unrelated PASS/FAIL and actual radioFAIL; new valid cyclePASS may survive reboot with receipt. Narrow upgrade exact1.14.1/build03:40:40Z ->1.15.0 only, same unit/profile/recipe/calibration/clock guards. Static policy tests cover GET-only/ACK/mismatch/missing-read/resume receipt; Node UI tests M1 SEND without config switch, no-edit review sends actualchannel, bothOFF gate and previous Stop/stale controls PASS.
+
+Final frozen build1.15.0/build2026-10-16T04:01:50Z (11:01:50 WIB) running. Device144/C28C actual1.14.1 own6F614ECF33PASS1FAIL/outputsOFF/TPLready verified; latest backup beforeOTA required. Compile/sourcepush/OTA/resume/actual GET waiting+SEND ACK/readback/UI final verification pending. Preserve all unrelated results, no global reset/erase/profile change. Operator may edit parameters; bench check may resend actual channel preserving all final settings.
+
 
 ### V2.49 | 2026-10-16 | Codex
 

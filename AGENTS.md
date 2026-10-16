@@ -1,3 +1,5 @@
+Owner correction1.15.0: SINGLE radio QC GET->SEND->GET; GET alone MENUNGGU SEND neverPASS. radio_comm enabled authorizes SEND even legacy radio_configOFF, bothOFF denies. No profile/mask reset. Read RADIO_WORKFLOW.md and CURRENT V2.52. Invalidate legacy read-only radioPASS on resume; preserve unrelated results. Narrow exact1.14.1/build03:40:40Z->1.15.0 upgrade.
+
 ACCEPTANCE1.14.1: CURRENT V2.51 installed144/C28C build03:40:40Z; actual Get7PASS and serial.csv browser download verified; own6F61433PASS1FAIL preserved. M1 writeOFF, physicalwrite untested, no profile reset. Latest acceptance supersedes earlier pending-build notes.
 
 Radio1.14.1 actual root cause: E70V1.0 WMCFG replies Mode:4. Parse matching Mode alias ONLY index1 bounds0..4. Upgrade ONLY exact1.14.0/build2026-10-16T03:35:28Z->1.14.1. CURRENT V2.50 authoritative. Preserve own6F614; no profile reset/writes invented.

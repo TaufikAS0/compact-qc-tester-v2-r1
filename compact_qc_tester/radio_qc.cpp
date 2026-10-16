@@ -1,5 +1,6 @@
 #include "radio_qc.h"
 #include "radio_protocol.h"
+#include "radio_cycle.h"
 #include "config.h"
 #include "qc_hardware.h"
 #include "qc_session.h"
@@ -14,6 +15,7 @@ bool active=false,saved=false,entered=false,matchedEntry=false,applyConfig=false
 uint8_t oldDir=0,oldLatch=0,selectedMask=0,writtenMask=0,ackedMask=0;
 uint32_t at=0,readAt=0,readSequence=0;int stage=0,command=0,retries=0;
 int expected[7]={-1,-1,-1,-1,-1,-1,-1},actual[7],baseline[7],written[7];
+String getStatus="BELUM DIUJI";
 String line,version,commStatus="BELUM DIUJI",configStatus="BELUM DIUJI",radioDetail,trace[7],readId,readSession,readProfileRevision;
 using namespace RadioProtocol;
 void traceLine(const String &s){if(command<7&&trace[command].length()<450)trace[command]+=s.substring(0,120)+"\n";}
@@ -27,25 +29,22 @@ bool nextWrite(int from){for(command=from;command<7;++command)if(selectedMask&(1
 void beginQueries(){for(auto &n:actual)n=-1;command=0;retries=0;sendQuery();}
 void evaluate(){
  bool missing=false;String values;for(int i=0;i<7;++i){missing|=actual[i]<0;values+=String(" ")+keys[i]+"="+(actual[i]<0?String("BELUM TERBACA"):String(actual[i]));}
- commStatus=missing?"FAIL":"PASS";radioDetail="Baca parameter:"+values;
+ getStatus=missing?"GAGAL":"BERHASIL";commStatus=configStatus=RadioCycle::verdict(!missing,false,false,false);radioDetail="GET "+getStatus+":"+values;
  if(applyConfig&&preflight){
   for(int i=0;i<7;++i)if(selectedMask&(1<<i)){
-   if(actual[i]<0||actual[i]!=baseline[i]){configStatus="UNVERIFIED";radioDetail+="; setelan awal berubah/tidak terbaca: "+String(keys[i])+". Tidak ada parameter ditulis; baca dan tinjau ulang";exitMode();return;}
-   if(actual[i]==expected[i])selectedMask&=~(1<<i);
+   if(actual[i]<0||actual[i]!=baseline[i]){commStatus=configStatus="INCOMPLETE";radioDetail+="; setelan awal berubah/tidak terbaca: "+String(keys[i])+". Tidak ada parameter ditulis; baca dan tinjau ulang";exitMode();return;}
   }
   if(!selectedMask){configStatus="BELUM DIUJI";radioDetail+="; tidak ada perubahan, bukan bukti uji tulis";exitMode();return;}
-  preflight=false;nextWrite(0);return;
+  if(missing){commStatus=configStatus="FAIL";radioDetail+="; GET awal tidak lengkap; tidak menulis";exitMode();return;}
+  commStatus=configStatus="TESTING";preflight=false;nextWrite(0);return;
  }
  if(applyConfig){
   bool absent=false,different=false;for(int i=0;i<7;++i)if(selectedMask&(1<<i)){absent|=actual[i]<0;different|=actual[i]>=0&&actual[i]!=expected[i];}
-  writeVerified=!absent&&!different&&(ackedMask&selectedMask)==selectedMask;writtenMask=selectedMask;for(int i=0;i<7;++i)written[i]=expected[i];
-  configStatus=writeVerified?"PASS":"FAIL";
-  radioDetail+="; tulis+verifikasi hanya parameter yang diubah: ";for(int i=0;i<7;++i)if(selectedMask&(1<<i))radioDetail+=String(keys[i])+" ";
+  writeVerified=!missing&&!absent&&!different&&writeAttempted&&selectedMask&&(ackedMask&selectedMask)==selectedMask;writtenMask=selectedMask;for(int i=0;i<7;++i)written[i]=expected[i];
+  commStatus=configStatus=RadioCycle::verdict(!missing,writeAttempted,(ackedMask&selectedMask)==selectedMask,!absent&&!different);
+  radioDetail+="; SEND+GET parameter yang ditinjau: ";for(int i=0;i<7;++i)if(selectedMask&(1<<i))radioDetail+=String(keys[i])+" ";
   radioDetail+="; ACK dan baca ulang diperlukan. Belum uji simpan setelah power-cycle; beberapa setelan perlu restart";
- }else if(writeVerified){
-  bool absent=false,different=false;for(int i=0;i<7;++i)if(writtenMask&(1<<i)){absent|=actual[i]<0;different|=actual[i]>=0&&actual[i]!=written[i];}
-  configStatus=(absent||different)?"FAIL":"PASS";if(absent||different)writeVerified=false;
- }else{configStatus="BELUM DIUJI";radioDetail+="; belum uji tulis. Perbedaan draft bukan kegagalan hardware";}
+ }else{writeVerified=false;radioDetail+=missing?"; GET gagal, periksa respons mentah":"; GET berhasil belum PASS QC: MENUNGGU SEND dan GET ulang yang cocok";}
  ++readSequence;readId=String(readSequence)+"-"+qcSessionId();readSession=qcSessionId();readProfileRevision=String(activeQcProfileRevision());readAt=millis();
  radioDetail+="; bukan uji RF/jangkauan";exitMode();
 }
@@ -58,10 +57,10 @@ void consumeLine(){
 }
 }
 bool radioQcActive(){return active;}
-void resetRadioQc(){if(active)return;commStatus=configStatus="BELUM DIUJI";radioDetail=version=readId="";writeAttempted=writeVerified=false;writtenMask=ackedMask=0;for(int i=0;i<7;++i){actual[i]=-1;trace[i]="";}}
+void resetRadioQc(){if(active)return;getStatus="BELUM DIUJI";commStatus=configStatus="BELUM DIUJI";radioDetail=version=readId="";writeAttempted=writeVerified=false;writtenMask=ackedMask=0;for(int i=0;i<7;++i){actual[i]=-1;trace[i]="";}}
 void cancelRadioQc(const char *reason){if(!active)return;commStatus=configStatus="INCOMPLETE";writeVerified=false;radioDetail=reason;radio.print("AT+EXIT\r\n");finish();}
 void radioQcState(JsonObject out){
- out["schema"]="QC-RADIO-2";out["active"]=active;out["model"]="E70-915NW14S";out["technology"]="CC1310 / 15.4 star (not LoRa)";
+ out["schema"]="QC-RADIO-3";out["criterion"]=RadioCycle::CRITERION;out["getStatus"]=getStatus;out["cycleStatus"]=commStatus;out["active"]=active;out["model"]="E70-915NW14S";out["technology"]="CC1310 / 15.4 star (not LoRa)";
  out["communication"]=commStatus;out["configuration"]=configStatus;out["detail"]=radioDetail;out["versionResponse"]=version;
  out["readId"]=readId;out["readSessionId"]=readSession;out["readProfileRevision"]=readProfileRevision;out["readAgeMs"]=readId.length()?millis()-readAt:0;out["operation"]=applyConfig?"WRITE_VERIFY":"READ";
  out["writeAttempted"]=writeAttempted;out["writeVerified"]=writeVerified;out["writeMask"]=writtenMask;out["ackedMask"]=ackedMask;out["stage"]=stage;
@@ -77,13 +76,13 @@ void beginRadioQc(WebServer &web,bool (*authorize)(),void (*stop)()){
    mask|=1<<i;String value=web.arg(keys[i]);if(value.isEmpty()||value.length()>5)valid=false;for(char c:value)if(c<'0'||c>'9')valid=false;next[i]=value.toInt();if(next[i]>maxima[i]||actual[i]<0)valid=false;}
   JsonDocument calibration;calibrationState(calibration.to<JsonObject>());
   if(active||webOtaBusy()||pdNegotiating()||currentQcBusy()||calibration["pending"].as<int>()>=0)d["error"]="Tunggu radio/OTA/PD/capture selesai";
-  else if(writing&&(!qcTestEnabled("Radio configuration")||web.arg("confirm")!="1"||web.arg("sessionId")!=qcSessionId()||web.arg("profileRevision")!=String(activeQcProfileRevision())||readSession!=qcSessionId()||readProfileRevision!=String(activeQcProfileRevision())||readId.isEmpty()||web.arg("readId")!=readId||millis()-readAt>300000))d["error"]="Baca parameter terbaru dan tinjau/konfirmasi tulis; sesi/profil/readId berubah atau kedaluwarsa";
+  else if(writing&&((!qcTestEnabled("Radio communication")&&!qcTestEnabled("Radio configuration"))||web.arg("confirm")!="1"||web.arg("sessionId")!=qcSessionId()||web.arg("profileRevision")!=String(activeQcProfileRevision())||readSession!=qcSessionId()||readProfileRevision!=String(activeQcProfileRevision())||readId.isEmpty()||web.arg("readId")!=readId||millis()-readAt>300000))d["error"]="Baca parameter terbaru dan tinjau/konfirmasi tulis; sesi/profil/readId berubah atau kedaluwarsa";
   else if(!valid||(writing&&!mask))d["error"]="Parameter tulis tidak valid/belum terbaca atau tidak ada perubahan";
   else{
    stop();qcRetest("Radio communication");qcRetest("Radio configuration");readId="";
    for(int i=0;i<7;++i){baseline[i]=actual[i];expected[i]=next[i];trace[i]="";actual[i]=-1;}
    applyConfig=writing;preflight=writing;selectedMask=mask;ackedMask=0;writeAttempted=false;
-   commStatus="TESTING";if(writing){configStatus="TESTING";writeVerified=false;}else if(!writeVerified)configStatus="BELUM DIUJI";
+   commStatus=configStatus="TESTING";getStatus="MEMBACA";writeVerified=false;writtenMask=0;
    radioDetail=writing?"Baca ulang setelan awal sebelum menulis perubahan":"Baca parameter tersimpan; tidak menulis setelan";publish();
    uint8_t bank,gpio=0,dir=0;
    if(!qcReadReg(MCP1_ADDR,0x0a,&bank,1)||(bank&0xa0)||!qcReadReg(MCP1_ADDR,0x01,&oldDir,1)||!qcReadReg(MCP1_ADDR,0x15,&oldLatch,1))d["error"]="Pemetaan mode MCP1 tidak tersedia";
@@ -101,7 +100,7 @@ void updateRadioQc(){
  if(stage==0&&now-at>=200){radio.write(uint8_t(0));stage=1;at=now;}
  else if(stage==1&&now-at>=120){radio.print("+++");stage=2;at=now;}
  else if(stage==2){if(matchedEntry){entered=true;beginQueries();}else if(now-at>=1500){commStatus="FAIL";configStatus="UNVERIFIED";radioDetail="Tidak ada respons Enter AT Mode; periksa daya/UART/pin mode. Tidak ada setelan ditulis";exitMode();}}
- else if(stage==5){if(ack){ackedMask|=1<<command;if(!nextWrite(command+1))beginQueries();}else if(commandError||now-at>=1500){configStatus="FAIL";radioDetail="Tulis ditolak/timeout pada "+String(keys[command])+"; sebagian perubahan sebelumnya mungkin tersimpan. Baca ulang sebelum melanjutkan";exitMode();}}
+ else if(stage==5){if(ack){ackedMask|=1<<command;if(!nextWrite(command+1))beginQueries();}else if(commandError||now-at>=1500){commStatus=configStatus="FAIL";radioDetail="Tulis ditolak/timeout pada "+String(keys[command])+"; sebagian perubahan sebelumnya mungkin tersimpan. Baca ulang sebelum melanjutkan";exitMode();}}
  else if(stage==3&&((command<7&&actual[command]>=0)||now-at>=1500)){
   if(line.length())consumeLine();if(command<7&&actual[command]<0&&retries==0){++retries;sendQuery();return;}
   retries=0;if(++command<=7)sendQuery();else evaluate();

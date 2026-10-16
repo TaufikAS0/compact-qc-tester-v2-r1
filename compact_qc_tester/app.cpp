@@ -96,8 +96,7 @@ bool authorized() {
     const String kind=server.arg("kind");
     test=kind=="wifi"?"WiFi network":kind=="ethernet"?"Ethernet network":kind=="mqtt"?"MQTT":"";
   } else if(uri=="/api/radio/start") {
-    if(server.arg("apply")=="1") test="Radio configuration";
-    else if(!qcTestEnabled("Radio configuration")) test="Radio communication";
+    test=qcTestEnabled("Radio communication")?"Radio communication":"Radio configuration";
   } else if(uri=="/api/output" && server.arg("state")!="off") {
     test=(server.arg("kind")=="led"?String("LED:"):String("Relay:"))+server.arg("index");
   } else if(uri=="/api/qc/confirm") {
