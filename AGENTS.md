@@ -1,3 +1,5 @@
+Modal1.16.0 owner instruction: ALL existing confirmation/review panels use centered native dialogs (general AND PD); no scroll/page jump, Batal/Escape no mutation, keyboard loop, Stop accessible in popup. Preserve all actual33PASS1FAIL own6F614 incl valid radioPASS; no newGET/radio reset for UI tests. Upgrade ONLY exact1.15.1/build04:18:24Z->1.16.0. CURRENT V2.56 tracks finalbuild06:31:10Z;06:28 candidate cancelled.
+
 ACCEPTANCE1.15.1 CURRENT V2.55: actual GET alone MENUNGGU SEND, M1 SEND enabled, real SEND bareOK+GET verified PASS, samebuild reboot/resume retains valid cyclePASS. Final NEW GET intentionally waiting operator SEND:32PASS1FAIL1pending own6F614, all unrelated evidence preserved, checkpoint clean. Latest acceptance supersedes pending-build notes; no profile reset/mask changes.
 
 Radio1.15.1 actual E70 write ACK is bareOK; accept exact trimmed OK OR +OK, never substring/echo. GET-only still MENUNGGU SEND; both profile gates per1.15.0. Narrow upgrade ONLY1.15.0/build04:05:15Z->1.15.1. CURRENT V2.54 is actual status; realSEND failed old ACK parser, final verification pending.

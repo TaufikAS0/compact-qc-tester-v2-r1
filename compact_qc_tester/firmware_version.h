@@ -1,5 +1,5 @@
 #pragma once
-constexpr char FW_VERSION[] = "1.15.1";
+constexpr char FW_VERSION[] = "1.16.0";
 #include "build_metadata.h"
 #include <string_view>
 static_assert(std::string_view(FW_VERSION) == FW_BUILD_VERSION,

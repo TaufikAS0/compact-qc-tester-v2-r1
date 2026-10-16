@@ -1,4 +1,4 @@
-CURRENT | V2.55 | 2026-10-16 | Codex | Installed1.15.1/build04:18:24Z OTA144/C28C verified; actual GET waits -> confirmed SEND/OK/readback PASS -> reboot/resume PASS -> newGET waits verified | FINAL own6F61432PASS1FAIL1pending RADIO, SEND enabled; unrelatedQC exact/cleancheckpoint; no main merge
+CURRENT | V2.56 | 2026-10-16 | Codex | Confirmation modals1.16.0 implemented/Node+preview browser PASS; final06:31:10Z build running | restored actual own6F61433PASS1FAIL inclradio; preserve ALL evidence; sourcepush/OTA/actualcancel checks pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,15 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.56 | 2026-10-16 | Codex
+
+Owner requests ALL existing review/confirmation panels become centered popups, plus GitHub push and OTA. Source1.16.0 converts shared changeReview (radio/session/profile/preset/PCB/report/RTC/checkpoint/module-reset/guided-start) AND PD review to native modal dialog. Common-root placement avoids hidden section ancestry. Dim/blur backdrop, bounded scrolling content, body scroll lock, page inert, safe Batal focus, Escape/Batal discard, Tab/Shift+Tab wrap inside dialog, original trigger focus restored. Stop output remains accessible INSIDE each popup. Only one review at a time; navigation/disconnect/context/Stop guards retained. No scrollIntoView on confirmation. Existing direct observations remain direct; no extra confirmation stage added.
+
+Node UI PASS including previous radio/RTC/metadata/reset/profile/PD guards plus modal open/cancel/focus/keyboard/Stop/navigation. Real LOCAL PREVIEW browser confirms general+PD dialogs centered; page scroll445 unchanged across opening and focus returns to selectDevice; PD Tab now wraps to modalPdStop, Escape/Batal closes, no PD commands/hardware. First compile06:28:26Z cancelled for explicit keyboard wrap improvement, NEVER upload. Final frozen1.16.0/build2026-10-16T06:31:10Z (13:31:10 WIB) running; no later firmware edits.
+
+Actual144/C28C1.15.1 had rebooted/unselected; found exact same-unit/build saved6F614ECF M1rev3 fullcycle radioPASS. Archived checkpoint BEFORE explicit same-build resume; current33PASS1FAIL0pending restored and backed up ignored build/modal-*. Preserve CURRENT actual baseline (not prior intentional waiting result from1.15.1 task). No radio GET/SEND/reset or profile changes for visual tests. New narrow upgrade ONLY exact1.15.1/build04:18:24Z->1.16.0, same unit/profile/recipe/calibration/RTC revision. Compile/sourcepush/OTA/resume/full ALL verdict+raw radio evidence preservation/actual modal cancel-only visual acceptance pending. Never mark hardwarePASS from preview.
+
 
 ### V2.55 | 2026-10-16 | Codex - complete actual acceptance
 

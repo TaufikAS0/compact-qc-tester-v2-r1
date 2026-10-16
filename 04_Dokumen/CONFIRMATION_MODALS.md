@@ -1,0 +1,11 @@
+# Confirmation popups - 1.16.0
+
+All existing reviewed actions use a centered native HTML dialog without navigating or scrolling the underlying page. Shared changeReview covers radio writes, sessions, profile/preset edits, PCB metadata, reports, RTC writes/retests, checkpoint save/resume, module resets and guided sequence start. Dedicated PD review uses the same modal layout and cancellation rules. Existing direct sensor/output observations do not acquire an extra approval step.
+
+Dialog showModal puts content in browser top layer and makes the background inert. Batal gets initial focus; Escape or Batal discards review and returns focus to the original trigger. Explicit Tab/Shift+Tab wrap keeps keyboard controls in the popup. Background scrolling locked only while a dialog is open; viewport/page location does not change. Long content stays within bounded viewport height; buttons remain usable. Dedicated Stop output button in each dialog invokes the existing priority Stop path and cancels the review. No mutation is sent on opening/cancelling a dialog.
+
+General and PD reviews are mutually exclusive. Existing stale session/profile/draft/readId/RTC revision, Stop/epoch, disconnect and pre-confirm refresh guards remain; navigation now also discards open reviews. Confirm still executes the same action with the same explicit parameters. No QC criteria, hardware mapping, stored profiles, calibration, metadata/CSV schema or output timing changed.
+
+Narrow checkpoint upgrade: exact1.15.1/build2026-10-16T04:18:24Z ->1.16.0 only, retaining same-unit/profile/recipe/calibration/RTC guards. ALL completed results, including valid radio full-cycle PASS, retained. No fresh radio GET/SEND/reset required merely to verify presentation; use reset review then Batal to preserve evidence.
+
+Software validation uses meaningful open/review/Escape/focus/Tab/Stop/navigation and existing pre-confirm race regressions. Visual local preview covers general and PD only, never physical QC. On actual target verify popup open/cancel and unchanged page position, then compare all prior results/details and raw evidence against latest pre-OTA backup. M1 PD remains OFF; never perform PD/RTC/radio writes or resets just to test a popup. See CURRENT for exact installed build and real acceptance.
