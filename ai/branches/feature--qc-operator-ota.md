@@ -1,4 +1,4 @@
-CURRENT | V2.62 | 2026-10-16 | Codex |1.17.1/build12:07:18Z OTA79/CA478 verified;34PASS checkpoint retained; laterPOWERON/currentUNSELECTED owner query pending;12h logger+30min heartbeat ACTIVE; no further radio bench
+CURRENT | V2.63 | 2026-10-16 | Codex |1.17.1 unchanged; owner confirms twoPOWERON manual/power-unplug; existing12h logger active until17Oct~07:12WIB, heartbeat10min+bounded QC HTTP probes; overnight acceptance pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,15 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.63 | 2026-10-16 | Codex - owner confirms power events; extend QC connectivity checks
+
+User confirms first restart was manual and power was accidentally unplugged for next event. Two POWERON detections19:12:39/19:21:15WIB are explained power events (sample timestamps, exact power interruption time unknown), not proven RF failure. Raw evidence retained; DO NOT automatically attribute all HTTP timeouts to power. Before19:40WIB baseline logger56samples/53success/3timeouts, no consecutive failure, maxHTTP4891ms, maxloop10148ms, STA disconnect0. Firmware1.17.1 unchanged; no hardware/network stabilityPASS.
+
+User explicitly requests continued test/automation until tomorrow. Existing logger PID14988 verified active, NOT duplicated/restarted;12h window19:11:39WIB16Oct->~07:11:39WIB17Oct. Existing pantau-compact-qc-semalaman heartbeat UPDATED ACTIVE30->10minutes, same thread, reads annotated operator-events, suppresses repeat alerts for historical explained resets, evaluates NEW faults after19:40WIB, final morning summary then disable itself. Laptop/device must remain ON/LAN. No further radio tests, POST/output/RTC/QC mutations/OTA allowed by monitoring.
+
+Added tools/qc-http-check.py: bounded GET-only2health+3state at normal1.5s operator cadence,5s timeout,512KB response bound, exactserial check, private JSON discarded/whitelist only. Append sanitized build/network-overnight/http-qc-checks.jsonl; no periodic worker duplication. Live19:41WIB test3/3state successful93/156/641ms, health16/32ms, sameCA478/build12:07:18Z, outputOFF, disconnect0. Python syntax validation PASS. These are momentary HTTP responsiveness results, not overnight acceptance or physical QC proof. No firmware rebuild/version bump/upload for this laptop-only helper. All changes on feature branch, no merge. Final publication/parity follows.
+
 
 ### V2.62 | 2026-10-16 | Codex -1.17.1 OTA and monitoring active
 
