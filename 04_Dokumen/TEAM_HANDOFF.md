@@ -1,3 +1,9 @@
+### V2.54 | 2026-10-16 | Codex
+
+Actual1.15.0/build04:05:15Z compile PASS app1557408 SHA2560ce062d1f15cd8bf20925cb7eb1cc2e87f936256574153f267bc617d885018f8; source18cd46a published BEFORE app-only OTA144/C28C HTTP200, exact runtime/MD5/profiles/calibration verified. Explicit resume invalidated ONLY legacy read-only radioPASS ->32PASS1FAIL1pending; all unrelated evidence retained. Real browser GET ->MENUNGGU SEND and SEND ENABLED on M1 with unchanged old configOFF. Review scrolls into view, currentchannel0->0 confirmed through actual web. Real module wrote reply bare OK (not +OK); strict old parser rejected it ->cycleFAIL, correctly noPASS. Diagnostics captured TX AT+CNCFG=0 / RX OK; final settings unchanged, no RF/output/RTC writes.
+
+Patch1.15.1 accepts ONLY exact trimmed OK or +OK; parameter parser still rejects bareOK as data; negative ACK echo/substring tests retained. All7 readbacks+sent-key matching still mandatory. New narrow upgrade exact1.15.0/build04:05:15Z->1.15.1 only. Node UI PASS. Final frozen1.15.1/build2026-10-16T04:18:24Z (11:18:24 WIB) running; no later firmware edits. Current own6F61432PASS2FAIL, radioFAIL explicit transaction until GET retest. Final compile/sourcepush/OTA/resume/repeatactualSEND/receipt persistence/finalfreshGET readiness pending. No invented changed parameter target.
+
 ### V2.53 | 2026-10-16 | Codex
 
 Radio SEND review now scrolls confirmation into view (previous panel above fold made clicks appear ineffective). Node UI PASS. Candidate04:01:50Z cancelled before completion; NEVER upload. New final frozen1.15.0/build2026-10-16T04:05:15Z running; helper gates this exact timestamp only. Source44237b0 published; this final UI fix pending publication. Own6F61433PASS1FAIL backup saved; actualGET/SEND/GET acceptance pending finalcompile/OTA.

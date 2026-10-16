@@ -13,3 +13,5 @@ static_assert(RadioProtocol::parse("WMCFG:5",1)==-1);
 static_assert(RadioProtocol::parse("WMCFG:4junk",1)==-1);
 static_assert(RadioProtocol::parse("TMCFG:4",1)==-1);
 static_assert(RadioProtocol::writeAck("+OK\r")&&!RadioProtocol::writeAck("NOT+OK")&&!RadioProtocol::writeAck("AT+CNCFG=+OK"));
+static_assert(RadioProtocol::writeAck("\r OK \n")); // Actual E70_V1.0 ACK.
+static_assert(!RadioProtocol::writeAck("NOT OK")&&!RadioProtocol::writeAck("AT+CNCFG=OK"));

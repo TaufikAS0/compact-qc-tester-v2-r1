@@ -16,5 +16,5 @@ constexpr int parse(std::string_view line,int index){
  if(static_cast<unsigned char>(line[at])==0xef){if(line.substr(at,3)!="\xef\xbc\x9a")return -1;at+=3;}else ++at;
  auto value=trim(line.substr(at));if(value.empty()||value.size()>5)return -1;int n=0;for(char c:value){if(c<'0'||c>'9')return -1;n=n*10+c-'0';}return n<=maxima[index]?n:-1;
 }
-constexpr bool writeAck(std::string_view line){return trim(line)=="+OK";}
+constexpr bool writeAck(std::string_view line){return trim(line)=="+OK"||trim(line)=="OK";}
 }
