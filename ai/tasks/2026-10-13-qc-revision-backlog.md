@@ -1,3 +1,9 @@
+### V2.48 | 2026-10-16 | Codex
+
+Owner clarified Get uses actual stored module parameters, never CPU defaults; automatic form fill after completed fresh Get, polling preserves edits. Send+Get reviews only changed fields, requires ACK and matching readback; observed read/write transaction failure is FAIL, stale context/cancellation remains incomplete/unverified and never PASS. No peer/RF QC performed. Existing Radio configuration switch still respected (current M1 OFF), no automatic profile reset. Temporary QC CSV now serial-only filename in browser AND HTTP header; content/columns/PCB retained, Warranty unchanged. UI tests include auto-fill/draft retention and serial-only temporary CSV filename, PASS.
+
+Owner reconnected144/C28C: installed1.13.1; reboot left profile unselected but own6F614ECF checkpoint intact. Explicit same-build resume HTTP200 restored current own session (never oldPCB0004/sessionB6361F85). Fresh pre-upload archive required. Final revised build1.14.0/build2026-10-16T03:33:19Z started, source frozen. Earlier03:21/03:29 artifacts superseded/NEVER upload. Final compile/push/OTA/resume/read/rawWMCFG diagnosis pending. No desired target values authorized: operator edits through web; do not invent channel10 write.
+
 Radio V2.44: source1.14.0 simple read/edit/write/readback + raw strict parser, stable IDs. Build03:09:28Z pending/software PASS. Latest current144/C28C session6F614ECF/PCBempty/32PASS1FAIL1pending archived. Preserve old results; no actual radio writes until desired values known. See CURRENT/RADIO_WORKFLOW.md.
 
 Warranty FAIL V2.43 COMPLETE1.13.1/build11:36:34Z OTA144 verified; actualFAIL export200 preservesFAIL, exact10/serial.csv, date/PIC guards. Original33PASS1FAIL/PCB0004/session/RTC1/raw evidence preserved. Source57448f8 pushed beforeOTA, final docs-only feature publication/no merge. See CURRENT.

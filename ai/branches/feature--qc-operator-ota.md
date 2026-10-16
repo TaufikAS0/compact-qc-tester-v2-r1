@@ -1,4 +1,4 @@
-CURRENT | V2.46 | 2026-10-16 | Codex | Source1.14.0/build03:21:30Z compile/gates/software PASS; radio phased workflow/strict parser/raw diagnostics | Publish feature then OTA144/C28C/exact1.13.1 resume/preserve own6F614ECF/actual READ rawWMCFG; M1 writeOFF and desired-channel reply pending
+CURRENT | V2.48 | 2026-10-16 | Codex | Owner Get/edit/Send+Get clarification and serial-only temporaryQC CSV implemented, UI PASS | final03:33:19Z build running;144 reconnected same-build own6F614 resumed; OTA/rawradio verification pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,18 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.48 | 2026-10-16 | Codex
+
+Owner clarified Get uses actual stored module parameters, never CPU defaults; automatic form fill after completed fresh Get, polling preserves edits. Send+Get reviews only changed fields, requires ACK and matching readback; observed read/write transaction failure is FAIL, stale context/cancellation remains incomplete/unverified and never PASS. No peer/RF QC performed. Existing Radio configuration switch still respected (current M1 OFF), no automatic profile reset. Temporary QC CSV now serial-only filename in browser AND HTTP header; content/columns/PCB retained, Warranty unchanged. UI tests include auto-fill/draft retention and serial-only temporary CSV filename, PASS.
+
+Owner reconnected144/C28C: installed1.13.1; reboot left profile unselected but own6F614ECF checkpoint intact. Explicit same-build resume HTTP200 restored current own session (never oldPCB0004/sessionB6361F85). Fresh pre-upload archive required. Final revised build1.14.0/build2026-10-16T03:33:19Z started, source frozen. Earlier03:21/03:29 artifacts superseded/NEVER upload. Final compile/push/OTA/resume/read/rawWMCFG diagnosis pending. No desired target values authorized: operator edits through web; do not invent channel10 write.
+
+
+### V2.47 | 2026-10-16 | Codex
+
+Source7650e7b pushed. OTA attempt failed on initial GET/api/state timeout BEFORE any upload/save/mutation; dependent resume/verify/read probes also timed out, no runtime1.14 acceptance. Asked owner to reconnect/provide IP. Local browser preview found button layout order1/3/2 confusing; final small HTML correction orders1/2/3 in one toolbar. Fresh final build required;03:21:30Z artifact now superseded/NEVER upload. Last installed remains1.13.1, own6F614ECF baseline archived. WMCFG cause still unverified until actual raw reply; writes not performed.
+
 
 ### Radio V2.46 | 2026-10-16 | Codex
 

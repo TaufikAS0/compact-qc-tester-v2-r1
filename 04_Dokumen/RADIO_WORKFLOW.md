@@ -1,3 +1,9 @@
+### V2.48 | 2026-10-16 | Codex
+
+Owner clarified Get uses actual stored module parameters, never CPU defaults; automatic form fill after completed fresh Get, polling preserves edits. Send+Get reviews only changed fields, requires ACK and matching readback; observed read/write transaction failure is FAIL, stale context/cancellation remains incomplete/unverified and never PASS. No peer/RF QC performed. Existing Radio configuration switch still respected (current M1 OFF), no automatic profile reset. Temporary QC CSV now serial-only filename in browser AND HTTP header; content/columns/PCB retained, Warranty unchanged. UI tests include auto-fill/draft retention and serial-only temporary CSV filename, PASS.
+
+Owner reconnected144/C28C: installed1.13.1; reboot left profile unselected but own6F614ECF checkpoint intact. Explicit same-build resume HTTP200 restored current own session (never oldPCB0004/sessionB6361F85). Fresh pre-upload archive required. Final revised build1.14.0/build2026-10-16T03:33:19Z started, source frozen. Earlier03:21/03:29 artifacts superseded/NEVER upload. Final compile/push/OTA/resume/read/rawWMCFG diagnosis pending. No desired target values authorized: operator edits through web; do not invent channel10 write.
+
 # Radio QC workflow1.14.0
 
 One radio panel, two explicit pieces of evidence. Existing stable test IDs/names Radio communication and Radio configuration remain for profile/report compatibility; UI labels them Baca parameter and Tulis + verifikasi. A legacy communication PASS only proved AT entry/channel; its historical checkpoint must not be presented as a new seven-parameter test.

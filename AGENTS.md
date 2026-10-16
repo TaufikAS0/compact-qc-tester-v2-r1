@@ -1,3 +1,5 @@
+Owner clarification2026-10-16: radio Get auto-fills actual stored values, no CPU defaults; Send+Get changed fields requires ACK/readback match. Actual completed read/write failure FAIL; stale context/cancel never PASS. Temporary fullQC CSV filename serial.csv both browser/server; content unchanged. See CURRENT V2.48 for final build/deployment.
+
 Radio1.14.0: read04_Dokumen/RADIO_WORKFLOW.md. Owner simple READ/EDIT/WRITE/READBACK. Keep stable radio test/profile IDs; partial read UNVERIFIED, draft mismatch not hardwareFAIL, read never writePASS. Only explicit changed fields + confirm/readId/context/preflight may write. Preserve current own144 session6F614ECF (NOT olderB6361F85); latest CURRENT authoritative. Upgrade ONLY exact1.13.1/build11:36:34Z->1.14.0.
 
 Owner decision2026-10-15 / Warranty1.13.1: PASS OR FAIL may export Warranty; qcStatus MUST remain actual, no forced PASS. INCOMPLETE/busy/ON still blocked, exact10/noPCB/serial.csv unchanged. This supersedes historical PASS-only instructions below. Current upgrade exception ONLY exact1.13.0/build11:18:57Z->1.13.1 same unit; preserve all current evidence. See WARRANTY_CSV.md/CURRENT.
