@@ -1,3 +1,5 @@
+Acceptance2026-10-16:1.16.0/build06:31:10Z installed144/C28C. Actual radio reset REVIEW and checkpoint REVIEW open/cancel tests pass; scroll2101 unchanged, Batal focus/Tab wrap/Escape/return focus verified. ALL33PASS1FAIL/raw evidence inclradioCNCFG1 preserved. PD visually tested on local preview only; no physical commands. See CURRENT V2.57.
+
 # Confirmation popups - 1.16.0
 
 All existing reviewed actions use a centered native HTML dialog without navigating or scrolling the underlying page. Shared changeReview covers radio writes, sessions, profile/preset edits, PCB metadata, reports, RTC writes/retests, checkpoint save/resume, module resets and guided sequence start. Dedicated PD review uses the same modal layout and cancellation rules. Existing direct sensor/output observations do not acquire an extra approval step.

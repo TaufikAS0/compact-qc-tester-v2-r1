@@ -1,4 +1,4 @@
-CURRENT | V2.56 | 2026-10-16 | Codex | Confirmation modals1.16.0 implemented/Node+preview browser PASS; final06:31:10Z build running | restored actual own6F61433PASS1FAIL inclradio; preserve ALL evidence; sourcepush/OTA/actualcancel checks pending
+CURRENT | V2.57 | 2026-10-16 | Codex | Installed1.16.0/build06:31:10Z OTA144/C28C verified; centered popup/cancel/Escape/Tab/scroll2101 actual checks PASS | own6F61433PASS1FAIL0pending inclradioCNCFG1 ALL evidence preserved/cleancheckpoint; no main merge; user Ctrl+F5
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,17 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.57 | 2026-10-16 | Codex - popup OTA complete
+
+Installed1.16.0/build2026-10-16T06:31:10Z (13:31:10 WIB) app-only OTA144/C28C HTTP200; exact runtime build/MD5/unit/profiles/calibration verified. Source8b91818 feature pushed BEFORE OTA. Compile/metadata/legacy gates PASS; app1559536 SHA256b13a33eaada3a52e28a7eca0da0c5dbc578f92a9cee6ec156066745bc030e75c MD576067848314b534a5e48afc2ac56d231, sketch1559385 bytes74%, staticRAM57672 bytes17%. No firmware source edits after final build start; cancelled06:28 candidate NEVER uploaded. No main merge/erase/profile or hardware mapping changes.
+
+Explicit exact1.15.1->1.16.0 checkpoint resume; preserved own6F614ECF M1rev3 ALL33PASS1FAIL0pending, including actual fullcycle radioPASS with stored CNCFG1 (never restore olderchannel0/waiting evidence). Compared EVERY prior PASS/FAIL/detail, all analog/Modbus/network/serial/radio raw evidence, RTC quick/revision, session/operator/PCB/lastReset/profiles/calibration; checkpoint clean before and AFTER modal tests. No fresh radio GET/SEND/reset, no RTC/PD/EEPROM/outputON commands for UI testing.
+
+ACTUAL browser on installed1.16.0: radio module RESET REVIEW opened CENTERED native popup, background dim/blur and inert, Batal initial focus. Clicked Batal; radioPASS retained. Reopened from same position: window.scrollY2101 BEFORE/OPEN/AFTER all equal, native:modal true, body scroll locked only while open. Tab from confirm wraps to modalStop, Escape closes, focus returns to original Reset QC Radio button, scroll unlocks. Checkpoint save review also native popup; Batal closes/focus returns saveProgress, no save/reset mutation performed. Actual screenshot ignored build/modal-live-v1_16_0.jpg. General+PD popup and PD Tab/Escape/Batal visually checked separately on LOCAL PREVIEW ONLY, no physical PD negotiation; M1 PD staysOFF. Preview is not hardware proof.
+
+Node UI PASS including modal open/Escape/Batal/focus/Tab/ShiftTab/Stop/navigation plus previous PD/radio/RTC/session/draft/epoch guards; Python14 PASS; portal packaging2 PASS; all firmware assertions compile PASS. All existing reviewed actions share popup; no added confirmation stages for direct observations. User should Ctrl+F5 to replace old inline-panel HTML after OTA. Progress and modal contract in CONFIRMATION_MODALS.md. Agent preview/tab cleanup and final docs push/parity only remain.
+
 
 ### V2.56 | 2026-10-16 | Codex
 
