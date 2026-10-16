@@ -1,4 +1,5 @@
 build/
+_codex_tmp/
 *.bin
 *.elf
 *.map

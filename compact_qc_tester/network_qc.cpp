@@ -10,7 +10,7 @@
 #include <atomic>
 namespace {
 struct Job {
-  int kind = 0; bool ethernet = false, dhcp = true;
+  int kind = 0; bool ethernet = false, dhcp = true, reuseCurrent = false;
   char ssid[33] = {}, wifiPassword[65] = {}, host[97] = {}, user[65] = {}, password[97] = {}, clientId[65] = {};
   uint16_t port = 1883;
   uint8_t ip[4] = {}, gateway[4] = {}, subnet[4] = {}, dns[4] = {};
@@ -41,12 +41,13 @@ void worker(void *) {
       eth.setConnectionTimeout(3000);
       if(!ready) snprintf(r.message,sizeof(r.message),"Ethernet controller/link/IP or DHCP failed; check cable and network config");
     } else if (!cancelled) {
-      if(job.kind==0) { // Explicit test applies supplied credentials even if already on the same SSID.
+      if(job.kind==0 && !job.reuseCurrent) { // Reassociate only for changed SSID / explicitly supplied password.
         WiFi.disconnect(false,false); WiFi.begin(job.ssid,job.wifiPassword);
       }
       uint32_t since=millis();
       while(!cancelled && WiFi.status()!=WL_CONNECTED && millis()-since<20000) vTaskDelay(pdMS_TO_TICKS(50));
       ready=WiFi.status()==WL_CONNECTED && uint32_t(WiFi.localIP())!=0;
+      if(job.kind==0) ready &= WiFi.SSID()==String(job.ssid);
       WiFi.localIP().toString().toCharArray(r.ip,sizeof(r.ip));
       wifi.setConnectionTimeout(3000);
       if(!ready) snprintf(r.message,sizeof(r.message),"WiFi association/DHCP timeout; check SSID/password/router");
@@ -105,6 +106,7 @@ void beginNetworkQc(WebServer &web,bool (*authorize)(),void (*stop)()) {
       String port=web.arg("port");bool valid=port.length()>0&&port.length()<6;for(char c:port)valid &= isDigit(c);long p=port.toInt();
       if((link!="wifi"&&link!="ethernet")||!valid||p<1||p>65535||!copyArg(web,"host",job.host,sizeof(job.host),true)||!copyArg(web,"user",job.user,sizeof(job.user))||!copyArg(web,"password",job.password,sizeof(job.password))||!copyArg(web,"clientId",job.clientId,sizeof(job.clientId))){reply(web,false,"Invalid MQTT host/port/client/auth settings");return;}job.port=p; if(!job.clientId[0])snprintf(job.clientId,sizeof(job.clientId),"QC-%s-%08lx",unitSerial(),static_cast<unsigned long>(esp_random()));
     }
+    job.reuseCurrent=job.kind==0 && !job.wifiPassword[0] && WiFi.status()==WL_CONNECTED && uint32_t(WiFi.localIP())!=0 && WiFi.SSID()==String(job.ssid);
     if(job.kind==0 && String(job.ssid)==STA_SSID && !job.wifiPassword[0]) strncpy(job.wifiPassword,STA_PASSWORD,sizeof(job.wifiPassword)-1);
     if(job.kind==2 && job.password[0] && !job.user[0]){reply(web,false,"MQTT password authentication requires a username");return;}
     qcRetest(item(job.kind));

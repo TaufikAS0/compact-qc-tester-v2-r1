@@ -1,3 +1,11 @@
+### V2.59 | 2026-10-16 | Codex -1.17.0 frozen compile
+
+Firmware1.17.0 frozen build2026-10-16T11:59:37Z (18:59:37WIB), app1578048 SHA256e8a533389f4c919ce8884f59bc546f6fb5fc15b342d29ffd67a5ce35db658131, sketch1577897/2097152 (75%), staticRAM57696 (17%). Build-Firmware compile, embedded identity and legacy partition gates PASS. PublicLabRelease packaging correctly requires clean committed source; perform node tools/portal-package.cjs after commit before upload (no firmware edits after build start). Earlier compile11:55 candidate failed missing qc_profiles include and was NEVER uploaded. Node UI (automatic outputs/timeout/Stop/profile/final evidence, radio actualchannel opt-in, RTC revision guard, existing suites), Python14, portal2 PASS.
+
+Added opt-in automatic radio GET->resend ACTUAL channel->ACK+GET and RTC reviewed challenge/restoration, disabled by default; no CPU defaults. Manual ON lease lock and one-output check also server-side, heartbeat3.5s unchanged. No invented currentPASS: target79/CA478 remains baseline33PASS/RTCpending before deployment. Read-only short baseline6/6 responses, maxHTTP281ms across~47s; no RSSI available on old1.11.0, not overnight acceptance. Automation pantau-compact-qc-semalaman ACTIVE on this thread each30min; bounded12h/30s logger to start AFTER deployment. Preserved all current owner results, no output ON yet. Source publication/OTA/exact MD5/unit/resume and live checks pending; no merge.
+
+1.17.0 Wi-Fi/automatic QC revision: see04_Dokumen/WIFI_AUTO_SEQUENCE.md and CURRENT V2.58. Build/tests/deployment evidence tracked in branch worklog; no hardware/overnight PASS implied.
+
 ### V2.57 | 2026-10-16 | Codex - popup OTA complete
 
 Installed1.16.0/build2026-10-16T06:31:10Z (13:31:10 WIB) app-only OTA144/C28C HTTP200; exact runtime build/MD5/unit/profiles/calibration verified. Source8b91818 feature pushed BEFORE OTA. Compile/metadata/legacy gates PASS; app1559536 SHA256b13a33eaada3a52e28a7eca0da0c5dbc578f92a9cee6ec156066745bc030e75c MD576067848314b534a5e48afc2ac56d231, sketch1559385 bytes74%, staticRAM57672 bytes17%. No firmware source edits after final build start; cancelled06:28 candidate NEVER uploaded. No main merge/erase/profile or hardware mapping changes.

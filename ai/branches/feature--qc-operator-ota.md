@@ -1,4 +1,4 @@
-CURRENT | V2.57 | 2026-10-16 | Codex | Installed1.16.0/build06:31:10Z OTA144/C28C verified; centered popup/cancel/Escape/Tab/scroll2101 actual checks PASS | own6F61433PASS1FAIL0pending inclradioCNCFG1 ALL evidence preserved/cleancheckpoint; no main merge; user Ctrl+F5
+CURRENT | V2.59 | 2026-10-16 | Codex |1.17.0/build11:59:37Z compile+metadata+legacy PASS, source publication/OTA79/CA478 pending; automation30min created, overnight logger not yet started
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,20 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.59 | 2026-10-16 | Codex -1.17.0 frozen compile
+
+Firmware1.17.0 frozen build2026-10-16T11:59:37Z (18:59:37WIB), app1578048 SHA256e8a533389f4c919ce8884f59bc546f6fb5fc15b342d29ffd67a5ce35db658131, sketch1577897/2097152 (75%), staticRAM57696 (17%). Build-Firmware compile, embedded identity and legacy partition gates PASS. PublicLabRelease packaging correctly requires clean committed source; perform node tools/portal-package.cjs after commit before upload (no firmware edits after build start). Earlier compile11:55 candidate failed missing qc_profiles include and was NEVER uploaded. Node UI (automatic outputs/timeout/Stop/profile/final evidence, radio actualchannel opt-in, RTC revision guard, existing suites), Python14, portal2 PASS.
+
+Added opt-in automatic radio GET->resend ACTUAL channel->ACK+GET and RTC reviewed challenge/restoration, disabled by default; no CPU defaults. Manual ON lease lock and one-output check also server-side, heartbeat3.5s unchanged. No invented currentPASS: target79/CA478 remains baseline33PASS/RTCpending before deployment. Read-only short baseline6/6 responses, maxHTTP281ms across~47s; no RSSI available on old1.11.0, not overnight acceptance. Automation pantau-compact-qc-semalaman ACTIVE on this thread each30min; bounded12h/30s logger to start AFTER deployment. Preserved all current owner results, no output ON yet. Source publication/OTA/exact MD5/unit/resume and live checks pending; no merge.
+
+
+### V2.58 | 2026-10-16 | Codex - Wi-Fi / automatic sequence in progress
+
+Owner target192.168.1.79 actualTMC88F1559CA478 classicESP32/build1.11.0/2026-10-15T08:16:55Z/sessionEB4CDCB2/M1/33PASS. Different unit from previous144/C28C and77/CA250. State+checkpoint+CSV backed up ignored _codex_tmp/network-sequence/before79*. Never transfer results across units. RTC now oscillatorStopped/time invalid despite historical quick evidence; do not claim current accuracy. Legacy radio read-only PASS must be repeated under GET/SEND/GET criterion.
+
+Implementing1.17.0: same-SSID blankpassword Wi-Fi QC reuses link; explicit credentials still reconnect; manager no competing retry during network worker; disable Wi-Fi sleep; RAM RSSI/reason/disconnect/IP/retry counters; bars+numeric; heap/reset/maxloop and read-only token-free health. Idle heartbeat reduced; active3.5s safety unchanged. Automatic pending-only safe tests; auto LED/DO ON/popup/OFF/popup/next30s timeout, cancellation/no auto-resume. Existing per-module reset for correction retained. Node UI, Python14 and portal2 PASS. Final compile, publication, OTA, live UI and bounded overnight monitor pending. User explicitly authorized read-only overnight checks; script not yet started. No merge.
+
 
 ### V2.57 | 2026-10-16 | Codex - popup OTA complete
 

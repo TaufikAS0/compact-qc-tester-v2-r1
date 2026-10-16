@@ -6,6 +6,7 @@
 #include "ota_manager.h"
 #include "qc_hardware.h"
 #include "qc_session.h"
+#include "qc_profiles.h"
 #include "rtc_qc.h"
 #include "output_state.h"
 #include "current_qc.h"
@@ -25,14 +26,17 @@
 #include <Wire.h>
 #include <driver/gpio.h>
 #include <esp_timer.h>
+#include <esp_system.h>
 
 WebServer server(80);
 String ssid, token;
 uint32_t lastHeartbeat = 0;
+uint32_t maxLoopMs = 0;
 OutputState outputState;
 uint32_t outputLimits[OutputState::COUNT]={};
 bool mcpReady = false, fault = false;
 bool relayReady[2] = {};
+bool sequenceOutputLease = false;
 uint16_t savedLatch = 0, savedDirection = 0;
 const uint8_t addresses[] = {0x68, 0x57, 0x38, 0x20, 0x21, 0x3c, 0x77, 0x28, 0x48};
 const char *deviceNames[] = {"RTC",  "EEPROM",    "AHT",          "MCP1", "MCP2",
@@ -135,6 +139,7 @@ bool writeLedBits(uint16_t bits) {
   return writeMcp(0x14, (current & ~LED_MASK) | (bits & LED_MASK));
 }
 void stopOutputs() {
+  sequenceOutputLease = false;
   cancelModbusQc(); cancelNetworkQc();
   cancelSerialQc("Cancelled by stop/new session/OTA");
   cancelRadioQc("Cancelled by stop/OTA");
@@ -198,6 +203,11 @@ void stateHandler() {
   d["apIP"] = WiFi.softAPIP().toString();
   d["token"] = token;
   d["uptime"] = millis();
+  labWiFiState(d["wifi"].to<JsonObject>());
+  d["freeHeap"] = ESP.getFreeHeap();
+  d["minFreeHeap"] = ESP.getMinFreeHeap();
+  d["resetReason"] = static_cast<int>(esp_reset_reason());
+  d["maxLoopMs"] = maxLoopMs;
   d["otaSupported"] = true;
   d["otaBusy"] = webOtaBusy();
   d["tplReady"] = tplWatchdogReady();
@@ -343,17 +353,33 @@ void outputHandler() {
     failure("Output state on/off required", 400);
     return;
   }
+  const bool sequenceCommand=server.arg("sequence")=="1";
+  if(sequenceOutputLease && !sequenceCommand && state=="on") {failure("Stop automatic sequence before manual ON",409);return;}
+  if(sequenceCommand) {
+    if(server.arg("sessionId")!=qcSessionId() || server.arg("profileRevision")!=String(activeQcProfileRevision())) {failure("Sequence context changed",409);return;}
+    const int selected=kind=="led"?index:11+index;
+    for(int n=0;n<OutputState::COUNT;++n)if(n!=selected && outputState.on[n]) {stopOutputs();failure("Other output active; sequence stopped",409);return;}
+  }
   // An authenticated explicit command is fresh operator activity. Heartbeat loss
   // still turns active outputs OFF; OFF must never require a preceding heartbeat.
   uint32_t limit=OUTPUT_PULSE_MS;
   if(server.hasArg("seconds")) {
     String seconds=server.arg("seconds");
+    const bool sequence=server.arg("sequence")=="1";
+    if(sequence && (server.arg("sessionId")!=qcSessionId() || server.arg("profileRevision")!=String(activeQcProfileRevision()))) {failure("Sequence context changed",409);return;}
+    if(sequence) {
+      bool digits=seconds.length()>0&&seconds.length()<=2;
+      for(char c:seconds)digits &= isDigit(c);
+      if(!digits||seconds.toInt()<1||seconds.toInt()>60){failure("Sequence timeout1..60 seconds",400);return;}
+    } else {
     if(seconds.length()!=1 || seconds[0]<'1' || seconds[0]>'9') {
       if(seconds!="10"){failure("Step timeout1..10 seconds",400);return;}
+    }
     }
     limit=seconds.toInt()*1000;
   }
   lastHeartbeat = millis();
+  if(sequenceCommand)sequenceOutputLease=true;
   const bool on = state == "on";
   if (kind == "relay") {
     if (!relayReady[index]) { failure("DO GPIO initialization failed"); return; }
@@ -410,6 +436,14 @@ void beginApp() {
   server.on("/", HTTP_GET, [] { server.send_P(200, "text/html; charset=utf-8", WEB_UI); });
   server.on("/assets/qrcode.js",HTTP_GET,[]{server.send_P(200,"application/javascript; charset=utf-8",QR_ASSET);});
   server.on("/api/state", HTTP_GET, stateHandler);
+  server.on("/api/health", HTTP_GET, [] {
+    JsonDocument d;
+    d["schema"]="COMPACT-HEALTH-1";d["serial"]=unitSerial();d["version"]=FW_VERSION;d["buildUTC"]=FW_BUILD_UTC;
+    d["uptime"]=millis();d["freeHeap"]=ESP.getFreeHeap();d["minFreeHeap"]=ESP.getMinFreeHeap();
+    d["resetReason"]=static_cast<int>(esp_reset_reason());d["maxLoopMs"]=maxLoopMs;d["outputActive"]=outputState.any();
+    labWiFiState(d["wifi"].to<JsonObject>());
+    String body;serializeJson(d,body);server.sendHeader("Cache-Control","no-store");server.send(200,"application/json",body);
+  });
   server.on("/api/i2c", HTTP_POST, scanHandler);
   server.on("/api/sd", HTTP_POST, sdHandler);
   server.on("/api/output", HTTP_POST, outputHandler);
@@ -439,6 +473,7 @@ void beginApp() {
                 OUTPUT_PROFILE_VERIFIED ? "verified configuration" : "LOCKED");
 }
 void updateApp() {
+  const uint32_t loopStarted=millis();
   if (outputState.any() && uint32_t(millis() - lastHeartbeat) >= SESSION_TIMEOUT_MS)
     stopOutputs();
   for (int n = 0; n < OutputState::COUNT; ++n) {
@@ -463,4 +498,5 @@ void updateApp() {
   server.handleClient();
   updateTplWatchdog();
   yield();
+  maxLoopMs=max(maxLoopMs,static_cast<uint32_t>(millis()-loopStarted));
 }
