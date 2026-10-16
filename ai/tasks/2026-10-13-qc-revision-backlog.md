@@ -1,3 +1,5 @@
+Radio V2.44: source1.14.0 simple read/edit/write/readback + raw strict parser, stable IDs. Build03:09:28Z pending/software PASS. Latest current144/C28C session6F614ECF/PCBempty/32PASS1FAIL1pending archived. Preserve old results; no actual radio writes until desired values known. See CURRENT/RADIO_WORKFLOW.md.
+
 Warranty FAIL V2.43 COMPLETE1.13.1/build11:36:34Z OTA144 verified; actualFAIL export200 preservesFAIL, exact10/serial.csv, date/PIC guards. Original33PASS1FAIL/PCB0004/session/RTC1/raw evidence preserved. Source57448f8 pushed beforeOTA, final docs-only feature publication/no merge. See CURRENT.
 
 Warranty FAIL V2.41: owner permits actualFAIL export with qcStatusFAIL, no forcedPASS. Source1.13.1/UI tests done, build11:36:34Z running; preserve current144/C28C/33PASS1FAIL/PCB0004. Next gated compile/push/OTA/explicit1.13.0 upgrade/live read-onlyFAIL CSV. See CURRENT.

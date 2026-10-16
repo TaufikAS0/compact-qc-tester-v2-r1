@@ -1,3 +1,5 @@
+Radio1.14.0: read04_Dokumen/RADIO_WORKFLOW.md. Owner simple READ/EDIT/WRITE/READBACK. Keep stable radio test/profile IDs; partial read UNVERIFIED, draft mismatch not hardwareFAIL, read never writePASS. Only explicit changed fields + confirm/readId/context/preflight may write. Preserve current own144 session6F614ECF (NOT olderB6361F85); latest CURRENT authoritative. Upgrade ONLY exact1.13.1/build11:36:34Z->1.14.0.
+
 Owner decision2026-10-15 / Warranty1.13.1: PASS OR FAIL may export Warranty; qcStatus MUST remain actual, no forced PASS. INCOMPLETE/busy/ON still blocked, exact10/noPCB/serial.csv unchanged. This supersedes historical PASS-only instructions below. Current upgrade exception ONLY exact1.13.0/build11:18:57Z->1.13.1 same unit; preserve all current evidence. See WARRANTY_CSV.md/CURRENT.
 
 Module reset1.13.0: read04_Dokumen/MODULE_RESET.md. Preserve current target144 evidence25PASS/PCB0004/RTC revision1; current exact deployment in CURRENT. Reset per row only, shared RS485+tags/Radio explicitly reviewed, no calibration/EEPROM erase. Upgrade exception ONLY exact1.12.0/build08:59:41Z->1.13.0 same unit.

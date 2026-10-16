@@ -1,4 +1,4 @@
-CURRENT | V2.43 | 2026-10-15 | Codex | Installed1.13.1/build11:36:34Z on144/C28C; actualFAIL Warranty200 with qcStatusFAIL/exact10/serial.csv, tests PASS | Original33PASS1FAIL/sessionB6361F85/PCB0004/RTCquick1/raw evidence preserved/clean checkpoint; source57448f8 published beforeOTA, final docs push/no merge
+CURRENT | V2.46 | 2026-10-16 | Codex | Source1.14.0/build03:21:30Z compile/gates/software PASS; radio phased workflow/strict parser/raw diagnostics | Publish feature then OTA144/C28C/exact1.13.1 resume/preserve own6F614ECF/actual READ rawWMCFG; M1 writeOFF and desired-channel reply pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,28 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### Radio V2.46 | 2026-10-16 | Codex
+
+Final1.14.0/build2026-10-16T03:21:30Z /10:21:30 WIB compile/metadata/legacy gates PASS, app1555232 SHA2564a7e8cdb77a92d3d496af8200c4c37950dd064e7e903bce6550e7f918199848a, sketch1555089 bytes74%, staticRAM57680 bytes17%. All parser/ACK static assertions compiled; Node radio review/draft/Stop/freshness/missing-field and earlier UI PASS, Python14/portal2 PASS. No firmware edits after final build start. Candidate03:09 was cancelled, never uploaded. Publish source feature, then authorized app-only OTA144 and exact1.13.1 upgrade/resume, compare original own-session evidence before actual READ/raw WMCFG diagnosis. Do not write blind values or enable M1 writeOFF automatically. Actual UART write/readback still pending owner target/profile; no RF/power-cycle certification.
+
+
+### Radio V2.45 | 2026-10-16 | Codex
+
+Final review: stage-specific Enter/Exit reply matching, binary wake/control echo filtering, capture-busy guard, UART-init restoration error detail, and UI explanation when write is OFF in selected profile. Candidate03:09:28Z compile was cancelled before completion, NEVER upload; no concurrent compiler remains. Final source frozen build2026-10-16T03:21:30Z /10:21:30 WIB running; no later firmware edits. UI radio/Stop/draft/current-vs-target tests PASS after final UI review; C++ parser/ACK assertions compile with final build. Runtime helper now gates ONLY this final timestamp.
+
+Current M1 write switch is OFF; do not enable/change active profile automatically because that resets the session. Pending desired channel question does not authorize a write when profile blocks it. Finish software/build/push/OTA/explicit resume/actual READ+raw WMCFG diagnosis first. Preserve latest own6F614ECF results; original backup32PASS1FAIL1pending exists; latest pre-upload archive must be refreshed if owner added results.
+
+
+### V2.44 | 2026-10-16 | Codex
+
+# Radio workflow1.14.0 - implementation/build acceptance pending2026-10-16
+
+Owner requests simple radio read/edit/write/readback QC. RADIO_WORKFLOW.md defines one panel/two labelled phases, existing profile/test IDs retained. Read ignores form and requires all7 for new readPASS; missing ->UNVERIFIED with bounded raw TX/RX, never inferred broken hardware. Load actual values explicitly, preserve drafts; reviewed changed-only writes require fresh readId/session/profile/confirm, preflight reread prevents stale writes, exact +OK + selected-key readback required. No automatic restart/NVM defaults/RF claims. Read mismatch vs draft cannot FAIL configuration; read-only cannot manufacture writePASS. Parser accepts explicit matching labels/space/plus/colon/equals/fullwidth colon, rejects echo/OK/invalid values. Tests compile + Node draft/readId/Stop/profile/unreadable/changed-only review regressions PASS; Python14/portal2 PASS.
+
+Actual target144/C28C1.13.1/build11:36:34Z now DIFFERENT CURRENT SESSION6F614ECF M1, owner has progressed32PASS/1FAIL/1pending, PCBempty. Baseline saved/archived ignored build/radio-flow-pre.json/checkpoint/fullCSV. Do not restore oldB6361F85/PCB0004 or other-unit evidence. WMCFG still unreadable on old source; exact raw response unknown, new diagnostics needed. Preserve original unrelated results/raw analog/Modbus/network/RTC/session/operator; approved exact1.13.1->1.14.0 upgrade only. Build03:09:28Z is a compile candidate ONLY, never upload: final review added stage-specific AT entry/exit matching, ignores binary wake echo/control noise, and profile-disabled write guidance. Fresh final frozen build required. Compile/gates/feature push/OTA/resume/live raw read and parser diagnosis pending. Async desired final channel question pending; do not invent a radio write target from screenshot. No real write performed yet.
+
+
 
 ### V2.43 | 2026-10-15 | Codex
 
