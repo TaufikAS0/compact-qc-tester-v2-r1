@@ -1,4 +1,4 @@
-CURRENT | V2.50 | 2026-10-16 | Codex | Actual WMCFG responds Mode:4, alias fix1.14.1 implemented/UI PASS | final03:40:40Z build running;1.14.0 installed/resumed, current6F61432PASS2FAIL pending newactualread; no writes/profile reset
+CURRENT | V2.51 | 2026-10-16 | Codex | Installed1.14.1/build03:40:40Z OTA144/C28C exactverified; Get all7 PASS, serial-only QC CSV actual browser download PASS | own6F61433PASS1FAIL preserved/cleancheckpoint; M1 writeOFF no physicalwrite; no main merge
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog

@@ -1,3 +1,5 @@
+ACCEPTANCE1.14.1: CURRENT V2.51 installed144/C28C build03:40:40Z; actual Get7PASS and serial.csv browser download verified; own6F61433PASS1FAIL preserved. M1 writeOFF, physicalwrite untested, no profile reset. Latest acceptance supersedes earlier pending-build notes.
+
 Radio1.14.1 actual root cause: E70V1.0 WMCFG replies Mode:4. Parse matching Mode alias ONLY index1 bounds0..4. Upgrade ONLY exact1.14.0/build2026-10-16T03:35:28Z->1.14.1. CURRENT V2.50 authoritative. Preserve own6F614; no profile reset/writes invented.
 
 Owner clarification2026-10-16: radio Get auto-fills actual stored values, no CPU defaults; Send+Get changed fields requires ACK/readback match. Actual completed read/write failure FAIL; stale context/cancel never PASS. Temporary fullQC CSV filename serial.csv both browser/server; content unchanged. See CURRENT V2.48 for final build/deployment.
