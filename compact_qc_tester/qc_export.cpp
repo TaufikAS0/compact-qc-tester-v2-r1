@@ -121,7 +121,7 @@ void beginQcExport(WebServer &server) {
     JsonDocument snapshot;
     hardwareState(snapshot["hardware"].to<JsonObject>());
     qcState(snapshot["qc"].to<JsonObject>());
-    server.sendHeader("Content-Disposition", "attachment; filename=" + unitSerial() +
+    server.sendHeader("Content-Disposition", String("attachment; filename=") + unitSerial() +
                                                  ".csv");
     server.send(200, "text/csv; charset=utf-8",
                 qcSnapshotCsv(snapshot, date, pic, production));

@@ -1,4 +1,4 @@
-CURRENT | V2.48 | 2026-10-16 | Codex | Owner Get/edit/Send+Get clarification and serial-only temporaryQC CSV implemented, UI PASS | final03:33:19Z build running;144 reconnected same-build own6F614 resumed; OTA/rawradio verification pending
+CURRENT | V2.49 | 2026-10-16 | Codex | Owner Get/edit/Send+Get clarification and serial-only temporaryQC CSV implemented, UI PASS | final03:35:28Z build running after CSV String compile correction;144 reconnected same-build own6F614 resumed; OTA/rawradio verification pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,11 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.49 | 2026-10-16 | Codex
+
+03:33:19Z compile FAILED: filename char-pointer concatenation. Corrected explicit Arduino String; final rebuild03:35:28Z running, firmware source frozen. Upload helper gates only03:35:28Z; never upload failed/superseded artifacts. Node/Python14/portal2 PASS. Source8a93fbd published; this compile correction awaits publication. Current own6F614 resumed33PASS1FAIL; refresh/retain checkpoint before OTA.
+
 
 ### V2.48 | 2026-10-16 | Codex
 
