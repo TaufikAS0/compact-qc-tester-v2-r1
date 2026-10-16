@@ -4,6 +4,7 @@
 #endif
 #include "config.h"
 #include "ota_manager.h"
+#include "guarded_ota.h"
 #include "qc_hardware.h"
 #include "qc_session.h"
 #include "rtc_qc.h"
@@ -431,6 +432,13 @@ void beginApp() {
   });
   server.onNotFound([] { failure("Not found", 404); });
   beginWebOta(server, stopOutputs);
+  beginGuardedOta(server, [](String &why) {
+    if (qcProfileSelected() || outputState.any() || rtcRunActive() || networkQcBusy() ||
+        modbusQcActive() || serialQcActive() || radioQcActive() || pdNegotiating() || currentQcBusy()) {
+      why="QC session/output/test active: archive results, then reboot without resuming before OTA";return false;
+    }
+    return true;
+  });
   server.begin();
   Serial.printf("Serial: %s\nBuild UTC: %s\n", unitSerial(), FW_BUILD_UTC);
   Serial.println(FW_BUILD_ID);

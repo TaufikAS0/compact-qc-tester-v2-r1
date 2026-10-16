@@ -1,0 +1,3 @@
+CURRENT | 2026-10-16 | source1.17.0 from8dbe087 | isolated guarded OTA implementation, build pending | NO device contact/flash/QC promotion
+
+New APIs and pure production policy assertions are documented in 04_Dokumen/GUARDED_PORTAL_OTA.md. Mandatory versioning/change rules read. Existing dashboard, Python14 and portal packaging2 regressions passed before final build. Fresh source commit required for PublicLabRelease. Preserve all original installed1.16.0 physical evidence; no arbitrary restore migration. No main/original feature merge. Next compile metadata/partition/marker gate and publish only this isolated feature source if valid; actual LAN OTA remains pending explicit device installation/acceptance.

@@ -1,3 +1,7 @@
+# Portal OTA 1.17.0 - isolated feature branch
+
+Adds guarded TELEMETRIC-OTA-1 discovery and Digest/nonce upload. Exact compiled target/build, image SHA-256/size and runtime layout checked before activation; portal verifies identity after reboot. Archive QC before replacing firmware; no cross-build resume bypass. See [changelog and handoff](04_Dokumen/GUARDED_PORTAL_OTA.md). Build/tests pending; no device flash/OTA. Historical installed1.16.0 evidence below does not certify this binary.
+
 ### V2.57 | 2026-10-16 | Codex - popup OTA complete
 
 Installed1.16.0/build2026-10-16T06:31:10Z (13:31:10 WIB) app-only OTA144/C28C HTTP200; exact runtime build/MD5/unit/profiles/calibration verified. Source8b91818 feature pushed BEFORE OTA. Compile/metadata/legacy gates PASS; app1559536 SHA256b13a33eaada3a52e28a7eca0da0c5dbc578f92a9cee6ec156066745bc030e75c MD576067848314b534a5e48afc2ac56d231, sketch1559385 bytes74%, staticRAM57672 bytes17%. No firmware source edits after final build start; cancelled06:28 candidate NEVER uploaded. No main merge/erase/profile or hardware mapping changes.

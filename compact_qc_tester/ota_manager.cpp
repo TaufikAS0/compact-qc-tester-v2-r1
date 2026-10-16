@@ -1,4 +1,5 @@
 #include "ota_manager.h"
+#include "guarded_ota.h"
 #if __has_include("ota_secrets.h")
 #include "ota_secrets.h" // PRIVATE override: that build must not be distributed.
 #else
@@ -35,7 +36,7 @@ void page() {
     challenge();
     return;
   }
-  if (busy || rebootPending) {
+  if (busy || rebootPending || guardedOtaBusy()) {
     web->send(409, "text/plain", "OTA sedang berjalan");
     return;
   }
@@ -68,7 +69,7 @@ void upload() {
   if (file.status == UPLOAD_FILE_START) {
     accepted = complete = false;
     result = "Upload tidak diizinkan";
-    if (busy || rebootPending || !authenticated())
+    if (busy || rebootPending || guardedOtaBusy() || !authenticated())
       return;
     if (nonce.isEmpty() || web->arg("nonce") != nonce ||
         static_cast<uint32_t>(millis() - issuedAt) > FORM_TIMEOUT_MS)
@@ -148,10 +149,11 @@ void beginWebOta(WebServer &server, void (*stopOutputs)()) {
   server.on("/update", HTTP_POST, finish, upload);
 }
 void updateWebOta() {
+  updateGuardedOta();
   if (busy && static_cast<uint32_t>(millis() - lastChunk) > UPLOAD_TIMEOUT_MS) {
     abortUpload("Upload timeout");
   }
   if (rebootPending && static_cast<uint32_t>(millis() - rebootAt) >= 750)
     ESP.restart();
 }
-bool webOtaBusy() { return busy || rebootPending; }
+bool webOtaBusy() { return busy || rebootPending || guardedOtaBusy(); }

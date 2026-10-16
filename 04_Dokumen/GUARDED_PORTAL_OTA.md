@@ -1,0 +1,13 @@
+# Guarded portal OTA - 1.17.0
+
+Derived from feature/qc-operator-ota 8dbe087 (1.16.0). Isolated feature/portal-ota-guarded; no merge or real device upload. Preserves pin mapping, public LAB STA/AP/OTA profile, calibration, partition table and QC criteria. Rules_Versioning and Rules_Change_Notifications read via issue 1.
+
+GET /api/device-info exposes compiled TMC / TMC_T_V2_R1+TMC_B_V3_R0 / ESP32 / tmc-legacy-16mb, actual flash/slot capacities, version/build and SHA-256 of the actual running image. Length is esp_image_get_metadata.image_len including appended hash (Espressif ESP-IDF esp_image_format.c). Generic Arduino app-descriptor project name is NOT product identity. Runtime partition offsets/sizes must match before guarded update.
+
+TELEMETRIC-OTA-1: authenticated Digest GET /api/ota/prepare produces a one-use 120s nonce. POST /api/ota?nonce=... multipart firmware requires product, device serial, PCB, partition, target version/build, size, SHA-256 and archive-confirmation headers. Reject wrong chip/full image before writing inactive slot; require embedded TMC_TARGET marker AND exact QC_BUILD marker, full size/hash and ESP verification BEFORE activation. Failed update retains active boot image. This prevents accidental mismatch, NOT malicious firmware: unsigned public LAB images are not cryptographic product authentication.
+
+Active QC profile/session, outputs, RTC run, serial/radio/network/PD/current test block guarded OTA. Archive QC JSON/CSV/checkpoint externally, then reboot WITHOUT resume for maintenance. Acknowledgement is operator declaration, not proof of durable archive. No automatic reset/save/migration or cross-build checkpoint bypass. Existing same-build resume rules remain. Legacy manual /update retains existing Digest/nonce behavior; strict guarded contract applies to /api/ota, not that legacy manual endpoint.
+
+Portal re-reads identity immediately before upload, enforces app-only/every compatibility field, then verifies SAME serial/version/build/SHA-256 after reboot. HTTP200 upload acceptance is not verification. No automatic full erase. First installation on an old device requires deliberate manual app-only OTA or normal USB with destructive warnings. No device installation/physical acceptance in this task.
+
+Supplemental changelog/handoff: 1.16.0 ->1.17.0 adds ONLY guarded API/discovery/hashing and integration; radio/QC/UI behavior retained. Main CHANGELOG.md contains legacy invalid UTF8 and is preserved untouched. Build via Build-Firmware.ps1 -PublicLabRelease from committed source. Software/compile tests required; actual OTA interruption/reboot/watchdog behavior remains pending. Original current 1.16.0 QC evidence must never be fabricated/copied into a different build.

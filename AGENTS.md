@@ -1,3 +1,7 @@
+# Guarded OTA1.17.0 branch
+
+Read04_Dokumen/GUARDED_PORTAL_OTA.md for supplemental changelog/handoff. Isolated feature/portal-ota-guarded from8dbe087, no auto-merge into ongoing firmware branch or device upload. Archive evidence; no arbitrary checkpoint migration. Existing pins/NVS/public LAB policies retained.
+
 ACCEPTANCE1.16.0 CURRENT V2.57: installed144/C28C build06:31:10Z exactOTA verified; general+PD confirmations are centered native modals, actual radio-reset/checkpoint review CANCEL tests preserve scroll/focus and ALL33PASS1FAIL own6F614 inclradioCNCFG1. No actual reset/radioGET/PD/RTC writes for UI tests. Full evidence comparison PASS/clean checkpoint. Ctrl+F5 required on old browser HTML.
 
 Modal1.16.0 owner instruction: ALL existing confirmation/review panels use centered native dialogs (general AND PD); no scroll/page jump, Batal/Escape no mutation, keyboard loop, Stop accessible in popup. Preserve all actual33PASS1FAIL own6F614 incl valid radioPASS; no newGET/radio reset for UI tests. Upgrade ONLY exact1.15.1/build04:18:24Z->1.16.0. CURRENT V2.56 tracks finalbuild06:31:10Z;06:28 candidate cancelled.
