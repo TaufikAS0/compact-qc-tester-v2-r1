@@ -28,8 +28,8 @@ bool qcSaveProgress(String &why){
 bool qcResumeProgress(String &why,const String &upgradeFromBuild){
  if(qcProfileSelected()){why="Resume only before selecting a new session; do not overwrite active QC";return false;}
  bool upgrading=!upgradeFromBuild.isEmpty();
- const bool knownUpgrade=upgradeFromBuild=="QC_BUILD=1.16.0|2026-10-16T06:31:10Z" || upgradeFromBuild=="QC_BUILD=1.11.0|2026-10-15T08:16:55Z";
- if(upgrading&&(String(FW_VERSION)!="1.17.0"||!knownUpgrade||saved["buildIdentity"]!=upgradeFromBuild||rtcRunActive()||saved["rtcEvidence"]["clockRevision"].as<uint32_t>()!=rtcClockRevision())){why="Only explicit exact verified1.11.0/1.16.0 checkpoint upgrade without active run/clock change is allowed";return false;}
+ const bool knownUpgrade=upgradeFromBuild=="QC_BUILD=1.17.0|2026-10-16T11:59:37Z" || upgradeFromBuild=="QC_BUILD=1.16.0|2026-10-16T06:31:10Z" || upgradeFromBuild=="QC_BUILD=1.11.0|2026-10-15T08:16:55Z";
+ if(upgrading&&(String(FW_VERSION)!="1.17.1"||!knownUpgrade||saved["buildIdentity"]!=upgradeFromBuild||rtcRunActive()||saved["rtcEvidence"]["clockRevision"].as<uint32_t>()!=rtcClockRevision())){why="Only explicit exact verified1.11.0/1.16.0/1.17.0 checkpoint upgrade without active run/clock change is allowed";return false;}
  if(!idle()||savedSession.isEmpty()||saved["schema"]!="QC-PROGRESS-1"||saved["serial"].as<String>()!=unitSerial()||(!upgrading&&saved["buildIdentity"]!=FW_BUILD_ID)||saved["calibrationId"].as<uint32_t>()!=currentCalibrationId()){why="Checkpoint identity/build/calibration differs or unavailable; download saved evidence, do not mix";return false;}
  JsonDocument current;qcProfilesState(current.to<JsonObject>());qcRecipesState(current.as<JsonObject>());String profile=saved["profile"].as<String>();bool found=false;
  for(JsonObject p:current["profiles"].as<JsonArray>())if(p["id"]==profile&&p["revision"]==saved["profileRevision"])found=true;

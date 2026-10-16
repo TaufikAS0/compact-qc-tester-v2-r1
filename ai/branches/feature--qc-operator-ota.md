@@ -1,4 +1,4 @@
-CURRENT | V2.59 | 2026-10-16 | Codex |1.17.0/build11:59:37Z compile+metadata+legacy PASS, source publication/OTA79/CA478 pending; automation30min created, overnight logger not yet started
+CURRENT | V2.61 | 2026-10-16 | Codex |1.17.1/build12:07:18Z compile PASS; final push/OTA79/CA478/resume pending; no further radio bench per owner;34PASS preserved
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,22 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.61 | 2026-10-16 | Codex - final1.17.1 compile
+
+Build-Firmware.ps1 PASS1.17.1/build2026-10-16T12:07:18Z, app1578192 SHA2564b52b98bf2339c7f993d5218d1bc481ec333ce936ee023241b232407fc459bb9 MD530f16db9ea0ab5446fd02af30ea0223f. Sketch1578049/2097152 (75%), staticRAM57696 (17%). Node UI+Python14+portal2 PASS; metadata/legacy partitions PASS. Source frozen since build start; no subsequent firmware edits. Automatic radio2.5s settle negative test passed; user explicitly says IGNORE further radio fault investigation/testing, so no additional physical radio tests. Do NOT disable profile or coercePASS based on that instruction. Current real34PASS ownEB4CDCB2 preserved; radio real manual fullcycle passed earlier, RTC real autoquick passed (revision5). Final OTA/resume pending.
+
+Browser SIMULATION (127.0.0.1 only, NO LAN forwarding): actual rendered auto output review->ON popup->OFF popup->next DO popup->Stop verified, no JS errors; screenshot build/sequence-popup-SIMULASI.jpg explicitly simulation, not physical output proof. Preview closed/server stopped. Actual device no ON commands for this task. Read-only logger first11/11 responses max47ms, RSSI-72..-65, no failures/restarts. Archive initial monitor before planned final OTA, then fresh12h logger.30min heartbeat active. No merge.
+
+
+### V2.60 | 2026-10-16 | Codex - live acceptance found radio transition gap
+
+Source3d844b7 pushed;1.17.0/build11:59:37Z app-only OTA79/CA478 HTTP200, exact appMD5/version/build/unit/profile/calibration verified. Explicit narrow old1.11.0 resume retains ownEB4CDCB2 and all unrelated results; invalidates only old read-only radioPASS (expected). Live browser sameSSID blankpassword WiFi QC PASS without any disconnect/IP reacquisition: disconnect0/gotIPs1; RSSI around-69..-74dBm, sleepDisabled true. Health~31ms, maxloop592ms. Not overnight acceptance.
+
+Live AutoQC radioGET successful then immediate automatic SEND failed AT reentry BEFORE any parameter write; correct FAIL, NOT fabricatedPASS. Sequence continued RTC quick real pattern/readback/restorationPASS clockrevision5 using laptop/WIB. Manual radio GET+SEND after natural delay succeeded bareOK and all7 readback; actualchannel0 unchanged. Evidence suggests insufficient transition settling; patch1.17.1 enforces readAge>=2500ms before automatic SEND, no POST retries or default writes. Add negative regression test: recentGET cannot SEND; settledGET uses actualchannel not draft. New exact1.17.0 checkpoint bridge preserves current real34PASS/RTCquick evidence.1.17.1 compile/push/OTA/retest pending;1.17.0 superseded, no final acceptance claimed yet.
+
+12h/30s read-only logger started PID12476 at build/network-overnight;30min thread heartbeat ACTIVE. Planned second OTA may appear as uptime decrease; restart clean final overnight capture after final deployment, preserve old log separately. No physical output visual PASS invented or outputON commanded. No merge.
+
 
 ### V2.59 | 2026-10-16 | Codex -1.17.0 frozen compile
 

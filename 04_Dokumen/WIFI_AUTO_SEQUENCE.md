@@ -1,4 +1,4 @@
-# Wi-Fi diagnostics and automatic QC sequence (1.17.0)
+# Wi-Fi diagnostics and automatic QC sequence (1.17.1)
 
 User target for this deployment: http://192.168.1.79, serialTMC88F1559CA478.
 
@@ -14,7 +14,7 @@ Idle browser no longer posts heartbeat each second. Active outputs/sequence stil
 
 Open Auto sequence QC -> review pending safe tests -> confirm. Final PASS/FAIL and disabled profile tests are skipped. Firmware determines AHT10, SD temporary-file roundtrip, Ethernet controller/link, current Wi-Fi SSID/IP, Ethernet DHCP and optional configured MQTT CONNACK outcomes. Unknown results/request errors are not fabricated hardware FAIL. Stop/context change/tab hidden/disconnect cancels; no automatic resume. Reopen only after reviewing state.
 
-Radio and RTC are opt-in automatic steps after global reviewed approval: radio reads all seven parameters, resends only the actual current channel, requires ACK and matched GET; no draft/default target. RTC challenge/restoration uses the reviewed laptop time zone and checks clock revision before writing. Neither is armed by default; final results are still skipped. EEPROM identity, PD, analog reference/Modbus expected values and external serial fixtures use their existing reviewed workflows. DI/switches automatically evaluate two real debounced cycles after physical stimulus. OLED/I2C observation is human. These cannot all honestly PASS unattended.
+Radio and RTC are opt-in automatic steps after global reviewed approval: radio reads all seven parameters, waits at least2.5s after GET before AT reentry, resends only the actual current channel, requires ACK and matched GET; no draft/default target. RTC challenge/restoration uses the reviewed laptop time zone and checks clock revision before writing. Neither is armed by default; final results are still skipped. EEPROM identity, PD, analog reference/Modbus expected values and external serial fixtures use their existing reviewed workflows. DI/switches automatically evaluate two real debounced cycles after physical stimulus. OLED/I2C observation is human. These cannot all honestly PASS unattended.
 
 LED & Output -> fixture safe checkbox on Kesiapan -> choose Otomatis + konfirmasi popup -> review -> confirm. Only one channel is commanded ON. Popup requires observed ON, then automatic OFF and observed OFF; only both observations finalize. Then next channel. ON maximum30s, firmware accepts only bounded1..60s sequence commands with session/profile context; manual preset1..10s unchanged. Firmware3.5s heartbeat still applies. Any FAIL stops the sequence. Timeout, Stop, changed context, hidden tab, lost link or another active channel prevents advancement. Opening page/refresh never starts outputs. Existing completed output results skipped. Manual controls disabled during sequence; global Stop accessible in popup.
 
