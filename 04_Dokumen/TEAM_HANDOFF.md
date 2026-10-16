@@ -1,3 +1,7 @@
+### V2.53 | 2026-10-16 | Codex
+
+Radio SEND review now scrolls confirmation into view (previous panel above fold made clicks appear ineffective). Node UI PASS. Candidate04:01:50Z cancelled before completion; NEVER upload. New final frozen1.15.0/build2026-10-16T04:05:15Z running; helper gates this exact timestamp only. Source44237b0 published; this final UI fix pending publication. Own6F61433PASS1FAIL backup saved; actualGET/SEND/GET acceptance pending finalcompile/OTA.
+
 ### V2.52 | 2026-10-16 | Codex
 
 Owner correction: radio QC is ONE GET -> SEND -> GET cycle, GET-only MUST NOT PASS; SEND must be available on current M1 without resetting profile. Source1.15.0 replaces read-only PASS with MENUNGGU SEND. Actual acknowledged SEND plus all7 fresh reads and sent-key matching required for cyclePASS; errors FAIL, Stop/stale context noPASS. Radio communication now combinedcycle gate (old configOFF no longer blocks it); either existing radio switch permits cycle, bothOFF deny browser AND backend. Stable IDs/profile masks/revisions unchanged; legacy config result hidden in radio card, primary result labels fullcycle. No peer/RF test added.

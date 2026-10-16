@@ -1,4 +1,4 @@
-CURRENT | V2.52 | 2026-10-16 | Codex | Radio single GET_SEND_GET cycle1.15.0 implemented/UI PASS, final04:01:50Z build running | M1 SEND fixed without profile reset; old read-onlyPASS invalidated onlyradio; OTA/livecycle pending
+CURRENT | V2.53 | 2026-10-16 | Codex | Single radio cycle1.15.0 + visible SEND review/UI PASS | final04:05:15Z build running (04:01 cancelled); actualcycle/OTA pending; preserve own6F614 unrelatedQC
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,11 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.53 | 2026-10-16 | Codex
+
+Radio SEND review now scrolls confirmation into view (previous panel above fold made clicks appear ineffective). Node UI PASS. Candidate04:01:50Z cancelled before completion; NEVER upload. New final frozen1.15.0/build2026-10-16T04:05:15Z running; helper gates this exact timestamp only. Source44237b0 published; this final UI fix pending publication. Own6F61433PASS1FAIL backup saved; actualGET/SEND/GET acceptance pending finalcompile/OTA.
+
 
 ### V2.52 | 2026-10-16 | Codex
 
