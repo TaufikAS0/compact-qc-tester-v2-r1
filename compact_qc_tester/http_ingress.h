@@ -8,7 +8,7 @@ constexpr bool httpKey(std::string_view a,std::string_view b) {
   for(size_t i=0;i<a.size();++i){char c=a[i];if(c>='A'&&c<='Z')c+=32;if(c!=b[i])return false;}
   return true;
 }
-constexpr HttpIngress inspectHttpIngress(std::string_view data,size_t limit=4096) {
+constexpr HttpIngress inspectHttpIngress(std::string_view data,size_t limit=4096,size_t bodyAvailable=0) {
   size_t end=data.find("\r\n\r\n");
   if(end==std::string_view::npos)return data.size()>=limit?HttpIngress::Reject:HttpIngress::Wait;
   size_t first=data.find("\r\n"),length=0;bool seen=false;
@@ -33,5 +33,5 @@ constexpr HttpIngress inspectHttpIngress(std::string_view data,size_t limit=4096
               line.substr(0,27)=="POST /api/qc/import-legacy ";
   if(stream)return HttpIngress::Stream;
   if(end+4>limit||length>limit-(end+4))return HttpIngress::Reject;
-  return data.size()>=end+4+length?HttpIngress::Ready:HttpIngress::Wait;
+  return data.size()+bodyAvailable>=end+4+length?HttpIngress::Ready:HttpIngress::Wait;
 }

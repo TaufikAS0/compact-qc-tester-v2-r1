@@ -1,3 +1,6 @@
+
+V2.65 IMPORTANT17Oct:1.17.2 failed REAL fragmented-GET acceptance, immediately rolled back exact retained1.17.1 (hash/MD5/checkpoint verified unchanged). Do NOT deploy1.17.2.1.17.3 candidate frozen04:23:32Z uses cooperative header buffer/replay, compiling. No final stabilityPASS. See CURRENT and NETWORK_STABILITY.md.
+
 Final candidate updated04:04:43Z (04:00 candidate cancelled for incomplete POST-body guard). No earlier candidate uploaded. Normal request total<=4096,1500ms; streamingOTA+legacy remain stock parser; compile assertions and live regression planned.
 
 Network repair17Oct2026 CURRENT V2.64: reproduced partial-header HTTP stall on79/CA478.1.17.2 bounded ingress/cooperative send, WiFi fallback/history. Source frozen final build04:00:26Z; initial03:47 compile failed name shadowing,03:57 candidate cancelled for checkpoint UI correction, NEVER uploaded. Tests UI/Python14/portal2 PASS. OTA/retest pending; see04_Dokumen/NETWORK_STABILITY.md.

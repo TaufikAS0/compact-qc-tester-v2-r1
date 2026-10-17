@@ -1,4 +1,9 @@
 
+1.17.3 final build2026-10-17T04:23:32Z PASS app1582800 SHA256bc6b0b4f652482319d1813e5ddd68644f3733696bebca98ccb884ffa5ac6996c; sketch1582645/staticRAM58096. Metadata/legacy/NodeUI/13ingress assertions PASS. Source frozen since build start.1.17.2 superseded/rejected and exact rollback verified. Sourcepush/newOTA/live acceptance pending.
+
+V2.65 IMPORTANT17Oct:1.17.2 failed REAL fragmented-GET acceptance, immediately rolled back exact retained1.17.1 (hash/MD5/checkpoint verified unchanged). Do NOT deploy1.17.2.1.17.3 candidate frozen04:23:32Z uses cooperative header buffer/replay, compiling. No final stabilityPASS. See CURRENT and NETWORK_STABILITY.md.
+
+
 1.17.2 final build2026-10-17T04:07:34Z PASS: app1581648 SHA2566107c569bc8d63a4caf953a5994c184d3097b310d1bab72b7428c77c522a1241; sketch1581505/2MB, staticRAM62128. Metadata/legacy partitions PASS; Node UI, Python14, portal2,11ingress assertions PASS. Source frozen since build start. Source publication, app-only OTA, runtime ingress/backpressure and same-app OTA verification pending. No main merge.
 
 Network repair1.17.2 in progress17Oct2026: see04_Dokumen/NETWORK_STABILITY.md and CURRENT V2.64. Compile/OTA/live regression pending; historical evidence retained.

@@ -30,6 +30,17 @@ def main():
         assert data.get('outputActive') is False
         return round(1000*(time.monotonic()-t), 1), data
     before = get()[1]
+    def response(s):
+        raw=b''
+        while True:
+            chunk=s.recv(4096)
+            if not chunk:break
+            raw+=chunk
+            if b'\r\n\r\n' in raw:
+                h,b=raw.split(b'\r\n\r\n',1)
+                sizes=[int(line.split(b':',1)[1]) for line in h.split(b'\r\n') if line.lower().startswith(b'content-length:')]
+                if sizes and len(b)>=sizes[0]:return h,b[:sizes[0]]
+        raise AssertionError('Truncated HTTP response')
     results = {}
     held = []
     try:
@@ -50,15 +61,17 @@ def main():
         time.sleep(.35)
         s.sendall(b'\r\nConnection: close\r\n\r\n')
         s.settimeout(5)
-        raw = b''
-        while True:
-            chunk = s.recv(4096)
-            if not chunk:
-                break
-            raw += chunk
-        assert raw.startswith(b'HTTP/1.1 200'), raw[:80]
-        assert a.serial.encode() in raw
+        h,b=response(s)
+        assert h.startswith(b'HTTP/1.1 200'),h[:80]
+        assert json.loads(b)['serial']==a.serial
         results['fragmentedValidGet'] = 'OK'
+    with socket.create_connection((u.hostname,u.port or 80),timeout=3) as s:
+        s.sendall(b'POST /api/heartbeat HTTP/1.1\r\nHost: qc\r\nContent-Length: 13\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n')
+        time.sleep(.2);s.sendall(b'token=')
+        time.sleep(.2);s.sendall(b'invalid')
+        h,b=response(s)
+        assert h.startswith(b'HTTP/1.1 403'),h[:80]
+        results['fragmentedPostAuthentication']='403 as expected; no mutation'
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
         results['concurrentGetMs'] = list(pool.map(lambda _: get()[0], range(9)))
     # A client that stops reading a large page used to hold NetworkClient.write.

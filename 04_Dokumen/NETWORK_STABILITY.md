@@ -1,4 +1,6 @@
-# Network responsiveness repair 1.17.2
+1.17.2 REJECTED: real valid fragmented GET reset/no response despite successful compile/OTA. Rollback exact1.17.1 verified, checkpoint unchanged.1.17.3 header replay fixes the first-segment peek weakness; build/live validation pending.
+
+# Network responsiveness repair 1.17.3
 
 ## Previous
 
@@ -30,7 +32,9 @@ Reference: https://docs.espressif.com/projects/esp-idf/en/v5.4.2/esp32/api-guide
 ## Changes
 
 QcWebServer retains stock handlers/Digest/OTA parsing but queues up to4 ingress
-sockets. Non-consuming MSG_PEEK checks for complete CRLF headers before invoking
+sockets. Headers are consumed incrementally into bounded per-client buffers across TCP
+segments, then replayed through virtual NetworkClient reads to the pinned stock
+parser. Complete CRLF headers and available normal body are checked before invoking
 the parser. Normal request (headers+body) bounded4096bytes/deadline1500ms;
 incomplete bodies, duplicate/invalid length and chunked requests are not dispatched.
 Deliberate multipart OTA and reviewed legacy JSON import retain streaming parsing,
@@ -45,7 +49,7 @@ Health exposes http.requests/rejectedHeaders/maxHandleMs/writeTimeouts.
 Core WiFi AutoReconnect remains enabled.30s fallback now uses esp_wifi_connect
 without forced disconnect, and waits30s from last disconnect event. Exposes last
 retry result, current BSSID and last8 actual disconnect records (uptime/reason/RSSI).
-Counters/history RAM only. Firmware source version1.17.2.
+Counters/history RAM only. Firmware source version1.17.3.
 
 ## Unchanged
 

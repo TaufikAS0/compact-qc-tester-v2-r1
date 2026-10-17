@@ -1,4 +1,4 @@
-CURRENT | V2.64 | 2026-10-17 | Codex |1.17.2 repair in progress: overnight faults separated; partial HTTP header reproduces >12s stall; bounded ingress/send + non-disconnecting WiFi fallback; build04:07:34Z PASS, sourcepush/OTA/retest pending
+CURRENT | V2.65 | 2026-10-17 | Codex |1.17.2 REJECTED by live fragmented GET; rollback exact1.17.1 verified/checkpoint unchanged;1.17.3 header replay candidate frozen04:23:32Z build PASS app1582800, sourcepush/OTA pending; OTA/retest pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,15 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+Final1.17.3 compile PASS app1582800 SHA256bc6b0b4f652482319d1813e5ddd68644f3733696bebca98ccb884ffa5ac6996c; exact04:23:32Z metadata/legacy gates PASS. No later firmware edits.
+
+### V2.65 | 2026-10-17 | Codex - live regression caught, rollback verified
+
+1.17.2/build04:07:34Z compiled/metadata/partition/software PASS and source3878688 pushed before OTA79/CA478 HTTP200. Exact appMD5 c56b831a099f4969c64cfe1d138fe094 and savedEB4CDCB2/profile/calibration unchanged verified. Actual incomplete-client competing health/state worked, but VALID fragmented GET returned connection reset/no bytes: acceptance FAILED. NEVER label1.17.2 stable. Immediately rolled back retained app1.17.1/build12:07:18Z SHA4b52b98b; new-server multipart OTA HTTP200 worked. Exact running1.17.1 MD530f16db9 and unchanged full checkpoint verified, outputsOFF/UNSELECTED. No user QC was active.
+
+1.17.3 replaces socket MSG_PEEK with bounded cooperative header consumption and HeaderClient virtual read replay into pinned stock parser. Body stays in shared NetworkClient RX buffer; all bytes must be available before normal dispatch. Full13 policy assertions and NodeUI PASS. Candidate frozen2026-10-17T04:23:32Z compiling via Build-Firmware. No firmware edits after build start. Exact checkpoint bridge remains only actual saved1.17.1/build12:07:18Z. Expanded live regression includes fragmented header AND fragmented POST body (invalid token must403),3held clients,9concurrentGETs and slow reader. Compile/sourcepush/OTA/actual regressions/same-app multipart OTA and fresh12h soak pending. No radio/RTC/outputON/QC-reset commands.
+
 
 Final build1.17.2/2026-10-17T04:07:34Z PASS app1581648 SHA2566107c569bc8d63a4caf953a5994c184d3097b310d1bab72b7428c77c522a1241; metadata/legacy partitions and software gates PASS. No firmware edits after build start. Publication/OTA/runtime verification pending.
 
