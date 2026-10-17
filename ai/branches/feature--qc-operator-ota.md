@@ -1,4 +1,4 @@
-CURRENT | V2.65 | 2026-10-17 | Codex |1.17.2 REJECTED by live fragmented GET; rollback exact1.17.1 verified/checkpoint unchanged;1.17.3 header replay candidate frozen04:23:32Z build PASS app1582800, sourcepush/OTA pending; OTA/retest pending
+CURRENT | V2.66 | 2026-10-17 | Codex |1.17.3 installed79/CA478; actual ingress/backpressure + same-appOTA PASS; checkpoint unchanged; SINGLE12h PID24168/10min heartbeat active to~23:28WIB, RF/long stability pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,13 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.66 | 2026-10-17 | Codex - installed repair, real regressions pass, observation active
+
+ACCEPTANCE1.17.3 CURRENT V2.66: installed79/CA478 build2026-10-17T04:23:32Z exactMD5919879256bbd1156f9f3d836f91058d9; app1582800 SHA256bc6b0b4f652482319d1813e5ddd68644f3733696bebca98ccb884ffa5ac6996c. Source7fdb5d3 pushed BEFORE OTA. Live fragmentedGET+POST/3held clients/9concurrentGET/slow-reader PASS, identical same-app multipartOTA through NEW parser PASS; ENTIRE savedEB4CDCB2/profile/calibration unchanged. UNSELECTED preserved; review modal BATAL only, no automatic resume/test.1.17.2 REJECTED and rollback documented. New SINGLE12h logger PID24168 health10s/state30s started17Oct11:28:25WIB until~23:28:25WIB; build/network-repair-v1_17_3; existing heartbeat ACTIVE10min quiet. Baseline disconnect0/reject1/writeTimeout0/maxloop652; do not repeat old/stimulus counters. RF initial cause unresolved; no overnight/hardwarePASS. Read NETWORK_STABILITY.md/CURRENT; no radio/outputON/RTC writes/reset/erase/merge. Final docs publication/parity follows.
+
+Actual momentary values: competing health47ms/state140ms with3held clients;9parallelGET31..78ms; slow-reader competing health984ms/maxloop1041ms with intentional reject4/writeTimeout1. No WiFi disconnect/restart. These stress counters reset by final identicalOTA. Fresh baseline maxloop652/reject1/writeTimeout0/disconnect0; no repeated historical alerts. Post-finalOTA state3/3 94..125ms; first9health/3state monitor samples successful. Logs are read-only HTTP, not hardwareQC proof. Old12h capture untouched.
+
 
 Final1.17.3 compile PASS app1582800 SHA256bc6b0b4f652482319d1813e5ddd68644f3733696bebca98ccb884ffa5ac6996c; exact04:23:32Z metadata/legacy gates PASS. No later firmware edits.
 

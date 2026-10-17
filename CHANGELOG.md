@@ -1,3 +1,25 @@
+#1.17.3 -2026-10-17
+
+## Previous
+1.17.1; intermediate1.17.2 rejected by real fragmentedGET, immediately rolled back.
+## Changes
+Cooperative segmented header replay/body admission; bounded response backpressure
+with OFF/TPL service; non-disconnecting WiFi fallback plus event/HTTP diagnostics.
+## Unchanged
+HuaweiJIN/AP credentials, pins/polarity, partitions, QC criteria/profiles/results,
+EEPROM/radio/RTC/calibration and unrelated NVS. No merge/erase/outputON.
+## Tests
+Build04:23:32Z/metadata/partitions,Node/Python14/portal2/13ingress assertions PASS.
+Live held/fragmented/concurrent/slow-reader and actual new-server same-appOTA PASS;
+exact unit/MD5 and entire checkpoint preserved. See NETWORK_STABILITY.md for hashes.
+## Limitations
+Initial WiFi/router fault unresolved. Short HTTP success is not12h/hardwarePASS.
+New12h observer active until~23:28WIB today. Normal requests<=4096bytes/1500ms;
+OTA/legacy streaming only outputsOFF, pinned core3.3.10/no SSE or middleware.
+## Upgrade
+App-only OTA, exact1.17.1 checkpoint migration with original guards; current
+UNSELECTED remains until explicit operator resume. No automatic tests after reboot.
+
 
 1.17.3 final build2026-10-17T04:23:32Z PASS app1582800 SHA256bc6b0b4f652482319d1813e5ddd68644f3733696bebca98ccb884ffa5ac6996c; sketch1582645/staticRAM58096. Metadata/legacy/NodeUI/13ingress assertions PASS. Source frozen since build start.1.17.2 superseded/rejected and exact rollback verified. Sourcepush/newOTA/live acceptance pending.
 

@@ -1,3 +1,5 @@
+Current installed repair1.17.3/build2026-10-17T04:23:32Z on79/CA478. See [network analysis, actual tests and pending12h observation](04_Dokumen/NETWORK_STABILITY.md).1.17.2 failed live acceptance and was superseded; source/compile alone is not stabilityPASS.
+
 ### V2.62 | 2026-10-16 | Codex -1.17.1 OTA and monitoring active
 
 Final source0b5e3b5 pushed BEFORE app-only OTA79/CA478 HTTP200. Installed1.17.1/build2026-10-16T12:07:18Z, app1578192 SHA2564b52b98bf2339c7f993d5218d1bc481ec333ce936ee023241b232407fc459bb9; runtime appMD5/version/build/serial/classicESP32/profile+calibration verified. Exact1.17.0->1.17.1 resume retained ownEB4CDCB2/M1rev1 ALL34PASS0FAIL and details (zero changed results), outputOFF. Build/metadata/legacy, NodeUI including radio settle negative test, Python14, portal2 PASS; clean-source portal packaging PASS. No main merge/erase/profile mask changes. No firmware edits after final build start.
