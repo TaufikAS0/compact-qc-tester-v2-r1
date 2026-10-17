@@ -1,4 +1,4 @@
-CURRENT | V2.63 | 2026-10-16 | Codex |1.17.1 unchanged; owner confirms twoPOWERON manual/power-unplug; existing12h logger active until17Oct~07:12WIB, heartbeat10min+bounded QC HTTP probes; overnight acceptance pending
+CURRENT | V2.64 | 2026-10-17 | Codex |1.17.2 repair in progress: overnight faults separated; partial HTTP header reproduces >12s stall; bounded ingress/send + non-disconnecting WiFi fallback; build04:07:34Z PASS, sourcepush/OTA/retest pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,13 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+Final build1.17.2/2026-10-17T04:07:34Z PASS app1581648 SHA2566107c569bc8d63a4caf953a5994c184d3097b310d1bab72b7428c77c522a1241; metadata/legacy partitions and software gates PASS. No firmware edits after build start. Publication/OTA/runtime verification pending.
+
+### V2.64 | 2026-10-17 | Codex - network fault reproduced, repair in progress
+
+Owner authorizes investigation/fix/app-only OTA and retest on79/CA478. Clean feature7076411 fetched; no merge.12h logger finished normally1435/1426/9;183 state GETs successful but4>2s/max5344ms;4 real STA disconnect events, manual2POWERON separate. Automation PAUSED after summary, no logger remains. On live1.17.1 idle/outputOFF one incomplete GET header blocked another healthGET>12s. Added bounded4slot header admission/cooperative response safety, fallback esp_wifi_connect instead of forced WiFi.reconnect, disconnect history/BSSID/HTTP diagnostics. No radio/RTC/outputON/QC reset. Narrow1.17.1 checkpoint migration only. Final candidate frozen04:07:34Z;04:04 cancelled for strict expiry/stream outputOFF guard; earlier03:47 compile error corrected,03:57/04:00 candidates cancelled before upload for UI/body guards. Compile-time ingress cases added; normal headers+body <=4096/1500ms, OTA+legacy streaming retained. NodeUI/Python14 PASS; compile/metadata/sourcepush/OTA/exact identity/evidence preservation/regression+soak pending. See04_Dokumen/NETWORK_STABILITY.md; progress preserved for interruption.
+
 
 ### V2.63 | 2026-10-16 | Codex - owner confirms power events; extend QC connectivity checks
 

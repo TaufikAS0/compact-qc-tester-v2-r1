@@ -1,3 +1,8 @@
+
+1.17.2 final build2026-10-17T04:07:34Z PASS: app1581648 SHA2566107c569bc8d63a4caf953a5994c184d3097b310d1bab72b7428c77c522a1241; sketch1581505/2MB, staticRAM62128. Metadata/legacy partitions PASS; Node UI, Python14, portal2,11ingress assertions PASS. Source frozen since build start. Source publication, app-only OTA, runtime ingress/backpressure and same-app OTA verification pending. No main merge.
+
+Network repair1.17.2 in progress17Oct2026: see04_Dokumen/NETWORK_STABILITY.md and CURRENT V2.64. Compile/OTA/live regression pending; historical evidence retained.
+
 ### V2.63 | 2026-10-16 | Codex - owner confirms power events; extend QC connectivity checks
 
 User confirms first restart was manual and power was accidentally unplugged for next event. Two POWERON detections19:12:39/19:21:15WIB are explained power events (sample timestamps, exact power interruption time unknown), not proven RF failure. Raw evidence retained; DO NOT automatically attribute all HTTP timeouts to power. Before19:40WIB baseline logger56samples/53success/3timeouts, no consecutive failure, maxHTTP4891ms, maxloop10148ms, STA disconnect0. Firmware1.17.1 unchanged; no hardware/network stabilityPASS.

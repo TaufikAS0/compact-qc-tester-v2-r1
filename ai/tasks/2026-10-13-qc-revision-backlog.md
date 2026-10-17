@@ -1,3 +1,7 @@
+Final candidate updated04:04:43Z (04:00 candidate cancelled for incomplete POST-body guard). No earlier candidate uploaded. Normal request total<=4096,1500ms; streamingOTA+legacy remain stock parser; compile assertions and live regression planned.
+
+Network repair17Oct2026 CURRENT V2.64: reproduced partial-header HTTP stall on79/CA478.1.17.2 bounded ingress/cooperative send, WiFi fallback/history. Source frozen final build04:00:26Z; initial03:47 compile failed name shadowing,03:57 candidate cancelled for checkpoint UI correction, NEVER uploaded. Tests UI/Python14/portal2 PASS. OTA/retest pending; see04_Dokumen/NETWORK_STABILITY.md.
+
 ### V2.63 | 2026-10-16 | Codex - owner confirms power events; extend QC connectivity checks
 
 User confirms first restart was manual and power was accidentally unplugged for next event. Two POWERON detections19:12:39/19:21:15WIB are explained power events (sample timestamps, exact power interruption time unknown), not proven RF failure. Raw evidence retained; DO NOT automatically attribute all HTTP timeouts to power. Before19:40WIB baseline logger56samples/53success/3timeouts, no consecutive failure, maxHTTP4891ms, maxloop10148ms, STA disconnect0. Firmware1.17.1 unchanged; no hardware/network stabilityPASS.

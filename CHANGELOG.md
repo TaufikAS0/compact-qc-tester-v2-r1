@@ -1,3 +1,8 @@
+
+1.17.2 final build2026-10-17T04:07:34Z PASS: app1581648 SHA2566107c569bc8d63a4caf953a5994c184d3097b310d1bab72b7428c77c522a1241; sketch1581505/2MB, staticRAM62128. Metadata/legacy partitions PASS; Node UI, Python14, portal2,11ingress assertions PASS. Source frozen since build start. Source publication, app-only OTA, runtime ingress/backpressure and same-app OTA verification pending. No main merge.
+
+Network repair1.17.2 in progress17Oct2026: see04_Dokumen/NETWORK_STABILITY.md and CURRENT V2.64. Compile/OTA/live regression pending; historical evidence retained.
+
 ### V2.61 | 2026-10-16 | Codex - final1.17.1 compile
 
 Build-Firmware.ps1 PASS1.17.1/build2026-10-16T12:07:18Z, app1578192 SHA2564b52b98bf2339c7f993d5218d1bc481ec333ce936ee023241b232407fc459bb9 MD530f16db9ea0ab5446fd02af30ea0223f. Sketch1578049/2097152 (75%), staticRAM57696 (17%). Node UI+Python14+portal2 PASS; metadata/legacy partitions PASS. Source frozen since build start; no subsequent firmware edits. Automatic radio2.5s settle negative test passed; user explicitly says IGNORE further radio fault investigation/testing, so no additional physical radio tests. Do NOT disable profile or coercePASS based on that instruction. Current real34PASS ownEB4CDCB2 preserved; radio real manual fullcycle passed earlier, RTC real autoquick passed (revision5). Final OTA/resume pending.

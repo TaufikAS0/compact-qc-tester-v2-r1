@@ -12,12 +12,20 @@ uint32_t lastAttempt = 0;
 bool wasConnected = false;
 std::atomic<uint32_t> disconnects{0}, gotIPs{0}, lastDisconnect{0}, lastGotIP{0}, reason{0};
 uint32_t retries = 0;
+int lastRetryResult = ESP_OK;
 bool sleepDisabled = false;
+struct WiFiEventRecord { uint32_t at; uint16_t reason; int8_t rssi; };
+WiFiEventRecord events[8] = {};
+uint32_t eventCount=0;
+portMUX_TYPE eventsMux=portMUX_INITIALIZER_UNLOCKED;
 void wifiEvent(arduino_event_id_t event, arduino_event_info_t info) {
   // Called from the network task: counters only, no JSON/String/NVS work here.
   if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
     reason = info.wifi_sta_disconnected.reason;
     lastDisconnect = millis(); ++disconnects;
+    portENTER_CRITICAL(&eventsMux);
+    events[eventCount++ % 8] = {millis(),info.wifi_sta_disconnected.reason,info.wifi_sta_disconnected.rssi};
+    portEXIT_CRITICAL(&eventsMux);
   } else if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
     lastGotIP = millis(); ++gotIPs;
   }
@@ -57,10 +65,13 @@ void updateLabWiFi() {
                   WiFi.localIP().toString().c_str());
     wasConnected = connected;
   }
-  if (!connected && !networkQcBusy() && static_cast<uint32_t>(millis() - lastAttempt) >= 30000) {
+  if (!connected && !networkQcBusy() && static_cast<uint32_t>(millis() - lastAttempt) >= 30000 &&
+      static_cast<uint32_t>(millis() - lastDisconnect.load()) >= 30000) {
     lastAttempt = millis();
     ++retries;
-    WiFi.reconnect();
+    // Core AutoReconnect handles ordinary loss. Fallback must not disconnect
+    // first: WiFi.reconnect() can interrupt an association already in flight.
+    lastRetryResult = esp_wifi_connect();
   }
 }
 
@@ -73,13 +84,19 @@ void labWiFiState(JsonObject d) {
   d["disconnects"] = disconnects.load();
   d["gotIPs"] = gotIPs.load();
   d["retryRequests"] = retries;
+  d["lastRetryResult"] = lastRetryResult;
   d["lastDisconnectMs"] = lastDisconnect.load();
   d["lastGotIPMs"] = lastGotIP.load();
   d["lastDisconnectReason"] = reason.load();
+  WiFiEventRecord copy[8];uint32_t count;
+  portENTER_CRITICAL(&eventsMux);count=eventCount;memcpy(copy,events,sizeof(copy));portEXIT_CRITICAL(&eventsMux);
+  auto history=d["disconnectHistory"].to<JsonArray>();
+  for(uint32_t i=count>8?count-8:0;i<count;++i){const auto &e=copy[i%8];auto r=history.add<JsonObject>();r["uptimeMs"]=e.at;r["reason"]=e.reason;r["rssiDBm"]=e.rssi;}
   if (connected) {
     const int rssi = WiFi.RSSI();
     d["rssiDBm"] = rssi;
     d["bars"] = rssi >= -55 ? 4 : rssi >= -65 ? 3 : rssi >= -75 ? 2 : 1;
     d["channel"] = WiFi.channel();
+    d["bssid"] = WiFi.BSSIDstr();
   } else { d["rssiDBm"] = nullptr; d["bars"] = 0; }
 }

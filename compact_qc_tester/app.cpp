@@ -18,6 +18,7 @@
 #include "web_ui.h"
 #include "qr_asset.h"
 #include "wifi_manager.h"
+#include "qc_web_server.h"
 #include <ArduinoJson.h>
 #include <SD.h>
 #include <SPI.h>
@@ -28,7 +29,7 @@
 #include <esp_timer.h>
 #include <esp_system.h>
 
-WebServer server(80);
+QcWebServer server(80);
 String ssid, token;
 uint32_t lastHeartbeat = 0;
 uint32_t maxLoopMs = 0;
@@ -433,6 +434,14 @@ void beginApp() {
   ssid = name;
   token = String(esp_random(), HEX) + String(esp_random(), HEX);
   beginLabWiFi(ssid.c_str());
+  server.streamingAllowed = [] { return !outputState.any(); };
+  server.serviceSafety = [] {
+    if(outputState.any() && uint32_t(millis()-lastHeartbeat)>=SESSION_TIMEOUT_MS) stopOutputs();
+    for(int n=0;n<OutputState::COUNT;++n) if(outputState.expired(n,millis(),outputLimits[n]?outputLimits[n]:OUTPUT_PULSE_MS)) {
+      stopOutputs(); break;
+    }
+    updateTplWatchdog();
+  };
   server.on("/", HTTP_GET, [] { server.send_P(200, "text/html; charset=utf-8", WEB_UI); });
   server.on("/assets/qrcode.js",HTTP_GET,[]{server.send_P(200,"application/javascript; charset=utf-8",QR_ASSET);});
   server.on("/api/state", HTTP_GET, stateHandler);
@@ -441,6 +450,9 @@ void beginApp() {
     d["schema"]="COMPACT-HEALTH-1";d["serial"]=unitSerial();d["version"]=FW_VERSION;d["buildUTC"]=FW_BUILD_UTC;
     d["uptime"]=millis();d["freeHeap"]=ESP.getFreeHeap();d["minFreeHeap"]=ESP.getMinFreeHeap();
     d["resetReason"]=static_cast<int>(esp_reset_reason());d["maxLoopMs"]=maxLoopMs;d["outputActive"]=outputState.any();
+    auto http=d["http"].to<JsonObject>();
+    http["requests"]=server.completedRequests;http["rejectedHeaders"]=server.rejectedHeaders;
+    http["maxHandleMs"]=server.maxHandleMs;http["writeTimeouts"]=server.writeTimeouts;
     labWiFiState(d["wifi"].to<JsonObject>());
     String body;serializeJson(d,body);server.sendHeader("Cache-Control","no-store");server.send(200,"application/json",body);
   });
