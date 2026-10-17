@@ -2,10 +2,60 @@
 import argparse
 import datetime as dt
 import json
+import sys
 from pathlib import Path
 import time
 import urllib.error
 import urllib.request
+
+
+def save_summary(directory, summary):
+    """A reader/antivirus can briefly deny Windows rename; never lose samples for it."""
+    temp = directory / 'summary.tmp'
+    temp.write_text(json.dumps(summary, indent=2), encoding='utf-8')
+    for attempt in range(20):
+        try:
+            temp.replace(directory / 'summary.json')
+            return True
+        except PermissionError:
+            time.sleep(0.05)
+    print('Summary replace denied; samples retained, retry at next sample', file=sys.stderr, flush=True)
+    return False
+
+
+def restore_summary(directory, summary):
+    """Replay append-only evidence, including a last sample missed by summary rename."""
+    prior_uptime = None
+    for line in (directory / 'samples.jsonl').read_text(encoding='utf-8').splitlines():
+        sample = json.loads(line)
+        if sample.get('serial', summary['serial']) != summary['serial']:
+            raise ValueError('Cannot resume evidence for a different serial')
+        summary['samples'] += 1
+        summary['last'] = sample
+        if sample.get('ok'):
+            summary['success'] += 1
+            summary['consecutiveFailures'] = 0
+            uptime = sample.get('uptime')
+            if uptime is not None:
+                summary['rebootsObserved'] += prior_uptime is not None and uptime < prior_uptime
+                prior_uptime = uptime
+            rssi = sample.get('wifi', {}).get('rssiDBm')
+            if isinstance(rssi, (int, float)):
+                summary['rssiMin'] = min(rssi, summary['rssiMin'] if summary['rssiMin'] is not None else rssi)
+                summary['rssiMax'] = max(rssi, summary['rssiMax'] if summary['rssiMax'] is not None else rssi)
+            summary['rttMaxMs'] = max(summary['rttMaxMs'], sample['rttMs'])
+        else:
+            summary['failures'] += 1
+            summary['consecutiveFailures'] += 1
+            summary['maxConsecutiveFailures'] = max(summary['maxConsecutiveFailures'], summary['consecutiveFailures'])
+        if 'qcState' in sample:
+            summary['stateSuccess'] += 1
+            latency = sample['qcState']['rttMs']
+            summary['stateMaxMs'] = max(summary['stateMaxMs'], latency)
+            summary['stateSlowOver2s'] += latency > 2000
+        if 'qcStateError' in sample:
+            summary['stateFailures'] += 1
+    return prior_uptime
 
 
 def probe(base, path='/api/health'):
@@ -42,6 +92,7 @@ def main():
     parser.add_argument('--hours', type=float, default=12)
     parser.add_argument('--interval', type=float, default=30)
     parser.add_argument('--out', type=Path, required=True)
+    parser.add_argument('--resume', action='store_true', help='Resume original deadline/counters from existing append-only evidence; old process must be stopped')
     parser.add_argument('--state-every', type=int, default=0, help='Also GET QC state every N health samples;0 disables')
     args = parser.parse_args()
     if not 0 < args.hours <= 24 or not 5 <= args.interval <= 3600:
@@ -57,7 +108,18 @@ def main():
                'rssiMin': None, 'rssiMax': None, 'rttMaxMs': 0, 'running': True,
                'stateSuccess': 0, 'stateFailures': 0, 'stateMaxMs': 0, 'stateSlowOver2s': 0}
     prior_uptime = None
-    until = time.monotonic() + args.hours * 3600
+    if args.resume:
+        saved = json.loads((args.out / 'summary.json').read_text(encoding='utf-8'))
+        if saved['url'] != args.url or saved['serial'] != args.serial:
+            parser.error('Resume URL/serial must match existing capture')
+        summary.update({key: saved[key] for key in ('startedUTC', 'hoursRequested', 'intervalSeconds')})
+        args.interval = summary['intervalSeconds']
+        prior_uptime = restore_summary(args.out, summary)
+        summary['resumedUTC'] = dt.datetime.now(dt.timezone.utc).isoformat()
+    elif (args.out / 'samples.jsonl').exists():
+        parser.error('Existing evidence requires --resume or a new directory')
+    deadline = dt.datetime.fromisoformat(summary['startedUTC']) + dt.timedelta(hours=summary['hoursRequested'])
+    until = time.monotonic() + max(0, (deadline - dt.datetime.now(dt.timezone.utc)).total_seconds())
     while time.monotonic() < until:
         stamp = dt.datetime.now(dt.timezone.utc).isoformat()
         sample = {'utc': stamp}
@@ -102,15 +164,13 @@ def main():
         with (args.out / 'samples.jsonl').open('a', encoding='utf-8') as output:
             output.write(json.dumps(sample, ensure_ascii=True) + '\n')
         summary['running'] = not wrong_unit and time.monotonic() + args.interval < until
-        temp = args.out / 'summary.tmp'
-        temp.write_text(json.dumps(summary, indent=2), encoding='utf-8')
-        temp.replace(args.out / 'summary.json')
+        save_summary(args.out, summary)
         if wrong_unit:
             break
         time.sleep(min(args.interval, max(0, until - time.monotonic())))
     summary['running'] = False
     summary['finishedUTC'] = dt.datetime.now(dt.timezone.utc).isoformat()
-    (args.out / 'summary.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')
+    save_summary(args.out, summary)
 
 
 if __name__ == '__main__':

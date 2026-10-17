@@ -1,5 +1,16 @@
 # Network responsiveness repair1.17.3
 
+Host observation correction17Oct12:00WIB: PID24168 exited11:59:21WIB when
+Windows denied atomic summary.tmp replacement. All185 raw samples survived;
+summary was one sample behind. Device bounded five-GET probe still succeeded
+(31..141ms), disconnect0/restart0. Host logger now retries transient rename locks,
+retains pending snapshot on persistent lock, and supports explicit --resume by
+replaying raw evidence with original deadline. Verified lock/replay tests PASS.
+Single replacement PID26864 resumed12:00:20WIB with original23:28:25WIB end;
+about59s observation gap is not device downtime. Backups/operator-events retained,
+same automation updated. Firmware/build/checkpoint unchanged; no OTA required.
+Later PID24168 references below describe the initial launch, not current ownership.
+
 ## Previous
 
 Installed baseline1.17.1/build2026-10-16T12:07:18Z on192.168.1.79,

@@ -1,4 +1,4 @@
-CURRENT | V2.66 | 2026-10-17 | Codex |1.17.3 installed79/CA478; actual ingress/backpressure + same-appOTA PASS; checkpoint unchanged; SINGLE12h PID24168/10min heartbeat active to~23:28WIB, RF/long stability pending
+CURRENT | V2.67 | 2026-10-17 | Codex |1.17.3 unchanged79/CA478; host logger Windows rename crash repaired, resumed SINGLE PID26864 preserving185samples/deadline23:28WIB; device0timeout/disconnect/reset; monitoring pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,10 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.67 | 2026-10-17 | Codex - host logger recovered without device mutation
+
+11:59:21WIB logger24168 exited after Windows PermissionError replacing summary.tmp; sample185 was appended but summary showed184. Device bounded probe2health+3state succeeded31..141ms, disconnect0/reboot0, same serial/build. This is a laptop logger failure, not evidence of device outage. Added bounded rename retries/nonfatal retained temporary snapshot and explicit --resume replay of append-only samples/original deadline; fresh start refuses existing evidence. Transient/persistent lock tests and actual185-sample replay PASS. Backups and operator-events retained. Verified old PID absent and no other logger before hidden resume SINGLE PID26864 at12:00:20WIB. About59s observation gap; final statistics must disclose it. Original finish23:28:25WIB unchanged; heartbeat updated same ID. New sample186 success, freeHeap154500/disconnect0. No firmware change/build/OTA/QC/output/radio/RTC operation; host-only publication follows.
 
 ### V2.66 | 2026-10-17 | Codex - installed repair, real regressions pass, observation active
 
