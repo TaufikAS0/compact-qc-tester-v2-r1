@@ -1,3 +1,9 @@
+CURRENT V2.72:1.18.1 installed CA478 build2026-10-19T09:23:20Z exact MD5055e377b5a2e9147562553595e5fccb3.
+AP192.168.4.1 browser/complete HTML PASS; bounded health2/state3 PASS (140-359ms).
+Wi-Fi saved/restart verified; entire historical checkpoint/profiles/calibration retained.
+AP initial HTML still3.6-6.1s; physical QC and long-term network stability not claimed.
+Source0ae50a3 pushed BEFORE OTA; see04_Dokumen/AP_RESPONSE_REPAIR_1_18_1.md.
+
 1.18.1 build2026-10-19T09:23:20Z app1611120 SHA256f1b0584e0ce06e91730070b8f3cde679311ebec59f5445b18ccd4d2a2ef19abd MD5055e377b5a2e9147562553595e5fccb3
 Final compile/partition/frozen72 inputs/Node UI/Python14 PASS. Source push/package/OTA/AP runtime acceptance pending. CURRENT V2.71.
 

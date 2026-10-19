@@ -1,3 +1,6 @@
+Latest deployment1.18.1/CURRENT V2.72 includes these1.18.0 features plus AP send repair.
+See AP_RESPONSE_REPAIR_1_18_1.md for actual build/hash/OTA/runtime evidence and limits.
+
 # Auto QC terpadu dan Wi-Fi tersimpan — 1.18.0
 
 ## Previous

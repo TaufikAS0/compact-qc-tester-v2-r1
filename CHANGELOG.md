@@ -1,3 +1,6 @@
+1.18.1 installed CA478 exact09:23:20Z/hash; AP complete HTML/browser and bounded API checks PASS.
+Wi-Fi NVS restart verified; old results/calibration preserved. AP initial load3.6-6.1s; no hardware/long-term PASS.
+
 1.18.1: cooperative HTTP send inactivity5000ms with OFF/TPL service; fixes observed AP cutoff.
 Previous/Changes/Unchanged/Tests/Limitations/Upgrade:04_Dokumen/AP_RESPONSE_REPAIR_1_18_1.md.
 

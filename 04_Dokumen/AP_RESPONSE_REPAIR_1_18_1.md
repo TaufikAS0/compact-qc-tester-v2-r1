@@ -52,3 +52,28 @@ Only exact CA478 idle/output OFF, app-only OTA after source push and backup.
 Retain both1.17.3 rollback and1.18.0 packages/manifests/evidence. No USB port
 identified: owner explicitly said COM11 is not this Compact; COM11/COM5 were
 not opened. Verify exact build/hash and historical data after restart.
+
+## Actual acceptance - CURRENT V2.72
+
+Installed exact1.18.1/build2026-10-19T09:23:20Z on CA478; MD5
+055e377b5a2e9147562553595e5fccb3 and SHA256
+f1b0584e0ce06e91730070b8f3cde679311ebec59f5445b18ccd4d2a2ef19abd.
+Source0ae50a3 pushed before OTA. Paired app/full artifacts retained locally.
+
+| Read-only acceptance | AP192.168.4.1 | STA192.168.1.20 |
+| --- | --- | --- |
+| Full151789-byte HTML, two fetches | complete3610/6125ms | complete344/359ms |
+| HTML SHA256 | 24fcdb838d4af496a096bdcfcfc907b85cc7ef7ce34ac36d5f942c8971087a2d | same |
+| Subsequent bounded health | 2/2,140/141ms | initial comparison47/32ms |
+| Subsequent bounded state | 3/3,359/344/219ms | initial comparison125ms |
+
+AP browser loaded actual1.18.1 and exactserial: eight inline modules, no
+duplicateIDs, old next-test button hidden, manual ON/OFF hidden in Auto.
+Wi-Fi save enabled without selected QC profile. Review/Batal tested on1.18.0;
+no new password entered. Saved profile loaded at boot and STA got1.20.
+Entire old checkpoint/profiles/saved recipes/calibration/identity remained
+unchanged; UNSELECTED/outputOFF retained. New boot disconnect0/gotIP1/retry0;
+writeTimeout0 after full fetches. Heap varies with active browser requests;
+no long-term leak conclusion. maxLoop6083ms came from the complete large AP
+response, with OFF/TPL service within the send loop. Initial AP load is still
+slow. These bounded checks do not prove long-term network or hardware PASS.

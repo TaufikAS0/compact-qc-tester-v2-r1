@@ -1,3 +1,4 @@
+CURRENT V2.72:1.18.1 deployed and AP browser/API verified; radio pair PLAN ONLY; physical fixture acceptance pending.
 Actual status CURRENT V2.71 supersedes historical pending rows below.
 Current implementation tracking (1.18.0, CURRENT V2.69):
 - AQ01 hierarchy/Auto inline modules: implemented, browser preview verified.
@@ -8,7 +9,7 @@ Current implementation tracking (1.18.0, CURRENT V2.69):
 - AQ06 OLED current Wi-Fi/IP: implemented; user visual observation pending.
 - NET01 saved Wi-Fi settings independent of QC: implemented; final installed acceptance pending.
 - RADPLAN01 second Compact responder24h: planning document complete; implementation deferred by owner.
-- REL1181:1.18.0 source/package/OTA/preservation/NVS restart PASS; AP HTML FAIL.1.18.1 build/deploy/retest pending.
+- REL1181 source/build/paired package/OTA/hash/preservation/AP retest PASS. Initial AP load remains slow; physical QC pending.
 
 1.18.0 / 19 October 2026: see04_Dokumen/UNIFIED_AUTO_QC.md and CURRENT V2.69.
 New Auto QC/Wi-Fi source candidate; radio pair PLAN ONLY. Final build/push/OTA

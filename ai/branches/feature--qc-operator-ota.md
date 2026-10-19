@@ -1,4 +1,4 @@
-CURRENT | V2.71 | 2026-10-19 | Codex |1.18.0 installed/hash/preservation/Wi-Fi NVS restart verified; AP HTML truncated;1.18.1 cooperative send build09:23:20Z PASS; publication/OTA/runtime acceptance pending
+CURRENT | V2.72 | 2026-10-19 | Codex |1.18.1 CA478 exactbuild/hash installed; AP complete HTML/browser/API PASS; Wi-Fi NVS and historical data preserved; AP initial load slow; radio PLAN ONLY; final docs publication/parity follows
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,34 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.72 | 2026-10-19 | Codex - actual1.18.1 OTA/AP acceptance
+
+Source0ae50a39f30e4eb8ec57e057a0449c4965b257d7 pushed before app-only OTA.
+CA478 exact1.18.1/build2026-10-19T09:23:20Z/MD5055e377b5a2e9147562553595e5fccb3
+verified on AP4.1. App1611120 SHA256f1b0584e0ce06e91730070b8f3cde679311ebec59f5445b18ccd4d2a2ef19abd;
+full1742192 SHA256f8d559b0f5cc5a71fb52bdad184a4efb597feb5415e8dd68047ed044a4e18291.
+72 frozen compiler inputs matched; compile/partition/Node UI/Python14 PASS.
+Paired packages exist locally, app-only installed. No merge/USB/erase.
+
+AP HTML now complete151789bytes in3610ms and6125ms, both identical SHA256
+24fcdb838d4af496a096bdcfcfc907b85cc7ef7ce34ac36d5f942c8971087a2d.
+STA HTML344ms/359ms. AP boundedhealth2/2 (140,141ms), state3/3 (359,344,219ms),
+zero errors/over2s API. Actual AP browser shows1.18.1/exactserial, eight inline
+modules/no duplicateIDs/no visible next-test/manual ON buttons; Wi-Fi save
+enabled while UNSELECTED. Saved profile survives upgrade and earlier identical
+same-app reboot; new password not supplied/guessed. Entire historical checkpoint,
+profiles/saved recipes/calibration/identity unchanged; output remains OFF.
+After new boot disconnect0/gotIP1/retry0/writeTimeout0; short observation only.
+maxLoop6083ms is the complete large AP response; OFF/TPL serviced during send.
+Initial AP loading remains slow; RF/router/laptop cause not established.
+No hardware QC outputs/EEPROM challenge/RF/RTC/PD writes performed. Radio pair
+PLAN ONLY; RS232 deferred. Screenshot ap-1.18.1.png retained locally.
+
+Earlier failed AP OTA and1.18.0 truncated responses remain in ignored evidence;
+1.18.0 and1.17.3 rollback files preserved. No relabeling of old17Oct soak faults.
+Final documentation checkpoint publication/parity follows; no firmware edits.
+
 
 ### V2.71 | 2026-10-19 | Codex - actual deployment and AP response evidence
 
