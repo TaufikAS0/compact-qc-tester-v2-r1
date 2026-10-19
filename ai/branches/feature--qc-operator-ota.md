@@ -1,4 +1,4 @@
-CURRENT | V2.72 | 2026-10-19 | Codex |1.18.1 CA478 exactbuild/hash installed; AP complete HTML/browser/API PASS; Wi-Fi NVS and historical data preserved; AP initial load slow; radio PLAN ONLY; final docs publication/parity follows
+CURRENT | V2.73 | 2026-10-19 | Codex |STA1.20 owner recheck timeout health2/state3; Ethernet laptop active; unit current status/IP unknown; earlier1.18.1 OTA verified; request OLED status/IP without scan
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,22 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.73 | 2026-10-19 | Codex - owner requests STA1.20 recheck; now unreachable
+
+At09:44:41-09:45:12UTC bounded GET-only probes to owner-confirmed192.168.1.20
+failed health2/2 and state3/3, each~5000ms timeout. Separate state identity
+verification also exhausted three connect attempts; no new identity obtained.
+Laptop Ethernet remains192.168.1.122/24 gateway1.1; Wi-Fi disconnected.
+Therefore laptop Wi-Fi disconnect alone does not explain STA failure. Unit
+power/router association/currentIP/server state unknown; do not diagnose RF
+or firmware regression from connection timeouts alone. Ask owner for current
+OLED STA status/IP; do not scan or open COM ports. No device mutations.
+Earlier successful1.18.1 OTA/hash/AP acceptance remains historical evidence,
+NOT proof of current reachability. Failed probe evidence retained in
+build/qc-unified-v1_18_1/http-sta-checks.jsonl. Source final docs45a24a3
+pushed and remote parity verified; clean before this follow-up checkpoint.
+
 
 ### V2.72 | 2026-10-19 | Codex - actual1.18.1 OTA/AP acceptance
 

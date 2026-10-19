@@ -1,3 +1,6 @@
+CURRENT V2.73: owner STA1.20 recheck now health2/state3 timeout; Ethernet laptop1.122 active.
+Earlier1.18.1 acceptance is historical, current reachability unknown. Ask OLED status/IP; no scan/COM.
+
 CURRENT V2.72:1.18.1 installed CA478 build2026-10-19T09:23:20Z exact MD5055e377b5a2e9147562553595e5fccb3.
 AP192.168.4.1 browser/complete HTML PASS; bounded health2/state3 PASS (140-359ms).
 Wi-Fi saved/restart verified; entire historical checkpoint/profiles/calibration retained.
