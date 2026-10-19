@@ -14,6 +14,8 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <esp_mac.h>
+#include <WiFi.h>
+#include "eeprom_transaction.h"
 
 namespace {
 String identityRawHex, identitySlots[2];
@@ -265,10 +267,17 @@ void updateQcHardware() {
     const QcItem &item = qcDisplayItem();
     oled.printf("%s\n%s\n", item.name.c_str(), item.status.c_str());
     // Build UTC rotates onto its own screen so all 20 timestamp characters fit.
-    if ((now / 7000) % 2) {
+    if ((now / 7000) % 3 == 1) {
       oled.clearDisplay();
       oled.setCursor(0, 0);
       oled.printf("QC %s\nBuild UTC\n%s\n", FW_VERSION, FW_BUILD_UTC);
+    } else if ((now / 7000) % 3 == 2) {
+      oled.clearDisplay();
+      oled.setCursor(0, 0);
+      oled.printf("QC %s\nWi-Fi: %s\nIP: %s\nAP: %s\n",FW_VERSION,
+        WiFi.status()==WL_CONNECTED?"Terhubung":"Terputus",
+        WiFi.status()==WL_CONNECTED?WiFi.localIP().toString().c_str():"--",
+        WiFi.softAPIP().toString().c_str());
     } else
       oled.println(qcDisplayDetail());
     oled.println(storedTop.isEmpty() ? HW_TOP : storedTop.c_str());
@@ -404,6 +413,46 @@ bool saveIdentity(const String &top, const String &bottom, String &detail) {
   return true;
 }
 bool configureAht10() { return startAht10(); }
+bool eepromRoundTrip(String &detail) {
+  Identity before[2];
+  if(!eepromRead(IDENTITY_BASE,reinterpret_cast<uint8_t *>(before),sizeof(before))){detail=eepromError;return false;}
+  for(const auto &r:before)if(!freeSlot(r)&&memcmp(r.magic,"QC01",4)!=0){detail="Foreign data in reserved QC slots; no write performed";return false;}
+  int latest=-1;
+  for(int i=0;i<2;++i)if(valid(before[i])&&(latest<0||int32_t(before[i].generation-before[latest].generation)>0))latest=i;
+  const int target=latest==0?1:0;
+  Identity pattern={};memcpy(pattern.magic,"QC01",4);
+  // Never touch the latest valid identity. Challenge only the inactive QC slot.
+  pattern.generation=0;
+  strlcpy(pattern.top,latest>=0?before[latest].top:HW_TOP,sizeof(pattern.top));
+  strlcpy(pattern.bottom,latest>=0?before[latest].bottom:HW_BOTTOM,sizeof(pattern.bottom));
+  for(auto &v:pattern.reserved)v=uint8_t(esp_random());
+  pattern.checksum=crc(reinterpret_cast<const uint8_t *>(&pattern),60);
+  const uint16_t at=IDENTITY_BASE+target*64;
+  auto writeSlot=[&](const Identity &value) {
+    const uint8_t *data=reinterpret_cast<const uint8_t *>(&value);
+    for(int pos=0;pos<64;pos+=16) {
+      updateTplWatchdog();Wire.beginTransmission(EEPROM_ADDR);Wire.write((at+pos)>>8);Wire.write((at+pos)&255);
+      const size_t queued=Wire.write(data+pos,16);const uint8_t error=Wire.endTransmission();
+      if(queued!=16||error)return false;
+      const uint32_t since=millis();bool ready=false;
+      do{updateTplWatchdog();Wire.beginTransmission(EEPROM_ADDR);ready=Wire.endTransmission()==0;yield();}while(!ready&&millis()-since<10);
+      if(!ready)return false;
+    }
+    return true;
+  };
+  const auto transaction=QcEeprom::challenge<64>(reinterpret_cast<const uint8_t *>(&before[target]),
+    reinterpret_cast<const uint8_t *>(&pattern),
+    [&](const uint8_t *bytes){Identity value;memcpy(&value,bytes,64);return writeSlot(value);},
+    [&](uint8_t *bytes){return eepromRead(at,bytes,64);});
+  const bool matched=transaction.matched,restored=transaction.restored;
+  Identity after[2];
+  const bool preserved=restored&&eepromRead(IDENTITY_BASE,reinterpret_cast<uint8_t *>(after),128)&&memcmp(before,after,128)==0;
+  loadIdentity();
+  detail=!preserved?"EEPROM RESTORE FAILED; stop QC and inspect reserved slot/identity before retry":matched?
+    "Fresh inactive-slot challenge write/read matched; both original QC slots restored and readback verified":
+    "EEPROM challenge write/read mismatch or transport failure; original slots restored";
+  return matched&&preserved;
+}
 bool configureCurrent(bool verified, float shunt, float gain, float offset) {
   if (currentQcBusy()) return false;
   adcReady = adcValid = adcVerified = false;

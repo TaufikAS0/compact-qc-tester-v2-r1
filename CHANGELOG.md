@@ -1,3 +1,27 @@
+# 1.18.0 — Unified Auto QC and persistent Wi-Fi
+
+Previous: 1.17.3 (2026-10-17T04:23:32Z).
+
+Changes: hierarchical Auto/Manual menu; inline device QC; automatic output
+commands with ON/OFF observations; EEPROM challenge/restore; configurable I2C
+address criteria; continuous RS485 polling and Tag2 Signed/address1/length1;
+saved Wi-Fi profile independent of QC; OLED current Wi-Fi/IP page. Radio pairing
+is planning only, with a second Compact responder24h; RS232 remains deferred.
+
+Unchanged: classicESP32/16MB legacy partitions, pinmap/polarity/TPL, user
+calibration/profile/identity namespaces and retained historical checkpoints.
+
+Tests: Node UI regression/new flows and real browser preview, Python14, portal2.
+Firmware compile/installed acceptance status is recorded in CURRENT/VALIDATION.
+
+Limitations: no physical output/OLED/analog/radio/EEPROM PASS inferred from
+software tests. I2C ACK presence is not sensor function. Actual router connection
+failure remains unproven. Criteria changes invalidate checkpoint compatibility.
+
+Upgrade: app-only OTA after exact serial/build/hash and idle/outputOFF checks,
+source push before OTA, preserve private backups. No erase or automatic resume
+of earlier-build QC evidence. See04_Dokumen/UNIFIED_AUTO_QC.md.
+
 #1.17.3 -2026-10-17
 
 ## Previous

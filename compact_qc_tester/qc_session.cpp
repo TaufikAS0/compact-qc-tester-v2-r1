@@ -144,7 +144,7 @@ void qcNoteI2cScan(unsigned devices) {
   qcRetest("I2C scan");
   i2cScanned = true; i2cDevices = devices;
   qcRecord("I2C scan", devices ? "DETECTED" : "FAIL",
-           devices ? "ACK list ready; awaiting user PASS/FAIL, not protocol proof"
+           devices ? "ACK list ready; automatic configured criteria evaluation follows"
                    : "No I2C addresses acknowledged");
 }
 void qcOutputAttempt(const String &type, int index, bool on) {
@@ -397,13 +397,7 @@ void beginQcSession(WebServer &server, bool (*authorize)(), void (*stop)()) {
       return;
     }
     if (type == "i2c") {
-      if (!i2cScanned || (verdict == "PASS" && !i2cDevices)) {
-        error("Run I2C scan first; empty scan cannot PASS"); return;
-      }
-      qcRetest("I2C scan");
-      qcRecord("I2C scan", verdict,
-               "User confirms scanned ACK list " + String(verdict == "PASS" ? "sesuai" : "tidak sesuai") +
-               "; " + String(i2cDevices) + " addresses; no IC/protocol acceptance inferred");
+      error("I2C verdict uses configured address criteria; run scan"); return;
     } else if (type == "oled") {
       JsonDocument h;
       hardwareState(h.to<JsonObject>());

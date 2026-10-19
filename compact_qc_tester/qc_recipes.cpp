@@ -37,7 +37,7 @@ bool normalized(JsonObjectConst in,JsonObject out){
 }
 void defaults(JsonObject p){p["toleranceMA"]=.1;p["serialBaud"]=9600;p["serialPackets"]=100;p["serialTimeoutMs"]=2000;p["stepSeconds"]=5;
  auto a=p["referencesMA"].to<JsonArray>();for(int v:{4,8,12,16,20})a.add(v);
- auto tags=p["tags"].to<JsonArray>();for(int i=0;i<2;++i){auto t=tags.add<JsonObject>();t["name"]=String("Tag")+String(i+1);t["baud"]=9600;t["parity"]="N";t["slave"]=1;t["function"]=3;t["address"]=i;t["count"]=1;t["type"]="Unsigned";t["order"]="ABCD";t["timeout"]=2000;}}
+ auto tags=p["tags"].to<JsonArray>();for(int i=0;i<2;++i){auto t=tags.add<JsonObject>();t["name"]=String("Tag")+String(i+1);t["baud"]=9600;t["parity"]="N";t["slave"]=1;t["function"]=3;t["address"]=i;t["count"]=1;t["type"]=i==1?"Signed":"Unsigned";t["order"]="ABCD";t["timeout"]=2000;}}
 void entry(const String &id,JsonObject out){out["id"]=id;out["revision"]=0;defaults(out["settings"].to<JsonObject>());for(JsonObject p:recipes["entries"].as<JsonArray>())if(p["id"].as<String>()==id){out["revision"]=p["revision"];out["settings"].set(p["settings"]);break;}String s;serializeJson(out["settings"],s);out["crc"]=crc(s);}
 }
 void beginQcRecipes(){recipes.clear();recipes["entries"].to<JsonArray>();Preferences p;ready=p.begin("qc-recipes",false);recipeDetail=ready?"Preset default; simpan per profil bila diperlukan":"Preset NVS tidak tersedia";if(!ready)return;String raw=p.getString("recipes-v1",""),sum=p.getString("crc-v1","");p.end();if(raw.isEmpty())return;

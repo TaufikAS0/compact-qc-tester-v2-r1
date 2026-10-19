@@ -1,3 +1,8 @@
+1.18.0 build2026-10-19T08:55:24Z app1611120bytes SHA256daf4d773d0fad15eefa472abff76fcb75dca8ace91e7675db8b58373b8b14178 MD543e75430bfc76f99f13c18d3e333a77e
+Software checks PASS: firmware/EEPROM fault cases, Node UI, Python14, portal2,
+browser inline hierarchy/navigation. Source push/package then OTA pending.
+Physical acceptance separate. See CURRENT V2.70 and04_Dokumen/UNIFIED_AUTO_QC.md.
+
 Current installed repair1.17.3/build2026-10-17T04:23:32Z on79/CA478. See [network analysis, actual tests and pending12h observation](04_Dokumen/NETWORK_STABILITY.md).1.17.2 failed live acceptance and was superseded; source/compile alone is not stabilityPASS.
 
 ### V2.62 | 2026-10-16 | Codex -1.17.1 OTA and monitoring active

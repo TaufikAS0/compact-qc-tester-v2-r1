@@ -8,6 +8,7 @@
 #include "current_calibration.h"
 #include "current_qc.h"
 #include "ota_manager.h"
+#include "i2c_criteria.h"
 #include <math.h>
 namespace {
 bool autoSave=false,dirty=false;uint32_t dirtyAt=0,lastSave=0;String progressDetail="Belum ada checkpoint; simpan progres sebelum tes panjang";String savedSession;JsonDocument saved;
@@ -20,6 +21,7 @@ void qcProgressNewSession(){autoSave=false;dirty=false;}
 bool qcSaveProgress(String &why){
  if(!qcProfileSelected()||!idle()){why="Select profile / wait for capture before checkpoint";return false;}
  JsonDocument next;next["schema"]="QC-PROGRESS-1";next["serial"]=unitSerial();next["buildIdentity"]=FW_BUILD_ID;next["calibrationId"]=currentCalibrationId();next["profile"]=qcVariantName();next["profileRevision"]=activeQcProfileRevision();next["profileMask"]=activeQcProfileMask();next["recipeIdentity"]=activeQcRecipeIdentity();
+ next["i2cCriteriaRevision"]=i2cCriteriaRevision();
  qcCaptureProgress(next.as<JsonObject>());rtcExportEvidence(next["rtcEvidence"].to<JsonObject>());
  if(next["schema"]!="QC-PROGRESS-1"||next["buildIdentity"]!=FW_BUILD_ID||next["sessionId"].as<String>()!=qcSessionId()||next["profile"].as<String>()!=qcVariantName()||next["calibrationId"].as<uint32_t>()!=currentCalibrationId()){why="Checkpoint header invalid; previous stored progress preserved";progressDetail=why;return false;}
  if(!qcSaveBlob("qc-progress","session-v1",next,why)){progressDetail=why;return false;}
@@ -31,6 +33,7 @@ bool qcResumeProgress(String &why,const String &upgradeFromBuild){
  const bool knownUpgrade=upgradeFromBuild=="QC_BUILD=1.17.1|2026-10-16T12:07:18Z";
  if(upgrading&&(String(FW_VERSION)!="1.17.3"||!knownUpgrade||saved["buildIdentity"]!=upgradeFromBuild||rtcRunActive()||saved["rtcEvidence"]["clockRevision"].as<uint32_t>()!=rtcClockRevision())){why="Only explicit exact verified1.17.1 checkpoint upgrade without active run/clock change is allowed";return false;}
  if(!idle()||savedSession.isEmpty()||saved["schema"]!="QC-PROGRESS-1"||saved["serial"].as<String>()!=unitSerial()||(!upgrading&&saved["buildIdentity"]!=FW_BUILD_ID)||saved["calibrationId"].as<uint32_t>()!=currentCalibrationId()){why="Checkpoint identity/build/calibration differs or unavailable; download saved evidence, do not mix";return false;}
+ if((saved["i2cCriteriaRevision"]|0u)!=i2cCriteriaRevision()){why="I2C criteria changed; old checkpoint is historical evidence; save current results before resume";return false;}
  JsonDocument current;qcProfilesState(current.to<JsonObject>());qcRecipesState(current.as<JsonObject>());String profile=saved["profile"].as<String>();bool found=false;
  for(JsonObject p:current["profiles"].as<JsonArray>())if(p["id"]==profile&&p["revision"]==saved["profileRevision"])found=true;
  bool recipeFound=false;for(JsonObject p:current["recipes"].as<JsonArray>())if(p["id"]==profile && String(p["revision"].as<unsigned long>())+":"+p["crc"].as<String>()==saved["recipeIdentity"].as<String>())recipeFound=true;
@@ -46,6 +49,7 @@ void updateQcProgress(){if(autoSave&&dirty&&idle()&&millis()-dirtyAt>=2000&&mill
 void qcSavedProgress(JsonObject d){d.set(saved.as<JsonObject>());}
 void qcReleaseProgressCache(){saved.clear();}
 bool qcImportLegacy(JsonDocument &original,String &why){
+ if(String(FW_VERSION)!="1.17.3"){why="Legacy import cannot validate new automatic QC criteria; retain old evidence and start a reviewed session";return false;}
  JsonObjectConst old=original.as<JsonObjectConst>();
  // One-time explicit bridge for the real1.9.1 RAM session. CRC is integrity/traceability, not a signature.
  if(qcProfileSelected()){why="Legacy import requires unselected device";return false;}

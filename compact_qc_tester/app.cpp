@@ -18,6 +18,8 @@
 #include "web_ui.h"
 #include "qr_asset.h"
 #include "wifi_manager.h"
+#include "i2c_criteria.h"
+#include "current_calibration.h"
 #include "qc_web_server.h"
 #include <ArduinoJson.h>
 #include <SD.h>
@@ -63,7 +65,7 @@ bool authorized() {
     failure("Invalid session token", 403);
     return false;
   }
-  if (!qcProfileSelected() && server.uri() != "/api/qc/new" && server.uri() != "/api/heartbeat" &&
+  if (!qcProfileSelected() && server.uri() != "/api/wifi/config" && server.uri() != "/api/qc/new" && server.uri() != "/api/heartbeat" &&
       server.uri() != "/api/stop" && server.uri() != "/api/qc/profile" && server.uri() != "/api/qc/recipe" && server.uri() != "/api/qc/resume" && server.uri() != "/api/qc/import-legacy" && server.uri() != "/api/rtc/run/release") {
     failure("Pilih profil device sebelum QC");
     return false;
@@ -257,6 +259,7 @@ void scanHandler() {
   JsonDocument d;
   scanBus(d["devices"].to<JsonArray>());
   qcNoteI2cScan(d["devices"].size());
+  evaluateI2cScan(d["devices"].as<JsonArrayConst>(),d.as<JsonObject>());
   reply(d);
 }
 void sdHandler() {
@@ -434,6 +437,22 @@ void beginApp() {
   ssid = name;
   token = String(esp_random(), HEX) + String(esp_random(), HEX);
   beginLabWiFi(ssid.c_str());
+  beginWiFiSettings(server,authorized,[] {
+    JsonDocument c;calibrationState(c.to<JsonObject>());
+    return !outputState.any() && !webOtaBusy() && !networkQcBusy() && !modbusQcActive() &&
+           !serialQcActive() && !radioQcActive() && !pdNegotiating() && !currentQcBusy() &&
+           c["pending"].as<int>()<0 && !rtcRunActive();
+  });
+  beginI2cCriteria(server,authorized,[] {JsonDocument c;calibrationState(c.to<JsonObject>());return !outputState.any()&&!webOtaBusy()&&!networkQcBusy()&&!modbusQcActive()&&!serialQcActive()&&!radioQcActive()&&!pdNegotiating()&&!currentQcBusy()&&c["pending"].as<int>()<0&&!rtcRunActive();});
+  server.on("/api/identity/test",HTTP_POST,[] {
+    if(!authorized())return;
+    JsonDocument c;calibrationState(c.to<JsonObject>());
+    if(webOtaBusy()||outputState.any()||pdNegotiating()||currentQcBusy()||c["pending"].as<int>()>=0||rtcRunActive()||server.arg("confirm")!="1"){failure("Hentikan output/capture/run dan konfirmasi uji tulis EEPROM");return;}
+    stopOutputs();qcRetest("EEPROM");String detail;
+    const bool ok=eepromRoundTrip(detail);
+    qcRecord("EEPROM",ok?"PASS":"FAIL",detail);
+    JsonDocument d;d["ok"]=true;d["status"]=ok?"PASS":"FAIL";d["detail"]=detail;reply(d);
+  });
   server.streamingAllowed = [] { return !outputState.any(); };
   server.serviceSafety = [] {
     if(outputState.any() && uint32_t(millis()-lastHeartbeat)>=SESSION_TIMEOUT_MS) stopOutputs();
@@ -463,6 +482,7 @@ void beginApp() {
     if (!authorized())
       return;
     lastHeartbeat = millis();
+    modbusHeartbeat();
     JsonDocument d;
     d["ok"] = true;
     reply(d);

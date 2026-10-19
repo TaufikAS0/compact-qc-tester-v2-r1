@@ -1,3 +1,18 @@
+Current implementation tracking (1.18.0, CURRENT V2.69):
+- AQ01 hierarchy/Auto inline modules: implemented, browser preview verified.
+- AQ02 output automatic ON/OFF + human observations: implemented, software regression PASS; bench pending.
+- AQ03 RS485 poll and Tag2 Signed/default1/1: implemented; static fixture test pending.
+- AQ04 EEPROM challenge/restore: implemented with five compiler fault-injection cases; physical test pending.
+- AQ05 I2C criteria + revision/checkpoint guard: implemented; physical address acceptance pending.
+- AQ06 OLED current Wi-Fi/IP: implemented; user visual observation pending.
+- NET01 saved Wi-Fi settings independent of QC: implemented; final installed acceptance pending.
+- RADPLAN01 second Compact responder24h: planning document complete; implementation deferred by owner.
+- REL118 source build/push/package/OTA/preservation: pending final build.
+
+1.18.0 / 19 October 2026: see04_Dokumen/UNIFIED_AUTO_QC.md and CURRENT V2.69.
+New Auto QC/Wi-Fi source candidate; radio pair PLAN ONLY. Final build/push/OTA
+acceptance pending; retain prior evidence, no physical PASS claim.
+
 ACCEPTANCE1.17.3 CURRENT V2.66: installed79/CA478 build2026-10-17T04:23:32Z exactMD5919879256bbd1156f9f3d836f91058d9; app1582800 SHA256bc6b0b4f652482319d1813e5ddd68644f3733696bebca98ccb884ffa5ac6996c. Source7fdb5d3 pushed BEFORE OTA. Live fragmentedGET+POST/3held clients/9concurrentGET/slow-reader PASS, identical same-app multipartOTA through NEW parser PASS; ENTIRE savedEB4CDCB2/profile/calibration unchanged. UNSELECTED preserved; review modal BATAL only, no automatic resume/test.1.17.2 REJECTED and rollback documented. New SINGLE12h logger PID24168 health10s/state30s started17Oct11:28:25WIB until~23:28:25WIB; build/network-repair-v1_17_3; existing heartbeat ACTIVE10min quiet. Baseline disconnect0/reject1/writeTimeout0/maxloop652; do not repeat old/stimulus counters. RF initial cause unresolved; no overnight/hardwarePASS. Read NETWORK_STABILITY.md/CURRENT; no radio/outputON/RTC writes/reset/erase/merge. Final docs publication/parity follows.
 
 

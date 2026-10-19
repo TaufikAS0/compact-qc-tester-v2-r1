@@ -1,4 +1,4 @@
-CURRENT | V2.67 | 2026-10-17 | Codex |1.17.3 unchanged79/CA478; host logger Windows rename crash repaired, resumed SINGLE PID26864 preserving185samples/deadline23:28WIB; device0timeout/disconnect/reset; monitoring pending
+CURRENT | V2.70 | 2026-10-19 | Codex |1.18.0 build08:55:24Z final compile/regressions PASS; source publication/package then OTA pending; exactCA478 AP4.1 idle backed up; radio pair PLAN ONLY
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,70 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.70 | 2026-10-19 | Codex - final build passed; source publication before OTA
+
+1.18.0 build2026-10-19T08:55:24Z app1611120bytes SHA256daf4d773d0fad15eefa472abff76fcb75dca8ace91e7675db8b58373b8b14178 MD543e75430bfc76f99f13c18d3e333a77e.
+Build-Firmware.ps1 PASS, classicESP32/core3.3.10/16MB legacy partition SHA256
+bc35a6a93f6204d86e25f28df16a6fb3e38a9052d8ca55a375c4e37c414c5c72; app<2MB.
+72 compiler input copies match frozen source. Earlier08:31 candidate is NOT
+the final image;08:44 and08:53 candidates failed missing dependency headers
+and were never uploaded. Final includes explicit calibration/profile headers.
+EEPROM five compile-time fault cases PASS, Node UI/new Wi-Fi/Auto/poll/Stop
+regressions PASS, Python14 PASS, portal2 PASS. Browser preview verified eight
+inline modules, no duplicate IDs, hidden manual ON/OFF, restored Manual controls.
+No physical QC tests/outputON/radio/RTC/EEPROM challenge executed.
+
+Exact rollback1.17.3 retained MD5919879256bbd1156f9f3d836f91058d9.
+Private baseline/full checkpoint backed up; AP4.1 CA478 UNSELECTED, GPIO32/33
+LOW and readback matches. Source commit/push and paired local packaging before
+app-only OTA follow. Installed acceptance and current router connection pending.
+
+
+### V2.69 | 2026-10-19 | Codex - unified Auto QC and persistent Wi-Fi
+
+Owner requested hierarchical navigation, all QC modules within Auto, automatic
+output commands with visual confirmations, continuous two-tag RS485/default
+Tag2 Signed/offset1/length1, automatic EEPROM round-trip and policy-based I2C,
+OLED Wi-Fi/IP, Wi-Fi settings repair, push and OTA. Radio pair explicitly PLAN
+ONLY after owner clarified second Compact will run24h; RS232 deferred.
+See04_Dokumen/UNIFIED_AUTO_QC.md and RADIO_PAIR_PLAN.md.
+
+Live AP192.168.4.1 confirms exactCA478 classicESP32/1.17.3 build04:23:32Z MD5
+919879256bbd1156f9f3d836f91058d9, outputOFF, UNSELECTED, no worker/RTC run.
+Private fullstate/checkpoint backups retained ignored under_codex_tmp/qc-unified.
+STA gotIPs0/disconnect0/retries37 at backup; old79timeout. Code proves old Wi-Fi
+form was volatile QC-only and boot overrode it with labprofile; actual current
+association failure cause remains unknown. New qc-wifi blob/readback/settings
+works independently of QC selection, AP retained, no secret in state/report.
+
+Source candidate1.18.0 implemented; Node regression/new settings/Auto cases PASS,
+Python14 PASS, portal2 PASS; browser preview8panels/no duplicate IDs/manual
+buttons hidden/Auto-Manual restoration PASS. EEPROM fault-injection compile-time
+cases cover partial challenge/read corruption/failed restore/readback mismatch.
+I2C revision bound to saved checkpoint; legacy import blocked for new criteria.
+RS485 confirmations bind current requestID and require re-observation if raw
+value changes. No physical tests/outputON/radio/RTC/EEPROM write executed.
+First compile in progress; final source freeze/rebuild, push, packaging, OTA
+and installed exacthash/preservation verification pending. Do not upload an
+intermediate build. Prior12h observation/automation completion remains valid.
+
+
+### V2.68 | 2026-10-17 | Codex - completed 12-hour observation
+
+Logger finished23:28:25.261WIB, elapsed12h0.025s, runningfalse/PID26864 absent.
+Health4278/4278, state1426/1426, failures/timeouts0; median31/125ms,
+P9594/219ms, maxima3141/610ms. Single health3141ms at12:49:35WIB retained,
+no repeated slowdown. RSSI-85..-56, disconnect0/retry0/no new reset,
+same serial1.17.3/build04:23:32Z/BSSID/channel6 throughout. Heap first/last-hour
+medians154500/154504bytes; min76620, no persistent decline. Historical reject1,
+writeTimeout0. Host59.276s gap disclosed; old logs retained. Supplemental bounded
+146health/219state allsuccessful/max312/406ms. Final fiveGET sameunit/outputOFF.
+Report04_Dokumen/NETWORK_OBSERVATION_2026-10-17.md compares old9timeouts fairly
+with changed cadence; RF cause remains unknown, no hardwarePASS/guaranteed cure.
+No additional firmware edits/build/OTA or device mutations. Report/checkpoint local,
+publication not performed in this completion turn. Pause same automation after
+saving summary, preserving prompt/schedule/target. No further routine monitor needed.
 
 ### V2.67 | 2026-10-17 | Codex - host logger recovered without device mutation
 

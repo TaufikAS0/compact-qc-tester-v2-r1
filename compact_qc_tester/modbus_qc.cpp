@@ -2,6 +2,7 @@
 #include "modbus_math.h"
 #include "qc_hardware.h"
 #include "qc_session.h"
+#include "qc_profiles.h"
 #include "config.h"
 #include "ota_manager.h"
 #include <HardwareSerial.h>
@@ -9,7 +10,7 @@ namespace {
 struct Tag {
   String name = "Tag", parity = "N", type = "Unsigned", order = "ABCD";
   uint32_t baud = 9600, timeout = 2000;
-  uint16_t address = 0, count = 1, raw[2] = {};
+  uint16_t address = 0, count = 1, raw[2] = {}, confirmedRaw[2] = {};
   uint8_t slave = 1, function = 3;
   bool valid = false; int verdict = 0;
   double value = 0; uint32_t at = 0, requestId = 0;
@@ -18,6 +19,7 @@ struct Tag {
 Tag tags[2];
 HardwareSerial uart(1);
 int pending = -1; uint32_t started = 0;
+bool polling=false;int nextTag=0;uint32_t nextRequest=0,pollHeartbeat=0;
 uint8_t rx[16]; size_t received = 0;
 void record(int n) {
   auto &p = tags[n]; qcRecord("Modbus tag:"+String(n+1), p.status, p.name+"; "+p.detail);
@@ -30,7 +32,10 @@ void record(int n) {
 void end(const char *status, const String &detail) {
   int n=pending; uart.end(); pending=-1;
   if(n<0) return;
-  auto &p=tags[n]; p.status=status; p.detail=detail; record(n);
+  auto &p=tags[n]; p.status=status; p.detail=detail;
+  if(p.status=="FAIL"||p.status=="INCOMPLETE"){p.valid=false;p.verdict=0;}
+  record(n);
+  if(polling){nextTag=1-n;nextRequest=millis()+1000;}
 }
 void reply(WebServer &web, bool ok, const String &detail) {
   JsonDocument d; d["ok"]=ok; d[ok?"detail":"error"]=detail;
@@ -56,14 +61,35 @@ void parse() {
   else if(p.type=="Signed")p.value=p.count==1?int16_t(value):int32_t(value);
   else p.value=value;
   p.valid=true;p.at=millis();
-  end("MENUNGGU USER","CRC-valid response; slave="+String(p.slave)+" FC="+String(p.function)+" offset="+String(p.address)+" raw="+String(p.raw[0])+","+String(p.raw[1])+" value="+String(p.value,6)+" request="+String(p.requestId,HEX)+" uptimeMs="+String(p.at));
+  if(p.verdict==1&&(p.raw[0]!=p.confirmedRaw[0]||p.raw[1]!=p.confirmedRaw[1]))p.verdict=0;
+  end(p.verdict==1?"PASS":"MENUNGGU USER","CRC-valid response; slave="+String(p.slave)+" FC="+String(p.function)+" offset="+String(p.address)+" raw="+String(p.raw[0])+","+String(p.raw[1])+" value="+String(p.value,6)+" request="+String(p.requestId,HEX)+" uptimeMs="+String(p.at));
+}
+bool requestTag(int n,bool continuous) {
+  auto &p=tags[n];p.valid=false;p.raw[0]=p.raw[1]=0;
+  if(!continuous){p.verdict=0;qcRetest("Modbus tag:"+String(n+1));}
+  p.status="TESTING";p.detail="Request queued";p.requestId=esp_random();
+  if(!mcpBit(MCP2_ADDR,2,false)){p.status="FAIL";p.verdict=0;p.detail="MCP2A2 LOW route write/readback failed";record(n);return false;}
+  uart.setRxBufferSize(256);uart.begin(p.baud,p.parity=="E"?SERIAL_8E1:p.parity=="O"?SERIAL_8O1:SERIAL_8N1,SERIAL_RX,SERIAL_TX);
+  if(!uart){p.status="FAIL";p.verdict=0;p.detail="UART1 initialization failed";record(n);return false;}
+  uint8_t tx[]={p.slave,p.function,uint8_t(p.address>>8),uint8_t(p.address),0,uint8_t(p.count),0,0};uint16_t crc=QcModbus::crc(tx,6);tx[6]=crc;tx[7]=crc>>8;
+  while(uart.available())uart.read();pending=n;received=0;started=millis();
+  if(uart.write(tx,8)!=8){end("FAIL","UART request queue failed");return false;}
+  record(n);return true;
 }
 }
 bool modbusQcActive(){return pending>=0;}
-void cancelModbusQc(){if(pending>=0)end("INCOMPLETE","Cancelled by Stop/new session/OTA");}
+void modbusHeartbeat(){if(polling)pollHeartbeat=millis();}
+void cancelModbusQc(){polling=false;if(pending>=0)end("INCOMPLETE","Cancelled by Stop/new session/OTA");}
 void resetModbusQc(){cancelModbusQc();for(int i=0;i<2;++i){tags[i].valid=false;tags[i].verdict=0;tags[i].status="BELUM DIUJI";tags[i].detail="";}}
 void beginModbusQc(WebServer &web,bool (*authorize)(),void (*stop)()) {
   tags[0].name="Tag1";tags[1].name="Tag2";
+  tags[1].type="Signed";tags[1].address=1;tags[1].count=1;
+  web.on("/api/modbus/poll",HTTP_POST,[&web,authorize,stop] {
+    if(!authorize())return;
+    if(webOtaBusy()||pdNegotiating()||pending>=0||web.arg("sessionId")!=qcSessionId()||web.arg("profileRevision")!=String(activeQcProfileRevision())){reply(web,false,"Wait for active test/OTA/PD and review current session");return;}
+    stop();polling=true;pollHeartbeat=millis();nextTag=0;nextRequest=millis();
+    reply(web,true,"RS485 polling started; two configured tags, stop/link loss cancels");
+  });
   web.on("/api/modbus/tag/config",HTTP_POST,[&web,authorize] {
     if(!authorize())return;
     int n;uint32_t b,t,s,f,a,c;String name=web.arg("name"),parity=web.arg("parity"),type=web.arg("type"),order=web.arg("order");
@@ -86,12 +112,14 @@ void beginModbusQc(WebServer &web,bool (*authorize)(),void (*stop)()) {
   });
   web.on("/api/modbus/tag/confirm",HTTP_POST,[&web,authorize] {
     if(!authorize())return;
-    int n;String v=web.arg("verdict");if(webOtaBusy()||pending>=0||!selected(web,n)||!tags[n].valid||(v!="PASS"&&v!="FAIL")){reply(web,false,"Valid response required before user confirmation");return;}
-    auto &p=tags[n];p.verdict=v=="PASS"?1:-1;p.status=v;p.detail+="; user "+v;record(n);reply(web,true,p.detail);
+    int n;String v=web.arg("verdict");if(webOtaBusy()||pending>=0||!selected(web,n)||!tags[n].valid||web.arg("requestId")!=String(tags[n].requestId)||(v!="PASS"&&v!="FAIL")){reply(web,false,"Fresh matching response required before user confirmation; wait for polling pause");return;}
+    auto &p=tags[n];p.verdict=v=="PASS"?1:-1;p.confirmedRaw[0]=p.raw[0];p.confirmedRaw[1]=p.raw[1];p.status=v;p.detail+="; user "+v;if(v=="FAIL")polling=false;record(n);reply(web,true,p.detail);
   });
   web.on("/api/modbus/stop",HTTP_POST,[&web,authorize]{if(!authorize())return;cancelModbusQc();reply(web,true,"Modbus stopped");});
 }
 void updateModbusQc() {
+  if(polling&&uint32_t(millis()-pollHeartbeat)>=3500){cancelModbusQc();return;}
+  if(polling&&pending<0&&int32_t(millis()-nextRequest)>=0){if(!requestTag(nextTag,true)){nextTag=1-nextTag;nextRequest=millis()+1000;}return;}
   if(pending<0)return;auto &p=tags[pending];
   if(millis()-started>=p.timeout){end("FAIL","Modbus timeout; check power/wiring/slave/baud/parity/register");return;}
   for(int budget=0;budget<16&&uart.available();++budget){
@@ -101,6 +129,6 @@ void updateModbusQc() {
   }
 }
 void modbusQcState(JsonObject out) {
-  out["active"]=pending>=0;out["pending"]=pending;
+  out["active"]=pending>=0;out["pending"]=pending;out["polling"]=polling;
   auto list=out["tags"].to<JsonArray>();for(auto &p:tags){auto d=list.add<JsonObject>();d["name"]=p.name;d["baud"]=p.baud;d["parity"]=p.parity;d["slave"]=p.slave;d["function"]=p.function;d["address"]=p.address;d["count"]=p.count;d["type"]=p.type;d["order"]=p.order;d["timeout"]=p.timeout;d["valid"]=p.valid;d["status"]=p.status;d["detail"]=p.detail;d["requestId"]=p.requestId;if(p.valid){d["value"]=p.value;d["uptimeMs"]=p.at;auto r=d["raw"].to<JsonArray>();for(int i=0;i<p.count;++i)r.add(p.raw[i]);}}
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+bool eepromRoundTrip(String &detail);
 #include <ArduinoJson.h>
 void beginQcHardware();
 void updateQcHardware();

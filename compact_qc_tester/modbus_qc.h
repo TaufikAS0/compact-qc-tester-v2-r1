@@ -7,3 +7,4 @@ void modbusQcState(JsonObject out);
 void resetModbusQc();
 bool modbusQcActive();
 void cancelModbusQc();
+void modbusHeartbeat();

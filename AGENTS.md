@@ -1,3 +1,13 @@
+1.18.0 / CURRENT V2.69: owner authorizes unified Auto QC, hierarchical navigation,
+automatic output commands with visual ON/OFF confirmations, automatic EEPROM
+challenge/restore, technician I2C criteria, RS485 continuous polling/Tag2 Signed
+offset1/count1, OLED Wi-Fi/IP, saved Wi-Fi settings, push and app-only OTA.
+Read04_Dokumen/UNIFIED_AUTO_QC.md. Radio pair is PLAN ONLY per latest owner
+clarification (second Compact24h); RS232 deferred. Preserve old checkpoint as
+historical evidence; no legacy cross-build import under new criteria. AP4.1
+CA478 exact1.17.3/build04:23:32Z idle backed up privately. Source/build/deploy
+status is CURRENT, not old acceptance notes below. No speculative RF diagnosis.
+
 ACCEPTANCE1.17.3 CURRENT V2.66: installed79/CA478 build2026-10-17T04:23:32Z exactMD5919879256bbd1156f9f3d836f91058d9; app1582800 SHA256bc6b0b4f652482319d1813e5ddd68644f3733696bebca98ccb884ffa5ac6996c. Source7fdb5d3 pushed BEFORE OTA. Live fragmentedGET+POST/3held clients/9concurrentGET/slow-reader PASS, identical same-app multipartOTA through NEW parser PASS; ENTIRE savedEB4CDCB2/profile/calibration unchanged. UNSELECTED preserved; review modal BATAL only, no automatic resume/test.1.17.2 REJECTED and rollback documented. New SINGLE12h logger PID24168 health10s/state30s started17Oct11:28:25WIB until~23:28:25WIB; build/network-repair-v1_17_3; existing heartbeat ACTIVE10min quiet. Baseline disconnect0/reject1/writeTimeout0/maxloop652; do not repeat old/stimulus counters. RF initial cause unresolved; no overnight/hardwarePASS. Read NETWORK_STABILITY.md/CURRENT; no radio/outputON/RTC writes/reset/erase/merge. Final docs publication/parity follows.
 
 
