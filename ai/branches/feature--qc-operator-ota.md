@@ -1,4 +1,4 @@
-CURRENT | V2.70 | 2026-10-19 | Codex |1.18.0 build08:55:24Z final compile/regressions PASS; source publication/package then OTA pending; exactCA478 AP4.1 idle backed up; radio pair PLAN ONLY
+CURRENT | V2.71 | 2026-10-19 | Codex |1.18.0 installed/hash/preservation/Wi-Fi NVS restart verified; AP HTML truncated;1.18.1 cooperative send build09:23:20Z PASS; publication/OTA/runtime acceptance pending
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,28 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.71 | 2026-10-19 | Codex - actual deployment and AP response evidence
+
+1.18.1 build2026-10-19T09:23:20Z app1611120 SHA256f1b0584e0ce06e91730070b8f3cde679311ebec59f5445b18ccd4d2a2ef19abd MD5055e377b5a2e9147562553595e5fccb3; compile/partition/freeze72/Node UI/Python14 PASS. Publication/OTA/runtime follows.
+
+1.18.0 source49133ae9ef1762367ece48da5251483717b1c12a pushed/parity clean;
+paired app/full packages generated. STA1.20 app-only OTA HTTP200, AP4.1 exact
+CA478 verified1.18.0/build08:55:24Z/MD543e75430bfc76f99f13c18d3e333a77e.
+Wi-Fi same-SSID/blank-retain-password save succeeded without selected QC
+profile; savedProfile true survived identical same-app OTA/reboot. Entire
+checkpoint/profiles/saved recipes/calibration/identity preserved throughout.
+No COM opened (owner says COM11 is not Compact). No physical QC started.
+
+Old1.17.3 regained HuaweiJIN/IP1.20 before OTA: not a new-firmware success.
+AP large HTML failed after12822/151789bytes with server writeTimeout+1;
+STA same page484ms complete. Initial post-save bounded probe overlapped
+intentional connection apply and recorded failures; preserve original evidence.
+AP browser also failed incomplete response. This is not a stability PASS.
+1.18.1 finalcandidate09:23:20Z allows5000ms cooperative send inactivity,
+retaining OFF/TPL service every iteration; compiling, source push/deploy and
+runtime verification pending. See04_Dokumen/AP_RESPONSE_REPAIR_1_18_1.md.
+
 
 ### V2.70 | 2026-10-19 | Codex - final build passed; source publication before OTA
 

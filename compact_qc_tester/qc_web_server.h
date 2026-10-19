@@ -90,7 +90,9 @@ class QcWebServer : public WebServer {
       int n=::send(_currentClient.fd(),data+sent,min(size_t(1460),length-sent),MSG_DONTWAIT);
       if(n>0){sent+=n;progress=millis();}
       else if(n<0 && errno!=EAGAIN && errno!=EWOULDBLOCK && errno!=EINTR) break;
-      else if(uint32_t(millis()-progress)>=1000){++writeTimeouts;break;}
+      // AP+STA shares one radio; a healthy AP receiver can pause over 1s.
+      // Allow bounded backpressure while continuing OFF timers/TPL above.
+      else if(uint32_t(millis()-progress)>=5000){++writeTimeouts;break;}
       delay(1); // scheduler only; safety serviced every iteration
     }
     if(sent!=length) _currentClient.stop();

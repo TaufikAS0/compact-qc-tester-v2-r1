@@ -1,3 +1,8 @@
+1.18.1 build2026-10-19T09:23:20Z app1611120 SHA256f1b0584e0ce06e91730070b8f3cde679311ebec59f5445b18ccd4d2a2ef19abd MD5055e377b5a2e9147562553595e5fccb3
+Final compile/partition/frozen72 inputs/Node UI/Python14 PASS. Source push/package/OTA/AP runtime acceptance pending. CURRENT V2.71.
+
+CURRENT V2.71: read AP_RESPONSE_REPAIR_1_18_1.md;1.18.0 installed but AP truncated;1.18.1 building.
+
 1.18.0 / CURRENT V2.69: owner authorizes unified Auto QC, hierarchical navigation,
 automatic output commands with visual ON/OFF confirmations, automatic EEPROM
 challenge/restore, technician I2C criteria, RS485 continuous polling/Tag2 Signed

@@ -1,3 +1,4 @@
+Actual status CURRENT V2.71 supersedes historical pending rows below.
 Current implementation tracking (1.18.0, CURRENT V2.69):
 - AQ01 hierarchy/Auto inline modules: implemented, browser preview verified.
 - AQ02 output automatic ON/OFF + human observations: implemented, software regression PASS; bench pending.
@@ -7,7 +8,7 @@ Current implementation tracking (1.18.0, CURRENT V2.69):
 - AQ06 OLED current Wi-Fi/IP: implemented; user visual observation pending.
 - NET01 saved Wi-Fi settings independent of QC: implemented; final installed acceptance pending.
 - RADPLAN01 second Compact responder24h: planning document complete; implementation deferred by owner.
-- REL118 source build/push/package/OTA/preservation: pending final build.
+- REL1181:1.18.0 source/package/OTA/preservation/NVS restart PASS; AP HTML FAIL.1.18.1 build/deploy/retest pending.
 
 1.18.0 / 19 October 2026: see04_Dokumen/UNIFIED_AUTO_QC.md and CURRENT V2.69.
 New Auto QC/Wi-Fi source candidate; radio pair PLAN ONLY. Final build/push/OTA

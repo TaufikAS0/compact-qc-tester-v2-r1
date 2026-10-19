@@ -1,3 +1,10 @@
+1.18.1 build2026-10-19T09:23:20Z app1611120 SHA256f1b0584e0ce06e91730070b8f3cde679311ebec59f5445b18ccd4d2a2ef19abd MD5055e377b5a2e9147562553595e5fccb3
+Final compile/partition/frozen72 inputs/Node UI/Python14 PASS. Source push/package/OTA/AP runtime acceptance pending. CURRENT V2.71.
+
+CURRENT V2.71:1.18.0 installed and Wi-Fi NVS restart/preservation verified; AP HTML truncated.
+1.18.1 cooperative send repair building09:23:20Z; publication/deploy/runtime acceptance pending.
+See04_Dokumen/AP_RESPONSE_REPAIR_1_18_1.md and CURRENT.
+
 1.18.0 build2026-10-19T08:55:24Z app1611120bytes SHA256daf4d773d0fad15eefa472abff76fcb75dca8ace91e7675db8b58373b8b14178 MD543e75430bfc76f99f13c18d3e333a77e
 Software checks PASS: firmware/EEPROM fault cases, Node UI, Python14, portal2,
 browser inline hierarchy/navigation. Source push/package then OTA pending.

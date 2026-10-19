@@ -1,3 +1,6 @@
+1.18.1: cooperative HTTP send inactivity5000ms with OFF/TPL service; fixes observed AP cutoff.
+Previous/Changes/Unchanged/Tests/Limitations/Upgrade:04_Dokumen/AP_RESPONSE_REPAIR_1_18_1.md.
+
 # 1.18.0 — Unified Auto QC and persistent Wi-Fi
 
 Previous: 1.17.3 (2026-10-17T04:23:32Z).
