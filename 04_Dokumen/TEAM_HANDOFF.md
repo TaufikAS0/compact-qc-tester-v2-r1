@@ -1,3 +1,7 @@
+1.18.2 build2026-10-20T01:23:08Z app1611376bytes SHA2565b7341f5836af1a508cfd7073a3146d012f1bd1031a77ebb948e04fed3332fb1 MD5de3e52c8f29904d6800169f03832703a
+Build/legacy partition/73 frozen compiler inputs/six constexpr timing assertions/Node UI PASS.
+OTA NOT performed:4.1 APIs404, exactCA478 currentIP/SSID required. CURRENT V2.74.
+
 CURRENT V2.72:1.18.1 installed CA478 build2026-10-19T09:23:20Z exact MD5055e377b5a2e9147562553595e5fccb3.
 AP192.168.4.1 browser/complete HTML PASS; bounded health2/state3 PASS (140-359ms).
 Wi-Fi saved/restart verified; entire historical checkpoint/profiles/calibration retained.

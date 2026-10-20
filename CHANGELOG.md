@@ -1,3 +1,6 @@
+1.18.2: one five-minute remembered Wi-Fi retry scheduler, core auto-reconnect disabled; AP stays active.
+Previous/Changes/Unchanged/Tests/Limitations/Upgrade:04_Dokumen/WIFI_RETRY_1_18_2.md.
+
 1.18.1 installed CA478 exact09:23:20Z/hash; AP complete HTML/browser and bounded API checks PASS.
 Wi-Fi NVS restart verified; old results/calibration preserved. AP initial load3.6-6.1s; no hardware/long-term PASS.
 

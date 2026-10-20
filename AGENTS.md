@@ -1,3 +1,7 @@
+1.18.2 build2026-10-20T01:23:08Z app1611376bytes SHA2565b7341f5836af1a508cfd7073a3146d012f1bd1031a77ebb948e04fed3332fb1 MD5de3e52c8f29904d6800169f03832703a
+Build/legacy partition/73 frozen compiler inputs/six constexpr timing assertions/Node UI PASS.
+OTA NOT performed:4.1 APIs404, exactCA478 currentIP/SSID required. CURRENT V2.74.
+
 CURRENT V2.73: owner STA1.20 recheck now health2/state3 timeout; Ethernet laptop1.122 active.
 Earlier1.18.1 acceptance is historical, current reachability unknown. Ask OLED status/IP; no scan/COM.
 

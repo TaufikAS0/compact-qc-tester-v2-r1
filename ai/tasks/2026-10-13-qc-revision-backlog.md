@@ -1,3 +1,4 @@
+NET-RETRY1182: five-minute retry implemented; build/partition/frozen73/timing/Node UI PASS; source publication follows; OTA blocked by4.1 APIs404/current identity unknown.
 CURRENT V2.72:1.18.1 deployed and AP browser/API verified; radio pair PLAN ONLY; physical fixture acceptance pending.
 Actual status CURRENT V2.71 supersedes historical pending rows below.
 Current implementation tracking (1.18.0, CURRENT V2.69):

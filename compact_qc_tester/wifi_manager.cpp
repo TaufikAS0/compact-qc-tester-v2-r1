@@ -7,6 +7,7 @@
 #include <atomic>
 #include <Preferences.h>
 #include "network_qc.h"
+#include "wifi_retry.h"
 
 namespace {
 uint32_t lastAttempt = 0;
@@ -68,7 +69,8 @@ void beginLabWiFi(const char *apSsid) {
   WiFi.persistent(false);
   WiFi.onEvent(wifiEvent);
   WiFi.mode(WIFI_AP_STA);
-  WiFi.setAutoReconnect(true);
+  // One scheduler owns reconnects; avoid core retries between five-minute slots.
+  WiFi.setAutoReconnect(false);
   if (!WiFi.softAP(apSsid, AP_PASSWORD, 1, false, 1)) {
     Serial.println("ERROR: recovery AP failed to start");
   }
@@ -92,17 +94,20 @@ void updateLabWiFi() {
   else if (!settingsPending && millis()-lastAttempt>=20000)
     settingsStatus="Belum mendapat IP; periksa SSID/password/jangkauan/router";
   if (connected != wasConnected) {
+    if (!connected) lastAttempt=millis(); // five minutes from observed link loss
     Serial.printf("STA: %s; SSID: %s; IP: %s\n", connected ? "CONNECTED" : "DISCONNECTED", WiFi.SSID().c_str(),
                   WiFi.localIP().toString().c_str());
     wasConnected = connected;
   }
-  if (!connected && !networkQcBusy() && static_cast<uint32_t>(millis() - lastAttempt) >= 30000 &&
-      static_cast<uint32_t>(millis() - lastDisconnect.load()) >= 30000) {
+  if (wifiRetryDue(millis(),lastAttempt,connected,networkQcBusy(),settingsPending)) {
     lastAttempt = millis();
     ++retries;
-    // Core AutoReconnect handles ordinary loss. Fallback must not disconnect
-    // first: WiFi.reconnect() can interrupt an association already in flight.
+    // Retry only the configured remembered network; keep recovery AP running.
+    // Never force disconnect while an association may still be in flight.
     lastRetryResult = esp_wifi_connect();
+    settingsStatus=lastRetryResult==ESP_OK
+      ? "Mencoba Wi-Fi tersimpan; percobaan berikutnya paling cepat5menit"
+      : "Permintaan koneksi gagal; akan dicoba lagi dalam5menit";
   }
 }
 
@@ -122,6 +127,9 @@ void labWiFiState(JsonObject d) {
   d["gotIPs"] = gotIPs.load();
   d["retryRequests"] = retries;
   d["lastRetryResult"] = lastRetryResult;
+  d["retryIntervalMs"] = WIFI_RETRY_INTERVAL_MS;
+  const uint32_t elapsed=uint32_t(millis()-lastAttempt);
+  d["retryInMs"] = connected ? 0 : (elapsed>=WIFI_RETRY_INTERVAL_MS ? 0 : WIFI_RETRY_INTERVAL_MS-elapsed);
   d["lastDisconnectMs"] = lastDisconnect.load();
   d["lastGotIPMs"] = lastGotIP.load();
   d["lastDisconnectReason"] = reason.load();

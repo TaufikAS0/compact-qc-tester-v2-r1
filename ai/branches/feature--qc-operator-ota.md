@@ -1,4 +1,4 @@
-CURRENT | V2.73 | 2026-10-19 | Codex |STA1.20 owner recheck timeout health2/state3; Ethernet laptop active; unit current status/IP unknown; earlier1.18.1 OTA verified; request OLED status/IP without scan
+CURRENT | V2.74 | 2026-10-20 | Codex |1.18.2 five-minute remembered Wi-Fi retry build01:23:08Z/software PASS;4.1 APIs404 identity unknown, OTA pending currentIP/SSID
 READING RULE | Read the CURRENT line and the first two entries under Latest Updates before editing.
 
 # Branch Worklog
@@ -10,6 +10,27 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 - Sequence V1.1 adalah versi worklog, bukan versi firmware. Firmware baseline tetap1.2.0.
 
 ## Latest Updates
+
+### V2.74 | 2026-10-20 | Codex - five-minute remembered Wi-Fi retry
+
+1.18.2 build2026-10-20T01:23:08Z app1611376bytes SHA2565b7341f5836af1a508cfd7073a3146d012f1bd1031a77ebb948e04fed3332fb1 MD5de3e52c8f29904d6800169f03832703a; compile/partition/frozen73/six timing assertions/Node UI PASS.
+Source publication and local paired packaging follow; OTA blocked by unknown current identity.
+
+Owner requests remembered Wi-Fi retry every five minutes while using hotspot.
+1.18.2 candidate build2026-10-20T01:23:08Z: disable core automatic reconnect;
+one application scheduler uses300000ms from boot/explicit apply/latest link
+loss or previous attempt. Boot and explicit Save still connect immediately.
+Keep AP active, esp_wifi_connect without forced disconnect; networkQC/pending
+settings defer retries. Added retryIntervalMs/retryInMs API diagnostics.
+Compile-time boundary/connected/busy/pending/millis rollover assertions;
+Node UI regression PASS. Build in progress; upload NOT performed.
+
+20Oct current4.1 returns404 error:not_found for /api/state and /api/health;
+fresh exactCA478 preflight failed before any mutation. Do not assume same
+unit or scan LAN; ask owner currentIP/SSID. Empty ignored retry1182 backup
+directory created; no current device checkpoint captured. Existing rollback
+and prior evidence retained. See04_Dokumen/WIFI_RETRY_1_18_2.md.
+
 
 ### V2.73 | 2026-10-19 | Codex - owner requests STA1.20 recheck; now unreachable
 
