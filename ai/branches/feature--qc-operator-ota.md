@@ -14,7 +14,7 @@ READING RULE | Read the CURRENT line and the first two entries under Latest Upda
 ### V2.74 | 2026-10-20 | Codex - five-minute remembered Wi-Fi retry
 
 1.18.2 build2026-10-20T01:23:08Z app1611376bytes SHA2565b7341f5836af1a508cfd7073a3146d012f1bd1031a77ebb948e04fed3332fb1 MD5de3e52c8f29904d6800169f03832703a; compile/partition/frozen73/six timing assertions/Node UI PASS.
-Source publication and local paired packaging follow; OTA blocked by unknown current identity.
+Source f23d9ec pushed; app-only/full paired packages generated locally, matching version/build. No OTA; current exactCA478 address required.
 
 Owner requests remembered Wi-Fi retry every five minutes while using hotspot.
 1.18.2 candidate build2026-10-20T01:23:08Z: disable core automatic reconnect;

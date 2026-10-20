@@ -42,3 +42,5 @@ Build/partition/frozen73 compiler inputs/six timing assertions/Node UI PASS.
 No OTA:20Oct4.1 returned404 for both identity/status APIs. Current address
 and exactCA478 identity required before upload. Physical five-minute retry
 and AP continuity remain untested on this release.
+
+Source f23d9ec pushed; app-only/full paired packages generated locally, matching version/build. No OTA; current exactCA478 address required.
